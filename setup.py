@@ -53,10 +53,13 @@ setup(
     install_requires=[
         "setuptools",
         # -*- Extra requirements: -*-
+        "imio.helpers",
+        "imio.pyutils",
         # 'z3c.jbot',
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "plone.restapi",
+        "requests",
     ],
     extras_require={
         "test": [
@@ -67,6 +70,7 @@ setup(
             "plone.testing>=5.0.0",
             "plone.app.contenttypes",
             "plone.app.robotframework[debug]",
+            "imio.annex",
         ],
     },
     entry_points="""

@@ -69,7 +69,7 @@ def create_session(endpoint_url, files_uids, signers=(), seal=None, acroform=Tru
     files_payload = [("files", (filename, file_content, "application/pdf")) for _, filename, file_content in files]
 
     # Headers avec autorisation
-    headers = {"accept": "application/json", "Authorization": "Basic aWFleGFtcGxlOmFkbWlu"}
+    headers = {"accept": "application/json", "Authorization": "Basic xxx"}
 
     ret = post_request(
         session_url, data={"data": str(data_payload).replace("'", '"')}, headers=headers, files=files_payload

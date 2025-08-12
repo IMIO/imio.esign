@@ -1,0 +1,8 @@
+<div tal:define="docs view/get_documents">
+  <tal:none tal:condition="python:not docs">
+    <span tal:content="view/get_no_documents_label">No documents</span>
+  </tal:none>
+  <ol tal:condition="docs">
+    <li tal:repeat="doc docs"><tal:link tal:replace="structure python:view.get_document_link(doc)">link</tal:link></li>
+  </ol>
+</div>

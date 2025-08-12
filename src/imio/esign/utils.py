@@ -11,7 +11,9 @@ logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def create_session(endpoint_url, files_uids, signers=(), seal=None, acroform=True, b64_cred=None, session_id=None):
+def create_external_session(
+    endpoint_url, files_uids, signers=(), seal=None, acroform=True, b64_cred=None, session_id=None, esign_root_url=None
+):
     """Create a session with the given signers and files.
 
     :param files_uids: files uids in site
@@ -22,7 +24,7 @@ def create_session(endpoint_url, files_uids, signers=(), seal=None, acroform=Tru
     :param b64_cred: base64 encoded credentials for authentication
     :return: session information
     """
-    session_url = "{}/{}".format(E_SIGN_ROOT_URL, SESSION_URL)
+    session_url = get_esign_root_url(esign_root_url)
     files = get_files_from_uids(files_uids)
     data_payload = {
         "commonData": {
@@ -45,8 +47,18 @@ def create_session(endpoint_url, files_uids, signers=(), seal=None, acroform=Tru
     if b64_cred:
         headers["Authorization"] = "Basic {}".format(b64_cred)
 
+    logger.info(data_payload)
     ret = post_request(session_url, data={"data": json.dumps(data_payload)}, headers=headers, files=files_payload)
+    logger.info("Response: %s", ret.text)
     return ret
+
+
+def get_esign_root_url(esign_root_url):
+    """Get the e-sign root URL."""
+    if esign_root_url:
+        return "{}/{}".format(esign_root_url, SESSION_URL)
+    else:
+        return "{}/{}".format(E_SIGN_ROOT_URL, SESSION_URL)
 
 
 def get_files_from_uids(uids):

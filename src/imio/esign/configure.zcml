@@ -10,7 +10,7 @@
 
   <!--include file="permissions.zcml" /-->
 
-  <!--include package=".browser" /-->
+  <include package=".browser" />
 
   <genericsetup:registerProfile
       name="default"
@@ -34,33 +34,6 @@
       factory=".setuphandlers.HiddenProfiles"
       name="imio.esign-hiddenprofiles"
       />
-
-    <browser:page
-        name="esign-sessions-listing"
-        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-        class=".views.SessionsListingView"
-        permission="zope2.Public"
-        template="templates/sessions.pt"
-        i18n:domain="imio.esign"
-    />
-
-    <browser:page
-        name="esign-session-documents"
-        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-        class=".views.SessionDocumentsView"
-        permission="zope2.Public"
-        template="templates/session_documents.pt"
-        i18n:domain="imio.esign"
-    />
-
-    <browser:page
-        name="esign-session"
-        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-        class=".views.SessionDashboardView"
-        permission="zope2.Public"
-        template="templates/session.pt"
-        i18n:domain="imio.esign"
-    />
 
   <!-- -*- extra stuff goes here -*- -->
 

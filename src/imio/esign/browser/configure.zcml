@@ -1,0 +1,36 @@
+<configure
+        xmlns="http://namespaces.zope.org/zope"
+        xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+        xmlns:i18n="http://namespaces.zope.org/i18n"
+        xmlns:plone="http://namespaces.plone.org/plone"
+        xmlns:browser="http://namespaces.zope.org/browser"
+        i18n_domain="imio.esign">
+
+    <browser:page
+            name="esign-sessions-listing"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".views.SessionsListingView"
+            permission="zope2.Public"
+            template="templates/sessions.pt"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:page
+            name="esign-session-documents"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".views.SessionDocumentsView"
+            permission="zope2.Public"
+            template="templates/session_documents.pt"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:page
+            name="esign-session"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".views.SessionDashboardView"
+            permission="zope2.Public"
+            template="templates/session.pt"
+            i18n:domain="imio.esign"
+    />
+
+</configure>

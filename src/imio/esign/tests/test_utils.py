@@ -28,13 +28,13 @@ class TestUtils(unittest.TestCase):
         at_folder = api.content.create(
             container=self.portal,
             id="annexes_types",
-            title=u"Annexes Types",
+            title="Annexes Types",
             type="ContentCategoryConfiguration",
             exclude_from_nav=True,
         )
         category_group = api.content.create(
             type="ContentCategoryGroup",
-            title=u"Annexes",
+            title="Annexes",
             container=at_folder,
             id="annexes",
         )
@@ -42,11 +42,11 @@ class TestUtils(unittest.TestCase):
         with open(icon_path, "rb") as fl:
             api.content.create(
                 type="ContentCategory",
-                title=u"To sign",
+                title="To sign",
                 container=category_group,
                 icon=NamedBlobImage(fl.read(), filename=u"icône1.png"),
                 id="to_sign",
-                predefined_title=u"To be signed",
+                predefined_title="To be signed",
                 # confidential=True,
                 # to_print=True,
                 to_sign=True,
@@ -57,77 +57,104 @@ class TestUtils(unittest.TestCase):
             )
         # add annexes
         tests_dir = os.path.dirname(__file__)
-        with open(os.path.join(tests_dir, "annex1.pdf"), "rb") as f:
-            annex1 = api.content.create(
-                container=self.portal,
-                type="annex",
-                id="annex1",
-                title="Annex 1",
-                content_category="to_sign",
-                scan_id="012345600000001",
-                file=NamedBlobFile(data=f.read(), filename=u"annex1.pdf", contentType="application/pdf"),
-            )
-            self.uid1 = annex1.UID()
-        with open(os.path.join(tests_dir, "annex2.pdf"), "rb") as f:
-            annex2 = api.content.create(
-                container=self.portal,
-                type="annex",
-                id="annex2",
-                title="Annex 2",
-                content_category="to_sign",
-                scan_id="012345600000002",
-                file=NamedBlobFile(data=f.read(), filename=u"annex2.pdf", contentType="application/pdf"),
-            )
-            self.uid2 = annex2.UID()
+        pdf_files = ["annex1.pdf", "annex2.pdf"]
+        self.uids = []
+        for i in range(10):
+            pdf_file = pdf_files[i % len(pdf_files)]
+            with open(os.path.join(tests_dir, pdf_file), "rb") as f:
+                annex = api.content.create(
+                    container=self.portal,
+                    type="annex",
+                    id="annex{}".format(i),
+                    title="Annex {}".format(i),
+                    content_category="to_sign",
+                    scan_id="0123456000000{:02d}".format(i),
+                    file=NamedBlobFile(data=f.read(), filename=u"annex{}.pdf".format(i), contentType="application/pdf"),
+                )
+                self.uids.append(annex.UID())
 
     def test_add_files_to_session(self):
         root_annot = IAnnotations(self.portal)
         self.assertNotIn("imio.esign", root_annot)
         signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
-        # no files and no session_id
-        add_files_to_session(signers, files_uids=(), session_id=None, title="my title")
-        self.assertIn("imio.esign", root_annot)
+        # add files, no session_id, no discriminator
+        sid, session = add_files_to_session(signers, (self.uids[0],), title="my title")
+        self.assertEqual(sid, 0)
         annot = root_annot["imio.esign"]
         self.assertEqual(annot["numbering"], 1)
         self.assertEqual(len(annot["sessions"]), 1)
-        self.assertEqual(len(annot["uids"]), 0)  # no files
-        session = annot["sessions"][0]
+        self.assertEqual(len(annot["uids"]), 1)
+        self.assertIn(self.uids[0], annot["uids"])
         self.assertEqual(session["title"], "my title")
         self.assertEqual(session["state"], "draft")
         self.assertEqual(session["seal"], False)
-        self.assertEqual(len(session["files"]), 0)
+        self.assertEqual(len(session["files"]), 1)
         self.assertEqual(len(session["signers"]), 2)
-        # add files, no session_id
-        add_files_to_session(signers, files_uids=(self.uid1,), session_id=None, title="my title")
+        # add files, no session_id => same session reused
+        sid, session = add_files_to_session(signers, (self.uids[1],))
+        self.assertEqual(sid, 0)
         self.assertEqual(annot["numbering"], 1)
         self.assertEqual(len(annot["sessions"]), 1)
-        self.assertEqual(len(annot["uids"]), 1)
-        self.assertIn(self.uid1, annot["uids"])
-        session = annot["sessions"][0]
+        self.assertEqual(len(annot["uids"]), 2)
+        self.assertIn(self.uids[1], annot["uids"])
+        self.assertEqual(len(session["files"]), 2)
+        # add files, no session_id, new discriminations => new session
+        sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))
+        self.assertEqual(sid, 1)
+        self.assertEqual(annot["numbering"], 2)
+        self.assertEqual(len(annot["sessions"]), 2)
+        self.assertEqual(len(annot["uids"]), 3)
+        self.assertIn(self.uids[2], annot["uids"])
         self.assertEqual(len(session["files"]), 1)
-        """
-        {
-            "numbering": 1,
-            "uids": {"3bad658001574309abfa4127868f770a": 0},
-            "sessions": {
-                0: {
-                    "files": [
-                        {
-                            "scan_id": "012345600000001",
-                            "title": u"Annex 1",
-                            "uid": "3bad658001574309abfa4127868f770a",
-                            "filename": u"annex1.pdf",
-                        }
-                    ],
-                    "title": "my title",
-                    "signers": [
-                        {"status": "", "userid": "user1", "email": "user1@sign.com"},
-                        {"status": "", "userid": "user2", "email": "user2@sign.com"},
-                    ],
-                    "last_update": datetime.datetime(2025, 8, 13, 10, 44, 1, 419579),
-                    "state": "draft",
-                    "seal": False,
+        # add files, no session_id, same discriminations => same session
+        sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))
+        self.assertEqual(sid, 1)
+        self.assertEqual(annot["numbering"], 2)
+        self.assertEqual(len(annot["sessions"]), 2)
+        self.assertEqual(len(annot["uids"]), 4)
+        self.assertIn(self.uids[3], annot["uids"])
+        self.assertEqual(len(session["files"]), 2)
+        # add files, no session_id, other discriminations => other session
+        sid, session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))
+        self.assertEqual(sid, 2)
+        # add files, session_id, other discriminations => reused session
+        sid, session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))
+        self.assertEqual(sid, 0)
+        # add files, session_id unfound, other discriminations => new session
+        sid, session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))
+        self.assertEqual(sid, 3)
+        # add files, no session_id, different signers => new session
+        sid, session = add_files_to_session([signers[0]], (self.uids[7],))
+        self.assertEqual(sid, 4)
+        # add files, no session_id, different seal => new session
+        sid, session = add_files_to_session(signers, (self.uids[8],), seal=True)
+        self.assertEqual(sid, 5)
+
+
+# example of annotation content
+"""
+{
+    "numbering": 1,
+    "uids": {"3bad658001574309abfa4127868f770a": 0},
+    "sessions": {
+        0: {
+            "files": [
+                {
+                    "scan_id": "012345600000001",
+                    "title": u"Annex 1",
+                    "uid": "3bad658001574309abfa4127868f770a",
+                    "filename": u"annex1.pdf",
                 }
-            },
+            ],
+            "title": "my title",
+            "signers": [
+                {"status": "", "userid": "user1", "email": "user1@sign.com"},
+                {"status": "", "userid": "user2", "email": "user2@sign.com"},
+            ],
+            "last_update": datetime.datetime(2025, 8, 13, 10, 44, 1, 419579),
+            "state": "draft",
+            "seal": False,
         }
-        """
+    },
+}
+"""

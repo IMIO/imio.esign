@@ -18,23 +18,30 @@ logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def add_files_to_session(signers, files_uids=(), seal=False, session_id=None, title=None):
+def add_files_to_session(signers, files_uids, seal=False, session_id=None, title=None, discriminators=()):
     """Add files to a session with the given signers.
 
-    :param session_id:
-    :param files_uids: files uids
     :param signers: a list of signers, each is a tuple with userid and email
+    :param files_uids: files uids list
     :param seal: seal or not
-    :return: session_id
+    :param session_id: session number
+    :param title: optional string
+    :param discriminators: optional list of string discriminators to use for session discrimination
+    :return: session_id, session
     """
     esign_dic = get_session_annotation()
-    if session_id and session_id not in esign_dic:
-        logger.error("Session with id %s not found in esign annotations.", session_id)
-        session_id = session = None
+    if session_id is not None:
+        if session_id not in esign_dic["sessions"]:
+            logger.error("Session with id %s not found in esign annotations.", session_id)
+            session_id = session = None
+        else:
+            session = esign_dic["sessions"][session_id]
     else:
-        session_id, session = discriminate_sessions(signers, seal)
+        session_id, session = discriminate_sessions(signers, seal, discriminators=discriminators)
     if not session:
-        session_id, session = create_session(signers=signers, seal=seal, title=title, annot=esign_dic)
+        session_id, session = create_session(
+            signers=signers, seal=seal, title=title, annot=esign_dic, discriminators=discriminators
+        )
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
         session["files"].append(
@@ -47,6 +54,7 @@ def add_files_to_session(signers, files_uids=(), seal=False, session_id=None, ti
         )
         esign_dic["uids"][uid] = session_id
     session["last_update"] = datetime.now()
+    return session_id, session
 
 
 def create_external_session(
@@ -61,9 +69,10 @@ def create_external_session(
     :param seal: a seal code, if any
     :param acroform: whether to use sign places
     :param b64_cred: base64 encoded credentials for authentication
+    :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default E_SIGN_ROOT_URL
     :return: session information
     """
-    session_url = get_esign_root_url(esign_root_url)
+    session_url = get_esign_session_url(esign_root_url)
     files = get_files_from_uids(files_uids)
     data_payload = {
         "commonData": {
@@ -92,13 +101,14 @@ def create_external_session(
     return ret
 
 
-def create_session(signers, seal, title=None, annot=None):
+def create_session(signers, seal, title=None, annot=None, discriminators=()):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param seal: a seal code, if any
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
+    :param discriminators: optional list of string discriminators
     :return: session id and session information
     """
     if not annot:
@@ -114,15 +124,17 @@ def create_session(signers, seal, title=None, annot=None):
         "state": "draft",
         "last_update": datetime.now(),
         "files": PersistentList(),
+        "discriminators": discriminators,
     }
     return session_id, sessions[session_id]
 
 
-def discriminate_sessions(signers, seal, annot=None):
+def discriminate_sessions(signers, seal, discriminators=(), annot=None):
     """Discriminate sessions based on seal value and signers in the same order.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param seal: a seal code, if any
+    :param discriminators: optional list of string discriminators
     :param annot: esign annotation, if not provided it will be fetched
     :return: session id and session if found, or (None, None) if no session found
     """
@@ -137,6 +149,9 @@ def discriminate_sessions(signers, seal, annot=None):
         if len(signers) != len(session_signers):
             continue
 
+        if set(discriminators) != set(session.get("discriminators", ())):
+            continue
+
         signers_match = all(
             (userid, email) == (s["userid"], s["email"]) for (userid, email), s in zip(signers, session_signers)
         )
@@ -146,7 +161,7 @@ def discriminate_sessions(signers, seal, annot=None):
     return None, None
 
 
-def get_esign_root_url(esign_root_url):
+def get_esign_session_url(esign_root_url):
     """Get the e-sign root URL."""
     if esign_root_url:
         return "{}/{}".format(esign_root_url, SESSION_URL)
@@ -187,8 +202,9 @@ def get_session_annotation(portal=None):
         portal = api.portal.get()
     annotations = IAnnotations(portal)
     if "imio.esign" not in annotations:
-        annotations["imio.esign"] = PersistentMapping({"numbering": 0, "sessions": PersistentMapping(),
-                                                       "uids": PersistentMapping()})
+        annotations["imio.esign"] = PersistentMapping(
+            {"numbering": 0, "sessions": PersistentMapping(), "uids": PersistentMapping()}
+        )
     return annotations["imio.esign"]
 
 

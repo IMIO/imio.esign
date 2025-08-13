@@ -2,6 +2,8 @@
 """utils tests for this package."""
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import get_session_annotation
+from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from plone import api
 from plone.app.testing import setRoles
@@ -182,6 +184,24 @@ class TestUtils(unittest.TestCase):
         remove_files_from_session((self.uids[6],))
         remove_files_from_session((self.uids[7],))
         remove_files_from_session((self.uids[8],))
+        self.assertEqual(len(annot["uids"]), 0)
+        self.assertEqual(len(annot["c_uids"]), 0)
+        self.assertEqual(len(annot["sessions"]), 0)
+
+    def test_remove_context_from_session(self):
+        """Test removing a context from a session."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+        signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
+        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1], self.uids[2], self.uids[3]))
+        self.assertEqual(len(annot["uids"]), 4)
+        self.assertEqual(len(annot["c_uids"]), 2)
+        self.assertEqual(len(annot["sessions"]), 1)
+        remove_context_from_session((self.folders[0].UID(),))
+        self.assertEqual(len(annot["uids"]), 2)
+        self.assertEqual(len(annot["c_uids"]), 1)
+        self.assertEqual(len(annot["sessions"]), 1)
+        remove_context_from_session((self.folders[1].UID(),))
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)

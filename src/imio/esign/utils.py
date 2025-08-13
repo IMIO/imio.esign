@@ -254,6 +254,20 @@ def post_request(url, data=None, json=None, headers=None, files=None):
         return response
 
 
+def remove_context_from_session(context_uids):
+    """Remove all files from a session that are linked to the given context UIDs.
+
+    :param context_uids: context_uids list
+    """
+    annot = get_session_annotation()
+    c_uids = annot["c_uids"]
+    for context_uid in context_uids:
+        if context_uid not in c_uids:
+            logger.error("Context UID %s not found in session", context_uid)
+            continue
+        remove_files_from_session(list(c_uids[context_uid]))
+
+
 def remove_files_from_session(files_uids):
     """Remove files from their corresponding sessions.
 

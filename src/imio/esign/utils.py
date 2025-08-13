@@ -31,18 +31,18 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
     :param discriminators: optional list of string discriminators to use for session discrimination
     :return: session_id, session
     """
-    esign_dic = get_session_annotation()
+    annot = get_session_annotation()
     if session_id is not None:
-        if session_id not in esign_dic["sessions"]:
+        if session_id not in annot["sessions"]:
             logger.error("Session with id %s not found in esign annotations.", session_id)
             session_id = session = None
         else:
-            session = esign_dic["sessions"][session_id]
+            session = annot["sessions"][session_id]
     else:
         session_id, session = discriminate_sessions(signers, seal, discriminators=discriminators)
     if not session:
         session_id, session = create_session(
-            signers=signers, seal=seal, title=title, annot=esign_dic, discriminators=discriminators
+            signers=signers, seal=seal, title=title, annot=annot, discriminators=discriminators
         )
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
@@ -57,8 +57,8 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
                 "context_uid": context_uid,
             }
         )
-        esign_dic["uids"][uid] = session_id
-        esign_dic["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
+        annot["uids"][uid] = session_id
+        annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -252,3 +252,48 @@ def post_request(url, data=None, json=None, headers=None, files=None):
             kwargs["files"] = [(tup[0], (tup[1][0], len(tup[1][1]))) for tup in kwargs["files"]]
             logger.error("Error while posting data '%s' to '%s': %s" % (kwargs, url, response.text))
         return response
+
+
+def remove_files_from_session(files_uids):
+    """Remove files from their corresponding sessions.
+
+    :param files_uids: list of file UIDs to remove
+    """
+    annot = get_session_annotation()
+    sessions = annot["sessions"]
+    uids = annot["uids"]
+    c_uids = annot["c_uids"]
+
+    for uid in files_uids:
+        session_id = uids.get(uid)
+        if session_id is None:
+            logger.error("No session found for file UID %s", uid)
+            continue
+        del uids[uid]
+        if session_id not in sessions:
+            logger.error("Session %s not found", session_id)
+            continue
+        session = sessions[session_id]
+        i = 0
+        context_uid = None
+        for j, dic in enumerate(session["files"]):
+            if dic["uid"] == uid:
+                i = j
+                context_uid = dic["context_uid"]
+                break
+        else:
+            logger.error("File UID %s not found in session %s", uid, session_id)
+            continue
+
+        del session["files"][i]
+        if not session["files"]:
+            del sessions[session_id]
+        else:
+            session["last_update"] = datetime.now()
+
+        if context_uid in c_uids and uid in c_uids[context_uid]:
+            c_uids[context_uid].remove(uid)
+            if not c_uids[context_uid]:
+                del c_uids[context_uid]
+
+        # logger.info("File UID %s removed from session %s", uid, session_id)

@@ -2,6 +2,7 @@
 """utils tests for this package."""
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import remove_files_from_session
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
@@ -83,7 +84,7 @@ class TestUtils(unittest.TestCase):
                 )
                 self.uids.append(annex.UID())
 
-    def test_add_files_to_session(self):
+    def test_add_remove_files_to_session(self):
         root_annot = IAnnotations(self.portal)
         self.assertNotIn("imio.esign", root_annot)
         signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
@@ -157,9 +158,33 @@ class TestUtils(unittest.TestCase):
         sid, session = add_files_to_session(signers, (self.uids[8],), seal=True)
         self.assertEqual(sid, 5)
 
+        self.assertEqual(len(annot["uids"]), 9)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 4)
+        self.assertEqual(len(annot["sessions"]), 6)
+
+        # now we can start to remove
+        remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files
+        self.assertEqual(len(annot["uids"]), 7)
+        self.assertEqual(len(annot["sessions"][0]["files"]), 1)
+        self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 4)
+        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 3)
+        remove_files_from_session((self.uids[5],))  # no more session files, session removed
+        self.assertEqual(len(annot["uids"]), 6)
+        self.assertEqual(len(annot["sessions"]), 5)
+        self.assertNotIn(0, annot["sessions"])
+        remove_files_from_session((self.uids[2], self.uids[3]))  # all session files, session removed
+        self.assertEqual(len(annot["uids"]), 4)
+        self.assertEqual(len(annot["sessions"]), 4)
+        self.assertNotIn(1, annot["sessions"])
+        remove_files_from_session((self.uids[4],))
+        remove_files_from_session((self.uids[6],))
+        remove_files_from_session((self.uids[7],))
+        remove_files_from_session((self.uids[8],))
+        self.assertEqual(len(annot["uids"]), 0)
+        self.assertEqual(len(annot["c_uids"]), 0)
+        self.assertEqual(len(annot["sessions"]), 0)
 
 
 # example of annotation content

@@ -7,7 +7,7 @@ from plone.app.testing import PLONE_FIXTURE
 from plone.app.testing import PloneSandboxLayer
 from plone.testing import z2
 
-import imio.esign
+import imio.esign  # noqa: F401
 
 
 class ImioEsignLayer(PloneSandboxLayer):
@@ -24,9 +24,13 @@ class ImioEsignLayer(PloneSandboxLayer):
         import plone.restapi
 
         self.loadZCML(package=plone.restapi)
+        import imio.annex
+
+        self.loadZCML(package=imio.annex)
         self.loadZCML(package=imio.esign)
 
     def setUpPloneSite(self, portal):
+        applyProfile(portal, "imio.annex:default")
         applyProfile(portal, "imio.esign:default")
 
 

@@ -45,11 +45,12 @@ def add_files_to_session(signers, files_uids=(), seal=False, session_id=None, ti
                 "uid": uid,
             }
         )
+        esign_dic["uids"][uid] = session_id
     session["last_update"] = datetime.now()
 
 
 def create_external_session(
-    session_id, endpoint_url, files_uids, signers=(), seal=None, acroform=True, b64_cred=None, esign_root_url=None
+    session_id, endpoint_url, files_uids, signers, seal=None, acroform=True, b64_cred=None, esign_root_url=None
 ):
     """Create a session with the given signers and files.
 
@@ -186,7 +187,8 @@ def get_session_annotation(portal=None):
         portal = api.portal.get()
     annotations = IAnnotations(portal)
     if "imio.esign" not in annotations:
-        annotations["imio.esign"] = PersistentMapping({"numbering": 0, "sessions": PersistentMapping()})
+        annotations["imio.esign"] = PersistentMapping({"numbering": 0, "sessions": PersistentMapping(),
+                                                       "uids": PersistentMapping()})
     return annotations["imio.esign"]
 
 

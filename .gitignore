@@ -22,6 +22,7 @@ local/
 node_modules/
 parts/
 dist/*
+src/*
 test.plone_addon/
 var/
 # files
@@ -40,3 +41,4 @@ report.html
 reports/
 venv/
 # excludes
+!src/imio

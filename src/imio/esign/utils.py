@@ -311,3 +311,30 @@ def remove_files_from_session(files_uids):
                 del c_uids[context_uid]
 
         # logger.info("File UID %s removed from session %s", uid, session_id)
+
+
+def remove_session(session_id):
+    """Remove a complete session and all its associated files.
+
+    :param session_id: ID of the session to remove
+    """
+    annot = get_session_annotation()
+    sessions = annot["sessions"]
+    uids = annot["uids"]
+    c_uids = annot["c_uids"]
+
+    if session_id not in sessions:
+        logger.error("Session %s not found", session_id)
+        return
+
+    session = sessions[session_id]
+    for fdic in session["files"]:
+        if fdic["uid"] in uids:
+            del uids[fdic["uid"]]
+        if fdic["context_uid"] in c_uids and fdic["uid"] in c_uids[fdic["context_uid"]]:
+            c_uids[fdic["context_uid"]].remove(fdic["uid"])
+            if not c_uids[fdic["context_uid"]]:
+                del c_uids[fdic["context_uid"]]
+
+    del sessions[session_id]
+    # logger.info("Session %s removed", session_id)

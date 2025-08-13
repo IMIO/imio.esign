@@ -5,6 +5,7 @@ from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
+from imio.esign.utils import remove_session
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
@@ -205,6 +206,23 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
+
+    def test_remove_session(self):
+        """Test removing a session."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+        signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
+        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
+        self.assertEqual(sid, 0)
+        sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal=True)
+        self.assertEqual(sid, 1)
+        import pdbp
+
+        pdbp.set_trace()
+        remove_session(0)  # remove first session
+        self.assertEqual(len(annot["uids"]), 2)
+        self.assertEqual(len(annot["c_uids"]), 2)
+        self.assertEqual(len(annot["sessions"]), 1)
 
 
 # example of annotation content

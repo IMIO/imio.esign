@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from imio.esign import E_SIGN_ROOT_URL
+from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
 from persistent.list import PersistentList
@@ -8,6 +9,7 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from plone.api.validation import mutually_exclusive_parameters
 from zope.annotation import IAnnotations
+from zope.component import getAdapter
 
 import json
 import logging
@@ -44,15 +46,19 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
         )
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
+        context_uid_provider = getAdapter(annex, IContextUidProvider)
+        context_uid = context_uid_provider.get_context_uid()
         session["files"].append(
             {
                 "scan_id": annex.scan_id,
                 "filename": annex.file.filename or "no_filename",
                 "title": annex.title or "no_title",
                 "uid": uid,
+                "context_uid": context_uid,
             }
         )
         esign_dic["uids"][uid] = session_id
+        esign_dic["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -203,7 +209,12 @@ def get_session_annotation(portal=None):
     annotations = IAnnotations(portal)
     if "imio.esign" not in annotations:
         annotations["imio.esign"] = PersistentMapping(
-            {"numbering": 0, "sessions": PersistentMapping(), "uids": PersistentMapping()}
+            {
+                "numbering": 0,
+                "sessions": PersistentMapping(),
+                "uids": PersistentMapping(),
+                "c_uids": PersistentMapping(),
+            }
         )
     return annotations["imio.esign"]
 

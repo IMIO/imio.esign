@@ -35,6 +35,10 @@
       name="imio.esign-hiddenprofiles"
       />
 
+  <adapter
+    factory=".adapter.DefaultContextUidProvider"
+    provides=".interfaces.IContextUidProvider"
+    for="*" />
   <!-- -*- extra stuff goes here -*- -->
 
 </configure>

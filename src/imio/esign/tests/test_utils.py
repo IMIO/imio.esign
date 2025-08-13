@@ -216,9 +216,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(sid, 0)
         sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal=True)
         self.assertEqual(sid, 1)
-        import pdbp
-
-        pdbp.set_trace()
         remove_session(0)  # remove first session
         self.assertEqual(len(annot["uids"]), 2)
         self.assertEqual(len(annot["c_uids"]), 2)

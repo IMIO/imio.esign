@@ -200,6 +200,34 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
 
+    def test_add_files_with_duplicate_filenames(self):
+        """Test that files with duplicate filenames are renamed with suffix."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+        ]
+
+        for i in range(3):
+            annex = api.content.get(UID=self.uids[i])
+            annex.file.filename = u"same_filename.pdf"
+            # annex.reindexObject()
+
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "same_filename.pdf")
+        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
+        self.assertEqual(len(session["files"]), 2)
+        self.assertIn("same_filename-1.pdf", [f["filename"] for f in session["files"]])
+
+        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
+        self.assertEqual(len(session["files"]), 3)
+        filenames = [f["filename"] for f in session["files"]]
+        self.assertIn("same_filename.pdf", filenames)
+        self.assertIn("same_filename-1.pdf", filenames)
+        self.assertIn("same_filename-2.pdf", filenames)
+
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""
         annot = get_session_annotation()

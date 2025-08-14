@@ -4,6 +4,8 @@ from imio.esign import E_SIGN_ROOT_URL
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
+from imio.helpers.transmogrifier import get_correct_id
+from os import path
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from plone import api
@@ -45,19 +47,23 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         session_id, session = create_session(
             signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators
         )
+    existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
+        filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
+        new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
             {
                 "scan_id": annex.scan_id,
-                "filename": annex.file.filename or "no_filename",
+                "filename": new_filename + ext,
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
             }
         )
+        existing_files.append(new_filename)
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     if session["client_id"] is None:

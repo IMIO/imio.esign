@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
-from Products.CMFPlone.utils import safe_unicode
-from collective.contact.core.browser.utils import date_to_DateTime
 from imio.esign import _
+from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
 from z3c.table.table import Table
 from zope.i18n import translate

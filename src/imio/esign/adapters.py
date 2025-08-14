@@ -1,5 +1,6 @@
 from imio.esign.browser.views import DUMMY_SESSIONS
 
+
 class DefaultContextUidProvider(object):
     """Default adapter that returns parent UID as context."""
 
@@ -15,7 +16,6 @@ class DefaultContextUidProvider(object):
 
 
 class FilesBelongingToAGivenSession(object):
-
     def __init__(self, context):
         self.context = context
         self.request = self.context.REQUEST

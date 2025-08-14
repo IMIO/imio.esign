@@ -1,17 +1,14 @@
 # -*- coding: utf-8 -*-
-import datetime
-import pprint
-
-from Products.CMFPlone.utils import safe_unicode
-from imio.esign import _
 from imio.esign.browser.table import SessionsTable
 from imio.helpers.content import uuidToObject
 from imio.prettylink.interfaces import IPrettyLink
-from Products.Five import BrowserView
 from plone import api
-from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
-from zope.i18n import translate
 from plone.app.layout.viewlets import ViewletBase
+from Products.Five import BrowserView
+from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+
+import datetime
+
 
 DUMMY_SESSIONS = {
     "numbering": 1,
@@ -173,6 +170,7 @@ class SessionFilesView(BrowserView):
     def get_file_link(self, ctx, obj):
         return IPrettyLink(ctx).getLink() + " / " + IPrettyLink(obj).getLink()
 
+
 class FacetedSessionSessionInfoViewlet(ViewletBase):
     """Show selected session info inside faceted results."""
 
@@ -181,9 +179,8 @@ class FacetedSessionSessionInfoViewlet(ViewletBase):
 
     @property
     def available(self):
-        #TODO: when no esign_session_id, display the sessions listing view
+        # TODO: when no esign_session_id, display the sessions listing view
         return "esign_session_id[]" in self.request.form.keys()
-
 
     def update(self):
         super(FacetedSessionSessionInfoViewlet, self).update()
@@ -194,7 +191,7 @@ class FacetedSessionSessionInfoViewlet(ViewletBase):
             session_id = self.request.get("esign_session_id", None)
         if not session_id:
             return
-        data = DUMMY_SESSIONS.get('sessions', {})
+        data = DUMMY_SESSIONS.get("sessions", {})
         sess = data.get(int(session_id))
         if not sess:
             return

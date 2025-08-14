@@ -72,7 +72,7 @@ class TestUtils(unittest.TestCase):
         tests_dir = os.path.dirname(__file__)
         pdf_files = ["annex1.pdf", "annex2.pdf"]
         self.uids = []
-        for i in range(9):
+        for i in range(10):
             pdf_file = pdf_files[i % len(pdf_files)]
             container = self.folders[i % len(self.folders)]
             with open(os.path.join(tests_dir, pdf_file), "rb") as f:
@@ -103,7 +103,8 @@ class TestUtils(unittest.TestCase):
         self.assertDictEqual(dict(annot["c_uids"]), {self.folders[0].UID(): [self.uids[0]]})
         self.assertEqual(session["title"], "my title")
         self.assertEqual(session["state"], "draft")
-        self.assertEqual(session["seal"], False)
+        self.assertEqual(session["seal"], None)
+        self.assertEqual(session["acroform"], True)
         self.assertEqual(session["client_id"], "0123456")
         self.assertEqual(len(session["files"]), 1)
         self.assertListEqual(
@@ -159,33 +160,37 @@ class TestUtils(unittest.TestCase):
         sid, session = add_files_to_session([signers[0]], (self.uids[7],))
         self.assertEqual(sid, 4)
         # add files, no session_id, different seal => new session
-        sid, session = add_files_to_session(signers, (self.uids[8],), seal=True)
+        sid, session = add_files_to_session(signers, (self.uids[8],), seal="seal1")
         self.assertEqual(sid, 5)
+        # add files, no session_id, same seal, different acroform => new session
+        sid, session = add_files_to_session(signers, (self.uids[9],), acroform=False)
+        self.assertEqual(sid, 6)
 
-        self.assertEqual(len(annot["uids"]), 9)
+        self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
-        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 4)
-        self.assertEqual(len(annot["sessions"]), 6)
+        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
+        self.assertEqual(len(annot["sessions"]), 7)
 
         # now we can start to remove
         remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files
-        self.assertEqual(len(annot["uids"]), 7)
+        self.assertEqual(len(annot["uids"]), 8)
         self.assertEqual(len(annot["sessions"][0]["files"]), 1)
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 4)
-        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 3)
+        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 4)
         remove_files_from_session((self.uids[5],))  # no more session files, session removed
-        self.assertEqual(len(annot["uids"]), 6)
-        self.assertEqual(len(annot["sessions"]), 5)
+        self.assertEqual(len(annot["uids"]), 7)
+        self.assertEqual(len(annot["sessions"]), 6)
         self.assertNotIn(0, annot["sessions"])
         remove_files_from_session((self.uids[2], self.uids[3]))  # all session files, session removed
-        self.assertEqual(len(annot["uids"]), 4)
-        self.assertEqual(len(annot["sessions"]), 4)
+        self.assertEqual(len(annot["uids"]), 5)
+        self.assertEqual(len(annot["sessions"]), 5)
         self.assertNotIn(1, annot["sessions"])
         remove_files_from_session((self.uids[4],))
         remove_files_from_session((self.uids[6],))
         remove_files_from_session((self.uids[7],))
         remove_files_from_session((self.uids[8],))
+        remove_files_from_session((self.uids[9],))
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
@@ -215,7 +220,7 @@ class TestUtils(unittest.TestCase):
         signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
         sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
         self.assertEqual(sid, 0)
-        sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal=True)
+        sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")
         self.assertEqual(sid, 1)
         remove_session(0)  # remove first session
         self.assertEqual(len(annot["uids"]), 2)
@@ -248,7 +253,7 @@ class TestUtils(unittest.TestCase):
             ],
             "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
             "state": "draft",
-            "seal": False,
+            "seal": None,
             "cliend_id": "0123456",
         }
     },

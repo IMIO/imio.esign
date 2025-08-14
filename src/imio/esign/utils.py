@@ -20,17 +20,20 @@ logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def add_files_to_session(signers, files_uids, seal=False, session_id=None, title=None, discriminators=()):
+def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=()):
     """Add files to a session with the given signers.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param files_uids: files uids list
     :param seal: seal or not
+    :param acroform: boolean to indicate if signer tag is in files
     :param session_id: session number
     :param title: optional string
     :param discriminators: optional list of string discriminators to use for session discrimination
     :return: session_id, session
     """
+    # TODO
+    # signers: add fullname, position
     annot = get_session_annotation()
     if session_id is not None:
         if session_id not in annot["sessions"]:
@@ -39,10 +42,10 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
         else:
             session = annot["sessions"][session_id]
     else:
-        session_id, session = discriminate_sessions(signers, seal, discriminators=discriminators)
+        session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators)
     if not session:
         session_id, session = create_session(
-            signers=signers, seal=seal, title=title, annot=annot, discriminators=discriminators
+            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators
         )
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
@@ -65,36 +68,37 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
     return session_id, session
 
 
-def create_external_session(
-    session_id, endpoint_url, files_uids, signers, seal=None, acroform=True, b64_cred=None, esign_root_url=None
-):
+def create_external_session(session_id, endpoint_url, b64_cred=None, esign_root_url=None):
     """Create a session with the given signers and files.
 
     :param session_id: internal session id
     :param endpoint_url: the endpoint URL to communicate with
-    :param files_uids: files uids in site
-    :param signers: a list of signers emails
-    :param seal: a seal code, if any
-    :param acroform: whether to use sign places
     :param b64_cred: base64 encoded credentials for authentication
     :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default E_SIGN_ROOT_URL
     :return: session information
     """
     session_url = get_esign_session_url(esign_root_url)
+    annot = get_session_annotation()
+    session = annot["sessions"].get(session_id)
+    if not session:
+        logger.error("Session with id %s not found.", session_id)
+        return None
+    files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
+    app_session_id = "{}{:05d}".format(session["client_id"], session_id)
     data_payload = {
         "commonData": {
             "endpointUrl": endpoint_url,
             "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, _ in files],
-            "imioAppSessionId": session_id and session_id or 1,
+            "imioAppSessionId": app_session_id,
         }
     }
 
-    if signers:
-        data_payload["signData"] = {"users": list(signers), "acroform": acroform}
+    signers = [fdic["email"] for fdic in session["signers"]]
+    data_payload["signData"] = {"users": list(signers), "acroform": session["acroform"]}
 
-    if seal:
-        data_payload["sealData"] = {"sealCode": seal}
+    if session["seal"] is not None:
+        data_payload["sealData"] = {"sealCode": session["seal"]}
 
     files_payload = [("files", (filename, file_content)) for _, filename, file_content in files]
 
@@ -109,11 +113,12 @@ def create_external_session(
     return ret
 
 
-def create_session(signers, seal, title=None, annot=None, discriminators=()):
+def create_session(signers, seal, acroform=True, title=None, annot=None, discriminators=()):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param seal: a seal code, if any
+    :param acroform: acroform boolean
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
     :param discriminators: optional list of string discriminators
@@ -126,23 +131,25 @@ def create_session(signers, seal, title=None, annot=None, discriminators=()):
     annot["numbering"] += 1
 
     sessions[session_id] = {
-        "signers": PersistentList([{"userid": userid, "email": email, "status": ""} for userid, email in signers]),
-        "seal": seal,
-        "title": title,
-        "state": "draft",
-        "last_update": datetime.now(),
-        "files": PersistentList(),
-        "discriminators": discriminators,
+        "acroform": acroform,
         "client_id": None,
+        "discriminators": discriminators,
+        "files": PersistentList(),
+        "last_update": datetime.now(),
+        "seal": seal,
+        "signers": PersistentList([{"userid": userid, "email": email, "status": ""} for userid, email in signers]),
+        "state": "draft",
+        "title": title,
     }
     return session_id, sessions[session_id]
 
 
-def discriminate_sessions(signers, seal, discriminators=(), annot=None):
+def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None):
     """Discriminate sessions based on seal value and signers in the same order.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param seal: a seal code, if any
+    :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators
     :param annot: esign annotation, if not provided it will be fetched
     :return: session id and session if found, or (None, None) if no session found
@@ -153,6 +160,8 @@ def discriminate_sessions(signers, seal, discriminators=(), annot=None):
 
     for session_id, session in sessions.items():
         if session.get("seal") != seal:
+            continue
+        if session.get("acroform") != acroform:
             continue
         session_signers = session.get("signers", [])
         if len(signers) != len(session_signers):

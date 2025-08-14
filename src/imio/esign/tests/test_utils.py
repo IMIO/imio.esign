@@ -90,7 +90,10 @@ class TestUtils(unittest.TestCase):
     def test_add_remove_files_to_session(self):
         root_annot = IAnnotations(self.portal)
         self.assertNotIn("imio.esign", root_annot)
-        signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
         # add files, no session_id, no discriminator
         sid, session = add_files_to_session(signers, (self.uids[0],), title="my title")
         self.assertEqual(sid, 0)
@@ -122,6 +125,7 @@ class TestUtils(unittest.TestCase):
         )
         self.assertEqual(len(session["signers"]), 2)
         # add files, no session_id => same session reused
+        signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # changed position => not discriminant
         sid, session = add_files_to_session(signers, (self.uids[1],))
         self.assertEqual(sid, 0)
         self.assertEqual(annot["numbering"], 1)
@@ -200,7 +204,10 @@ class TestUtils(unittest.TestCase):
         """Test removing a context from a session."""
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
-        signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
         sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1], self.uids[2], self.uids[3]))
         self.assertEqual(len(annot["uids"]), 4)
         self.assertEqual(len(annot["c_uids"]), 2)
@@ -218,7 +225,10 @@ class TestUtils(unittest.TestCase):
         """Test removing a session."""
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
-        signers = [("user1", "user1@sign.com"), ("user2", "user2@sign.com")]
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
         sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
         self.assertEqual(sid, 0)
         sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")
@@ -253,8 +263,20 @@ class TestUtils(unittest.TestCase):
             "seal": None,
             "sign_url": None,
             "signers": [
-                {"status": "", "userid": "user1", "email": "user1@sign.com"},
-                {"status": "", "userid": "user2", "email": "user2@sign.com"},
+                {
+                    "status": "",
+                    "userid": "user1",
+                    "email": "user1@sign.com",
+                    "fullname": "User 1",
+                    "position": "Position 1",
+                },
+                {
+                    "status": "",
+                    "userid": "user2",
+                    "email": "user2@sign.com",
+                    "fullname": "User 2",
+                    "position": "Position 2",
+                },
             ],
             "state": "draft",
             "title": "my title",

@@ -23,7 +23,7 @@ SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=()):
     """Add files to a session with the given signers.
 
-    :param signers: a list of signers, each is a tuple with userid and email
+    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param files_uids: files uids list
     :param seal: seal or not
     :param acroform: boolean to indicate if signer tag is in files
@@ -32,8 +32,6 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
     :param discriminators: optional list of string discriminators to use for session discrimination
     :return: session_id, session
     """
-    # TODO
-    # signers: add fullname, position
     annot = get_session_annotation()
     if session_id is not None:
         if session_id not in annot["sessions"]:
@@ -119,7 +117,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 def create_session(signers, seal, acroform=True, title=None, annot=None, discriminators=()):
     """Create a session with the given signers and seal.
 
-    :param signers: a list of signers, each is a tuple with userid and email
+    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param seal: a seal code, if any
     :param acroform: acroform boolean
     :param title: title of the session
@@ -141,7 +139,12 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
         "last_update": datetime.now(),
         "seal": seal,
         "sign_url": None,
-        "signers": PersistentList([{"userid": userid, "email": email, "status": ""} for userid, email in signers]),
+        "signers": PersistentList(
+            [
+                {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
+                for userid, email, fullname, position in signers
+            ]
+        ),
         "state": "draft",
         "title": title,
     }
@@ -175,7 +178,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
             continue
 
         signers_match = all(
-            (userid, email) == (s["userid"], s["email"]) for (userid, email), s in zip(signers, session_signers)
+            (userid, email) == (s["userid"], s["email"]) for (userid, email, _, _), s in zip(signers, session_signers)
         )
         if signers_match:
             return session_id, session

@@ -6,6 +6,11 @@
         xmlns:browser="http://namespaces.zope.org/browser"
         i18n_domain="imio.esign">
 
+    <!-- Publish static files -->
+    <browser:resourceDirectory
+        name="imio.esign"
+        directory="static" />
+
     <browser:page
             name="esign-sessions-listing"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
@@ -16,21 +21,22 @@
     />
 
     <browser:page
-            name="esign-session-documents"
+            name="esign-session-files"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-            class=".views.SessionDocumentsView"
+            class=".views.SessionFilesView"
             permission="zope2.Public"
-            template="templates/session_documents.pt"
+            template="templates/session_files.pt"
             i18n:domain="imio.esign"
     />
 
-    <browser:page
-            name="esign-session"
-            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-            class=".views.SessionDashboardView"
-            permission="zope2.Public"
-            template="templates/session.pt"
-            i18n:domain="imio.esign"
+    <browser:viewlet
+            for="eea.facetednavigation.subtypes.interfaces.IFacetedNavigable"
+            manager="collective.eeafaceted.z3ctable.interfaces.ITopAboveNavManager"
+            name="esign-faceted-session-info"
+            template="templates/faceted_session_info.pt"
+            class=".views.FacetedSessionSessionInfoViewlet"
+            permission="zope2.View"
     />
+
 
 </configure>

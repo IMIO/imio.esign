@@ -1,44 +1,53 @@
 <configure
-    xmlns="http://namespaces.zope.org/zope"
-    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
-    xmlns:i18n="http://namespaces.zope.org/i18n"
-    xmlns:plone="http://namespaces.plone.org/plone"
-    xmlns:browser="http://namespaces.zope.org/browser"
-    i18n_domain="imio.esign">
+        xmlns="http://namespaces.zope.org/zope"
+        xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+        xmlns:i18n="http://namespaces.zope.org/i18n"
+        xmlns:plone="http://namespaces.plone.org/plone"
+        xmlns:browser="http://namespaces.zope.org/browser"
+        i18n_domain="imio.esign">
 
-  <!--i18n:registerTranslations directory="locales" /-->
+    <!--i18n:registerTranslations directory="locales" /-->
 
-  <!--include file="permissions.zcml" /-->
+    <!--include file="permissions.zcml" /-->
 
-  <include package=".browser" />
-  <include package=".services" />
 
-  <genericsetup:registerProfile
-      name="default"
-      title="imio.esign"
-      directory="profiles/default"
-      description="Installs the imio.esign add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.post_install"
-      />
+    <include package=".browser" />
+    <include package=".services" />
 
-  <genericsetup:registerProfile
-      name="uninstall"
-      title="imio.esign (uninstall)"
-      directory="profiles/uninstall"
-      description="Uninstalls the imio.esign add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.uninstall"
-      />
+    <i18n:registerTranslations directory="locales"/>
 
-  <utility
-      factory=".setuphandlers.HiddenProfiles"
-      name="imio.esign-hiddenprofiles"
-      />
 
-  <adapter
-    factory=".adapter.DefaultContextUidProvider"
-    provides=".interfaces.IContextUidProvider"
-    for="*" />
+    <genericsetup:registerProfile
+            name="default"
+            title="imio.esign"
+            directory="profiles/default"
+            description="Installs the imio.esign add-on."
+            provides="Products.GenericSetup.interfaces.EXTENSION"
+            post_handler=".setuphandlers.post_install"
+    />
+
+    <genericsetup:registerProfile
+            name="uninstall"
+            title="imio.esign (uninstall)"
+            directory="profiles/uninstall"
+            description="Uninstalls the imio.esign add-on."
+            provides="Products.GenericSetup.interfaces.EXTENSION"
+            post_handler=".setuphandlers.uninstall"
+    />
+
+    <utility
+            factory=".setuphandlers.HiddenProfiles"
+            name="imio.esign-hiddenprofiles"
+    />
+
+    <adapter
+            factory=".adapters.DefaultContextUidProvider"
+            provides=".interfaces.IContextUidProvider"
+            for="*"/>
+
+    <adapter for="*"
+             factory=".adapters.FilesBelongingToAGivenSession"
+             provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"
+             name="files-belonging-to-a-given-session"/>
 
 </configure>

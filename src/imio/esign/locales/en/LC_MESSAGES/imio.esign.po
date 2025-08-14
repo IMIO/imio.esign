@@ -1,0 +1,115 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2025-08-14 12:37+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"Language-Code: en\n"
+"Language-Name: English\n"
+"Preferred-Encodings: utf-8 latin1\n"
+"Domain: imio.dashboard\n"
+"X-is-fallback-for: en-au en-ca en-gb en-us\n"
+
+#: ./browser/table.py:100
+msgid "Actions"
+msgstr ""
+
+#: ./browser/table.py:59
+msgid "Documents"
+msgstr ""
+
+#: ./browser/views.py:222
+msgid "Files"
+msgstr ""
+
+#: ./browser/table.py:91
+msgid "Go to dashboard"
+msgstr ""
+
+#: ./browser/templates/sessions.pt:14
+msgid "Here you can find the list of all sessions of electronic signatures."
+msgstr ""
+
+#: ./browser/table.py:11
+msgid "ID"
+msgstr ""
+
+#: ./configure.zcml:23
+msgid "Installs the imio.esign add-on."
+msgstr ""
+
+#: ./browser/table.py:37
+#: ./browser/templates/faceted_session_info.pt:32
+#: ./browser/views.py:219
+msgid "Last update"
+msgstr ""
+
+#: ./browser/templates/sessions.pt:11
+msgid "List of electronic signing sessions"
+msgstr ""
+
+#: ./browser/views.py:194
+msgid "No"
+msgstr ""
+
+#: ./browser/table.py:67
+msgid "Quick look"
+msgstr ""
+
+#: ./browser/templates/faceted_session_info.pt:40
+#: ./browser/views.py:228
+msgid "Sealed"
+msgstr ""
+
+#: ./browser/templates/faceted_session_info.pt:18
+msgid "Session ID"
+msgstr ""
+
+#: ./browser/templates/faceted_session_info.pt:13
+msgid "Session Information"
+msgstr ""
+
+#: ./browser/views.py:213
+msgid "Session information"
+msgstr ""
+
+#: ./browser/table.py:46
+#: ./browser/templates/faceted_session_info.pt:46
+#: ./browser/views.py:225
+msgid "Signers"
+msgstr ""
+
+#: ./browser/table.py:19
+#: ./browser/templates/faceted_session_info.pt:23
+#: ./browser/views.py:216
+msgid "State"
+msgstr ""
+
+#: ./browser/table.py:29
+msgid "Title"
+msgstr ""
+
+#: ./configure.zcml:32
+msgid "Uninstalls the imio.esign add-on."
+msgstr ""
+
+#: ./browser/views.py:194
+msgid "Yes"
+msgstr ""
+
+#: ./configure.zcml:23
+msgid "imio.esign"
+msgstr ""
+
+#: ./configure.zcml:32
+msgid "imio.esign (uninstall)"
+msgstr ""
+
+#: ./browser/views.py:164
+msgid "state_%s"
+msgstr ""

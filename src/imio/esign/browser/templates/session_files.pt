@@ -1,0 +1,10 @@
+<div tal:define="files view/files">
+    <tal:none tal:condition="python:not files">
+        <span i18n:translate="">No files</span>
+    </tal:none>
+    <ol tal:condition="files">
+        <li tal:repeat="file files">
+            <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>
+        </li>
+    </ol>
+</div>

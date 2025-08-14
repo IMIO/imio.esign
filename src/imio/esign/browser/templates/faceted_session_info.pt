@@ -1,0 +1,76 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+      xmlns:tal="http://xml.zope.org/namespaces/tal"
+      xmlns:metal="http://xml.zope.org/namespaces/metal"
+      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+      lang="en"
+         i18n:domain="imio.esign">
+<div class="faceted-session-info" tal:define="has view/has_session"
+         tal:condition="has">
+    <h2 tal:content="python:view.session['title']">Session title</h2>
+    <fieldset>
+        <legend i18n:translate="">Session information</legend>
+        <table class="no-style-table table-view-widgets">
+            <tbody>
+
+            <tr>
+                <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
+                <td class="table_widget_value" tal:content="python:view.session['id']">25452</td>
+            </tr>
+
+            <tr>
+                <td class="table_widget_label"><label i18n:translate="">State</label></td>
+                <td class="table_widget_value">
+          <span tal:define="state python:view.session['state']"
+                   tal:content="python:view.session['state']">draft</span>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="table_widget_label"><label i18n:translate="">Last update</label></td>
+                <td class="table_widget_value"
+                         tal:content="python:view.session['last_update'].strftime('%Y-%m-%d %H:%M')">
+                    2025-08-13 10:44
+                </td>
+            </tr>
+
+            <tr>
+                <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
+                <td class="table_widget_value"
+                         tal:content="python:'Yes' if view.session['seal'] else 'No'">No
+                </td>
+            </tr>
+            <tr>
+                <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
+                <td class="table_widget_value">
+                    <table class="no-border no-style-table"
+                             tal:define="signers python:view.session.get('signers', [])">
+                        <thead>
+                        <tr>
+                            <th>Full name</th>
+                            <th>Position</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr tal:repeat="s signers">
+                            <td tal:content="python:s['fullname']">Jean Dupont</td>
+                            <td tal:content="python:s['held_position']">Directeur Général</td>
+                            <td tal:content="python:s['email']">user1@sign.com</td>
+                            <td tal:content="python:s['status']">pending</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </fieldset>
+</div>
+
+<style>
+    table.no-border td {
+        border: none !important;
+    }
+</style>
+</html>

@@ -104,6 +104,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(session["title"], "my title")
         self.assertEqual(session["state"], "draft")
         self.assertEqual(session["seal"], False)
+        self.assertEqual(session["client_id"], "0123456")
         self.assertEqual(len(session["files"]), 1)
         self.assertListEqual(
             list(session["files"]),
@@ -248,6 +249,7 @@ class TestUtils(unittest.TestCase):
             "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
             "state": "draft",
             "seal": False,
+            "cliend_id": "0123456",
         }
     },
 }

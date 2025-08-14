@@ -59,6 +59,8 @@ def add_files_to_session(signers, files_uids, seal=False, session_id=None, title
         )
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
+    if session["client_id"] is None:
+        session["client_id"] = session["files"][0]["scan_id"][:7]
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -131,6 +133,7 @@ def create_session(signers, seal, title=None, annot=None, discriminators=()):
         "last_update": datetime.now(),
         "files": PersistentList(),
         "discriminators": discriminators,
+        "client_id": None,
     }
     return session_id, sessions[session_id]
 

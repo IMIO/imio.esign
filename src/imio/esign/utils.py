@@ -85,7 +85,8 @@ def create_external_session(session_id, endpoint_url, b64_cred=None, esign_root_
         return None
     files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
-    app_session_id = "{}{:05d}".format(session["client_id"], session_id)
+    # app_session_id = int("{}{:05d}".format(session["client_id"], session_id))
+    app_session_id = 1000 + session_id
     data_payload = {
         "commonData": {
             "endpointUrl": endpoint_url,

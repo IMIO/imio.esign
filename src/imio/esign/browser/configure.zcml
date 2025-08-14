@@ -38,5 +38,20 @@
             permission="zope2.View"
     />
 
+    <browser:view
+            name="add-to-esign-session"
+            for="*"
+            class=".actions.AddToSessionView"
+            permission="zope2.Public"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:view
+            name="remove-from-esign-session"
+            for="*"
+            class=".actions.RemoveFromSessionView"
+            permission="zope2.Public"
+            i18n:domain="imio.esign"
+    />
 
 </configure>

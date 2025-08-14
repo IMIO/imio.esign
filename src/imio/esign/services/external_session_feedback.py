@@ -10,7 +10,7 @@ class ExternalSessionFeedbackPost(Service):
         """Handle the external session feedback.
 
         Needs json body with:
-            * "session_id": "123456", app_session_id
+            * "app_session_id": "123456", app_session_id
             * "code": "some_code", feedback identification code
             * "session_state": "to_create_session"; session state
             * "sign_url": "http://example.com/sign", sign URL
@@ -37,7 +37,7 @@ class ExternalSessionFeedbackPost(Service):
             session = annot["sessions"][session_id]
             session_update = {}
             session_state = data.get("session_state")
-            if session_state:
+            if session_state and session_state != session["state"]:
                 session_update["state"] = session_state
             sign_url = data.get("sign_url")
             if sign_url:
@@ -48,7 +48,7 @@ class ExternalSessionFeedbackPost(Service):
         except Exception as e:
             self.request.response.setStatus(500)
             return {"message": str(e)}
-        return {"success": True, "message": "Information correctly handled"}
+        return {"message": "Information correctly handled"}
 
     def authorized(self):
         """Check if the user is authorized to access this service."""

@@ -11,6 +11,7 @@
   <!--include file="permissions.zcml" /-->
 
   <include package=".browser" />
+  <include package=".services" />
 
   <genericsetup:registerProfile
       name="default"
@@ -39,6 +40,5 @@
     factory=".adapter.DefaultContextUidProvider"
     provides=".interfaces.IContextUidProvider"
     for="*" />
-  <!-- -*- extra stuff goes here -*- -->
 
 </configure>

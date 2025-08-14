@@ -68,11 +68,10 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
     return session_id, session
 
 
-def create_external_session(session_id, endpoint_url, b64_cred=None, esign_root_url=None):
+def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     """Create a session with the given signers and files.
 
     :param session_id: internal session id
-    :param endpoint_url: the endpoint URL to communicate with
     :param b64_cred: base64 encoded credentials for authentication
     :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default E_SIGN_ROOT_URL
     :return: session information
@@ -86,10 +85,12 @@ def create_external_session(session_id, endpoint_url, b64_cred=None, esign_root_
     files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
     # app_session_id = int("{}{:05d}".format(session["client_id"], session_id))
+    # TODO temporary value while waiting for fastapi update
     app_session_id = 1000 + session_id
+    portal = api.portal.get()
     data_payload = {
         "commonData": {
-            "endpointUrl": endpoint_url,
+            "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
             "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, _ in files],
             "imioAppSessionId": app_session_id,
         }
@@ -111,6 +112,7 @@ def create_external_session(session_id, endpoint_url, b64_cred=None, esign_root_
     logger.info(data_payload)
     ret = post_request(session_url, data={"data": json.dumps(data_payload)}, headers=headers, files=files_payload)
     logger.info("Response: %s", ret.text)
+    # {"message":"Request received in the expected format. Session is being created in background."}
     return ret
 
 
@@ -138,6 +140,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
         "files": PersistentList(),
         "last_update": datetime.now(),
         "seal": seal,
+        "sign_url": None,
         "signers": PersistentList([{"userid": userid, "email": email, "status": ""} for userid, email in signers]),
         "state": "draft",
         "title": title,

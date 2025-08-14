@@ -105,6 +105,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(session["state"], "draft")
         self.assertEqual(session["seal"], None)
         self.assertEqual(session["acroform"], True)
+        self.assertIsNone(session["sign_url"])
         self.assertEqual(session["client_id"], "0123456")
         self.assertEqual(len(session["files"]), 1)
         self.assertListEqual(
@@ -236,6 +237,9 @@ class TestUtils(unittest.TestCase):
     "c_uids": {"f66b3da2d2e947fd81ab65e3e36c039d": ["3c0528c0ad364641be8b9cbaedbf6620"]},
     "sessions": {
         0: {
+            "acroform": True,
+            "cliend_id": "0123456",
+            "discriminators": (),
             "files": [
                 {
                     "context_uid": "f66b3da2d2e947fd81ab65e3e36c039d",
@@ -245,16 +249,15 @@ class TestUtils(unittest.TestCase):
                     "filename": u"annex0.pdf",
                 }
             ],
-            "discriminators": (),
-            "title": "my title",
+            "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
+            "seal": None,
+            "sign_url": None,
             "signers": [
                 {"status": "", "userid": "user1", "email": "user1@sign.com"},
                 {"status": "", "userid": "user2", "email": "user2@sign.com"},
             ],
-            "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
             "state": "draft",
-            "seal": None,
-            "cliend_id": "0123456",
+            "title": "my title",
         }
     },
 }

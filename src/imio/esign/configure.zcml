@@ -37,7 +37,7 @@
       />
 
   <adapter
-    factory=".adapter.DefaultContextUidProvider"
+    factory=".adapters.DefaultContextUidProvider"
     provides=".interfaces.IContextUidProvider"
     for="*" />
 

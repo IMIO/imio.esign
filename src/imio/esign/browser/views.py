@@ -1,117 +1,15 @@
 # -*- coding: utf-8 -*-
+from imio.esign import _
 from imio.esign.browser.table import SessionsTable
+from imio.esign.utils import create_external_session
+from imio.esign.utils import get_session_annotation
+from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.prettylink.interfaces import IPrettyLink
 from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
-
-import datetime
-
-
-DUMMY_SESSIONS = {
-    "numbering": 1,
-    "uids": {"78e72614568f4e8cb74a7fda90f89ad1": 0},
-    "sessions": {
-        25452: {
-            "id": 25452,
-            "files": [
-                {
-                    "scan_id": "012345600000001",
-                    "title": "Annex 1",
-                    "uid": "78e72614568f4e8cb74a7fda90f89ad1",
-                    "context_uid": "c65197e2bab64ceab88c405dc0296cfa",
-                    "filename": "annex1.pdf",
-                }
-            ],
-            "title": "Séance du Collège du 13/08/2025 (18:00) - 1",
-            "signers": [
-                {
-                    "status": "pending",
-                    "userid": "user1",
-                    "fullname": "Jean Dupont",
-                    "held_position": u"Directeur Général",
-                    "email": "user1@sign.com",
-                },
-                {
-                    "status": "signed",
-                    "userid": "user2",
-                    "fullname": "Jeanne Dupont",
-                    "held_position": u"Bourgmestre",
-                    "email": "user2@sign.com",
-                },
-            ],
-            "last_update": datetime.datetime(2025, 8, 13, 10, 44, 1, 419579),
-            "state": "draft",
-            "seal": False,
-        },
-        25453: {
-            "id": 25453,
-            "files": [
-                {
-                    "scan_id": "012345600000001",
-                    "title": "Annex 1",
-                    "uid": "78e72614568f4e8cb74a7fda90f89ad1",
-                    "context_uid": "c65197e2bab64ceab88c405dc0296cfa",
-                    "filename": "annex1.pdf",
-                }
-            ],
-            "title": "Séance du Collège du 18/08/2025 (18:00) - 1",
-            "signers": [
-                {
-                    "status": "pending",
-                    "userid": "user1",
-                    "fullname": "Jean Dupont",
-                    "held_position": u"Directeur Général",
-                    "email": "user1@sign.com",
-                },
-                {
-                    "status": "signed",
-                    "userid": "user2",
-                    "fullname": "Jeanne Dupont",
-                    "held_position": u"Bourgmestre",
-                    "email": "user2@sign.com",
-                },
-            ],
-            "last_update": datetime.datetime(2025, 8, 13, 10, 44, 1, 419579),
-            "state": "draft",
-            "seal": False,
-        },
-        25454: {
-            "id": 25454,
-            "files": [
-                {
-                    "scan_id": "012345600000001",
-                    "title": "Annex 1",
-                    "uid": "78e72614568f4e8cb74a7fda90f89ad1",
-                    "context_uid": "c65197e2bab64ceab88c405dc0296cfa",
-                    "filename": "annex1.pdf",
-                }
-            ],
-            "title": "Séance du Collège du 18/08/2025 (18:00) - 2",
-            "signers": [
-                {
-                    "status": "pending",
-                    "userid": "user1",
-                    "fullname": "Jean Dupont",
-                    "held_position": u"Directeur Général",
-                    "email": "user1@sign.com",
-                },
-                {
-                    "status": "signed",
-                    "userid": "user2",
-                    "fullname": "Jeanne Dupont",
-                    "held_position": u"Bourgmestre",
-                    "email": "user2@sign.com",
-                },
-            ],
-            "last_update": datetime.datetime(2025, 8, 13, 10, 44, 1, 419579),
-            "state": "draft",
-            "seal": False,
-        },
-    },
-}
 
 
 class SessionsListingView(BrowserView):
@@ -131,15 +29,14 @@ class SessionsListingView(BrowserView):
         return table.render()
 
     def get_sessions(self):
-        return DUMMY_SESSIONS["sessions"].values()
+        sessions = []
+        for session_id, session in get_session_annotation()["sessions"].items():
+            session["id"] = session_id
+            sessions.append(session)
+        return sessions
 
     def get_dashboard_link(self, session):
-        user_id = api.user.get_current().getId()
-        return "Members/{user_id}/mymeetings/meeting-config-college/searches_items#c3=20&b_start=0&c1={collection_uid}&esign_session_id={session_id}".format(
-            user_id=user_id,
-            collection_uid="a25665fc111f48da99674b893ba60ed9",
-            session_id=session["id"],
-        )
+        raise NotImplementedError
 
 
 class SessionFilesView(BrowserView):
@@ -152,7 +49,7 @@ class SessionFilesView(BrowserView):
         self.files = []
 
     def __call__(self):
-        session_id = self.request.get("session_id")
+        session_id = int(self.request.get("session_id"))
         session = self.get_session(session_id)
         files = []
         for f in session["files"]:
@@ -165,36 +62,95 @@ class SessionFilesView(BrowserView):
 
     def get_session(self, session_id):
         """Get the session object."""
-        return filter(lambda s: s["id"] == int(session_id), DUMMY_SESSIONS["sessions"].values())[0]
+        return get_session_annotation()["sessions"][session_id]
 
     def get_file_link(self, ctx, obj):
         return IPrettyLink(ctx).getLink() + " / " + IPrettyLink(obj).getLink()
 
 
-class FacetedSessionSessionInfoViewlet(ViewletBase):
+class SessionDeleteView(BrowserView):
+    """View to delete a session."""
+
+    def __call__(self):
+        session_id = self.request.get("esign_session_id")
+        if not session_id:
+            api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
+            return self.request.RESPONSE.redirect(self.context.absolute_url())
+
+        session_id = int(session_id)
+        sessions = get_session_annotation()["sessions"]
+        if session_id in sessions:
+            remove_session(session_id)
+            api.portal.show_message(_("Session deleted successfully!"), request=self.request, type="info")
+        else:
+            api.portal.show_message(_("Session not found!"), request=self.request, type="error")
+
+        return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@esign-sessions-listing")
+
+
+class ExternalSessionCreateView(BrowserView):
+    """View to create a session in Luxtrust."""
+
+    def __call__(self, session_id=None):
+        if not session_id:
+            session_id = self.request.get("session_id", None)
+        if not session_id:
+            api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
+            return self.request.RESPONSE.redirect(self.context.absolute_url())
+        create_external_session(int(session_id))
+
+
+class FacetedSessionInfoViewlet(ViewletBase):
     """Show selected session info inside faceted results."""
 
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
+    sessions_listing_view = SessionsListingView  # to be overridden in subclass
+    sessions_collection_uid = None  # to be overridden in subclass
+
+    def render(self):
+        """Render the viewlet."""
+        if self.sessions_collection_uid is None:
+            raise NotImplementedError("You must set sessions_collection_uid in subclass.")
+        if self.request.form.get("c1[]", None) == self.sessions_collection_uid:
+            if self.session:
+                return self.index()
+            return self.sessions_listing_view(self.context, self.request).render_table()
+        return ""
 
     @property
-    def available(self):
-        # TODO: when no esign_session_id, display the sessions listing view
-        return "esign_session_id[]" in self.request.form.keys()
-
-    def update(self):
-        super(FacetedSessionSessionInfoViewlet, self).update()
-        self.session = None
-        if "esign_session_id[]" in self.request.form.keys():
-            session_id = self.request.form["esign_session_id[]"]
-        else:
-            session_id = self.request.get("esign_session_id", None)
+    def session(self):
+        session = None
+        session_id = self.request.form.get("esign_session_id[]", None)
         if not session_id:
             return
-        data = DUMMY_SESSIONS.get("sessions", {})
-        sess = data.get(int(session_id))
-        if not sess:
+        sessions = get_session_annotation()["sessions"]
+        session = sessions.get(int(session_id))
+        if not session:
             return
-        self.session = sess
+        session["id"] = session_id
+        return session
 
-    def has_session(self):
-        return bool(self.session)
+
+class ItemSessionInfoViewlet(ViewletBase):
+    """Show selected session info for an item."""
+
+    index = ViewPageTemplateFile("templates/faceted_session_info.pt")
+
+    def render(self):
+        """Render the viewlet."""
+        if self.session:
+            return self.index()
+        return ""
+
+    @property
+    def session(self):
+        sessions = get_session_annotation()["sessions"]
+        for session in sessions.values():
+            for file in session.get("files", []):
+                if self.context.UID() == file.get("context_uid"):
+                    session["id"] = session.get("id", None)
+                    return session
+        return {}
+
+
+# TODO clean up css

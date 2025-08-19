@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
 from imio.esign import _
+from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
 from z3c.table.table import Table
@@ -12,7 +13,7 @@ class IdColumn(Column):
     weight = 10
 
     def renderCell(self, item):
-        return str(item.get("id", ""))
+        return str(item.get("id"))
 
 
 class StateColumn(Column):
@@ -49,8 +50,7 @@ class SignersColumn(Column):
     def renderCell(self, item):
         signers = item.get("signers") or []
         parts = [
-            "<li>%s, %s (%s)</li>" % (s.get("fullname", ""), s.get("held_position"), s.get("status", ""))
-            for s in signers
+            "<li>%s, %s (%s)</li>" % (s.get("fullname", ""), s.get("position"), s.get("status", "")) for s in signers
         ]
         return "<ol>%s</ol>" % "".join(parts)
 
@@ -76,20 +76,13 @@ class FilesColumn(Column):
             u'<div id="session-files" class="collapsible" '
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
-            u"load_view='@@esign-session-files?session_id={0}', "
+            u"load_view='{3}/@@esign-session-files?session_id={0}', "
             u"base_url='{1}');\"> {2}</div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
             u"</div></div>"
-        ).format(session_id, base_url, details_msg)
-
-        # Add a link to the dashboard
-        dashboard_link = self.table.view.get_dashboard_link(item)
-        if dashboard_link:
-            html += (u"""<div class="dashboard-link"><a href="{0}">{1}</a></div>""").format(
-                dashboard_link, translate(_("Go to dashboard"), context=self.request)
-            )
+        ).format(session_id, base_url, details_msg, api.portal.get().absolute_url())
 
         return html
 
@@ -102,11 +95,18 @@ class ActionsColumn(Column):
     cssClasses = {"td": "actions-column"}
 
     def renderCell(self, item):
+        portal_url = api.portal.get().absolute_url()
+        session_id = item.get("id")
+        dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
         return """
-        <img title="Supprimer" onclick="javascript:confirmDeleteObject(base_url='http://localhost:8081/Plone/Members/dgen/mymeetings/meeting-config-college/copy3_of_recurringofficialreport2', object_uid='1b8f6225afac4da79546860b86417371', this, msgName=null, view_name='@@delete_givenuid', redirect=null);" style="cursor:pointer" src="http://localhost:8081/Plone/delete_icon.png">
-        <img title="Envoyer" onclick="javascript:confirmDeleteObject(base_url='http://localhost:8081/Plone/Members/dgen/mymeetings/meeting-config-college/copy3_of_recurringofficialreport2', object_uid='1b8f6225afac4da79546860b86417371', this, msgName=null, view_name='@@delete_givenuid', redirect=null);" style="cursor:pointer" src="/Plone/++resource++imio.esign/digital_signature_pen.png">
-        <img title="Voir" onclick="javascript:confirmDeleteObject(base_url='http://localhost:8081/Plone/Members/dgen/mymeetings/meeting-config-college/copy3_of_recurringofficialreport2', object_uid='1b8f6225afac4da79546860b86417371', this, msgName=null, view_name='@@delete_givenuid', redirect=null);" style="cursor:pointer" src="/Plone/++resource++imio.esign/view_element.png">
-        """
+        <img title="Supprimer" onclick="javascript:confirmDeleteObject(base_url='{portal_url}', object_uid=null, this, msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);window.location.reload();" style="cursor:pointer" src="http://localhost:8081/Plone/delete_icon.png">
+        <img title="Envoyer" onclick="javascript:callViewAndReload('{portal_url}', '@@external-esign-session-create', {{'session_id': '{session_id}'}});" style="cursor:pointer" src="/Plone/++resource++imio.esign/digital_signature_pen.png">
+        <a href="{dashboard_link}"><img title="Voir" style="cursor:pointer" src="/Plone/++resource++imio.esign/view_element.png"></a>
+        """.format(
+            portal_url=portal_url,
+            session_id=session_id,
+            dashboard_link=dashboard_link,
+        )
 
 
 class SessionsTable(Table):

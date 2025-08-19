@@ -22,8 +22,9 @@ logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(),
-                         watchers=()):
+def add_files_to_session(
+    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=()
+):
     """Add files to a session with the given signers.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -69,6 +70,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     if session["client_id"] is None:
+        # FIXME what if scan_id is None ?
         session["client_id"] = session["files"][0]["scan_id"][0:7]
     session["last_update"] = datetime.now()
     return session_id, session
@@ -102,8 +104,11 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:
-        data_payload["signData"] = {"users": list(signers), "acroform": session["acroform"],
-                                    "watchers": session.watchers}
+        data_payload["signData"] = {
+            "users": list(signers),
+            "acroform": session["acroform"],
+            "watchers": session.get("watchers", ()),
+        }
 
     if session["seal"] is not None:
         data_payload["sealData"] = {"sealCode": session["seal"]}
@@ -116,7 +121,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         headers["Authorization"] = "Basic {}".format(b64_cred)
 
     logger.info(data_payload)
-    ret = post_request(session_url, data={"data": json.dumps(data_payload)}, headers=headers, files=files_payload)
+    ret = post_request(
+        session_url, data={"data": json.dumps(data_payload, default=vars)}, headers=headers, files=files_payload
+    )
     if ret.status_code == 200:
         session["state"] = "sent"
     logger.info("Response: %s", ret.text)

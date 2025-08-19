@@ -174,7 +174,6 @@ class SessionFilesView(BrowserView):
 class FacetedSessionSessionInfoViewlet(ViewletBase):
     """Show selected session info inside faceted results."""
 
-    # Put the template in your package under: imio/esign/browser/templates/faceted_session_info.pt
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
 
     @property

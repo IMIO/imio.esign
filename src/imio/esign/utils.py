@@ -56,7 +56,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
             {
-                "scan_id": annex.scan_id,
+                "scan_id": annex.scan_id.startswith("IMIO") and annex.scan_id or "IMIO" + annex.scan_id,
                 "filename": new_filename + ext,
                 "title": annex.title or "no_title",
                 "uid": uid,
@@ -67,7 +67,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     if session["client_id"] is None:
-        session["client_id"] = session["files"][0]["scan_id"][:7]
+        session["client_id"] = session["files"][0]["scan_id"][4:11]
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -212,7 +212,7 @@ def get_files_from_uids(uids):
             logger.error("Annex %s has no scan_id", annex.absolute_url())
             continue
         else:
-            scan_id = annex.scan_id
+            scan_id = annex.scan_id.startswith("IMIO") and annex.scan_id or "IMIO" + annex.scan_id
         if not hasattr(annex, "file") or not annex.file:
             logger.error("Annex %s has no file", annex.absolute_url())
             continue

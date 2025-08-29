@@ -22,7 +22,8 @@ logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=()):
+def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(),
+                         watchers=()):
     """Add files to a session with the given signers.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -32,6 +33,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
     :param session_id: session number
     :param title: optional string
     :param discriminators: optional list of string discriminators to use for session discrimination
+    :param watchers: optional list of external esign session watchers emails (used only when creating a new session)
     :return: session_id, session
     """
     annot = get_session_annotation()
@@ -45,7 +47,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators)
     if not session:
         session_id, session = create_session(
-            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators
+            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators, watchers=watchers
         )
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
@@ -67,7 +69,7 @@ def add_files_to_session(signers, files_uids, seal=None, acroform=True, session_
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
     if session["client_id"] is None:
-        session["client_id"] = session["files"][0]["scan_id"][4:11]
+        session["client_id"] = session["files"][0]["scan_id"][0:7]
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -99,7 +101,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     }
 
     signers = [fdic["email"] for fdic in session["signers"]]
-    data_payload["signData"] = {"users": list(signers), "acroform": session["acroform"]}
+    if signers:
+        data_payload["signData"] = {"users": list(signers), "acroform": session["acroform"],
+                                    "watchers": session.watchers}
 
     if session["seal"] is not None:
         data_payload["sealData"] = {"sealCode": session["seal"]}
@@ -118,7 +122,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal, acroform=True, title=None, annot=None, discriminators=()):
+def create_session(signers, seal, acroform=True, title=None, annot=None, discriminators=(), watchers=()):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -127,6 +131,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
     :param discriminators: optional list of string discriminators
+    :param watchers: optional list of external esign session watchers emails
     :return: session id and session information
     """
     if not annot:
@@ -149,6 +154,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
                 for userid, email, fullname, position in signers
             ]
         ),
+        "watchers": PersistentList(watchers),
         "state": "draft",
         "title": title,
     }

@@ -95,7 +95,7 @@ class TestUtils(unittest.TestCase):
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
         # add files, no session_id, no discriminator
-        sid, session = add_files_to_session(signers, (self.uids[0],), title="my title")
+        sid, session = add_files_to_session(signers, (self.uids[0],), title="my title", watchers=("stalker@sign.com",))
         self.assertEqual(sid, 0)
         annot = root_annot["imio.esign"]
         self.assertEqual(annot["numbering"], 1)
@@ -110,6 +110,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(session["acroform"], True)
         self.assertIsNone(session["sign_url"])
         self.assertEqual(session["client_id"], "0123456")
+        self.assertEqual(len(session["watchers"]), 1)
         self.assertEqual(len(session["files"]), 1)
         self.assertListEqual(
             list(session["files"]),
@@ -144,6 +145,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 3)
         self.assertIn(self.uids[2], annot["uids"])
         self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(len(session["watchers"]), 0)
         # add files, no session_id, same discriminations => same session
         sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))
         self.assertEqual(sid, 1)
@@ -176,6 +178,8 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
         self.assertEqual(len(annot["sessions"]), 7)
+
+        # TODO add files with seal option only and no signers !!
 
         # now we can start to remove
         remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files

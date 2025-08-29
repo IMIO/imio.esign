@@ -180,6 +180,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["sessions"]), 7)
 
         # TODO add files with seal option only and no signers !!
+        # TODO test session discrimination following session "state"
 
         # now we can start to remove
         remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files

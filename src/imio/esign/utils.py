@@ -117,6 +117,8 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 
     logger.info(data_payload)
     ret = post_request(session_url, data={"data": json.dumps(data_payload)}, headers=headers, files=files_payload)
+    if ret.status_code == 200:
+        session["state"] = "sent"
     logger.info("Response: %s", ret.text)
     # {"message":"Request received in the expected format. Session is being created in background."}
     return ret
@@ -176,6 +178,8 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     sessions = annot.get("sessions", {})
 
     for session_id, session in sessions.items():
+        if session["state"] != "draft":
+            continue
         if session.get("seal") != seal:
             continue
         if session.get("acroform") != acroform:

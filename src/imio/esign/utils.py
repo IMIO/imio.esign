@@ -107,8 +107,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         data_payload["signData"] = {
             "users": list(signers),
             "acroform": session["acroform"],
-            "watchers": session.get("watchers", ()),
         }
+        if session.get("watchers", ()):
+            data_payload["signData"]["watchers"] = list(session["watchers"])
 
     if session["seal"] is not None:
         data_payload["sealData"] = {"sealCode": session["seal"]}

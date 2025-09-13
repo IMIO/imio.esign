@@ -150,7 +150,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
     session_id = annot["numbering"]
     annot["numbering"] += 1
 
-    sessions[session_id] = {
+    sessions[session_id] = PersistentMapping({
         "acroform": acroform,
         "client_id": None,
         "discriminators": discriminators,
@@ -167,7 +167,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
         "watchers": PersistentList(watchers),
         "state": "draft",
         "title": title,
-    }
+    })
     return session_id, sessions[session_id]
 
 

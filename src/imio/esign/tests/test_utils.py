@@ -72,7 +72,7 @@ class TestUtils(unittest.TestCase):
         tests_dir = os.path.dirname(__file__)
         pdf_files = ["annex1.pdf", "annex2.pdf"]
         self.uids = []
-        for i in range(10):
+        for i in range(12):
             pdf_file = pdf_files[i % len(pdf_files)]
             container = self.folders[i % len(self.folders)]
             with open(os.path.join(tests_dir, pdf_file), "rb") as f:
@@ -94,6 +94,7 @@ class TestUtils(unittest.TestCase):
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
+
         # add files, no session_id, no discriminator
         sid, session = add_files_to_session(signers, (self.uids[0],), title="my title", watchers=("stalker@sign.com",))
         self.assertEqual(sid, 0)
@@ -125,6 +126,7 @@ class TestUtils(unittest.TestCase):
             ],
         )
         self.assertEqual(len(session["signers"]), 2)
+
         # add files, no session_id => same session reused
         signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # changed position => not discriminant
         sid, session = add_files_to_session(signers, (self.uids[1],))
@@ -137,6 +139,7 @@ class TestUtils(unittest.TestCase):
         self.assertIn(self.folders[1].UID(), annot["c_uids"])
         self.assertEqual(len(session["files"]), 2)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 1)
+
         # add files, no session_id, new discriminations => new session
         sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))
         self.assertEqual(sid, 1)
@@ -146,6 +149,7 @@ class TestUtils(unittest.TestCase):
         self.assertIn(self.uids[2], annot["uids"])
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(len(session["watchers"]), 0)
+
         # add files, no session_id, same discriminations => same session
         sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))
         self.assertEqual(sid, 1)
@@ -154,53 +158,70 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 4)
         self.assertIn(self.uids[3], annot["uids"])
         self.assertEqual(len(session["files"]), 2)
+
         # add files, no session_id, other discriminations => other session
         sid, session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))
         self.assertEqual(sid, 2)
+
         # add files, session_id, other discriminations => reused session
         sid, session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))
         self.assertEqual(sid, 0)
+
         # add files, session_id unfound, other discriminations => new session
         sid, session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))
         self.assertEqual(sid, 3)
+
         # add files, no session_id, different signers => new session
         sid, session = add_files_to_session([signers[0]], (self.uids[7],))
         self.assertEqual(sid, 4)
+
         # add files, no session_id, different seal => new session
         sid, session = add_files_to_session(signers, (self.uids[8],), seal="seal1")
         self.assertEqual(sid, 5)
+
         # add files, no session_id, same seal, different acroform => new session
         sid, session = add_files_to_session(signers, (self.uids[9],), acroform=False)
         self.assertEqual(sid, 6)
-
         self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
         self.assertEqual(len(annot["sessions"]), 7)
 
-        # TODO add files with seal option only and no signers !!
-        # TODO test session discrimination following session "state"
+        # add files, no session_id, no signers => new session
+        sid, session = add_files_to_session([], (self.uids[10],), seal="seal2")
+        self.assertEqual(sid, 7)
+        self.assertEqual(len(annot["sessions"]), 8)
+        self.assertEqual(session["signers"], [])
+        self.assertEqual(session["seal"], "seal2")
+
+        # add files, no session_id, same seal, different states => new session
+        session["state"] = "sent"
+        sid, session = add_files_to_session([], (self.uids[11],), seal="seal2")
+        self.assertEqual(sid, 8)
+        self.assertEqual(len(annot["sessions"]), 9)
 
         # now we can start to remove
         remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files
-        self.assertEqual(len(annot["uids"]), 8)
+        self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["sessions"][0]["files"]), 1)
-        self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 4)
-        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 4)
+        self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
+        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
         remove_files_from_session((self.uids[5],))  # no more session files, session removed
-        self.assertEqual(len(annot["uids"]), 7)
-        self.assertEqual(len(annot["sessions"]), 6)
+        self.assertEqual(len(annot["uids"]), 9)
+        self.assertEqual(len(annot["sessions"]), 8)
         self.assertNotIn(0, annot["sessions"])
         remove_files_from_session((self.uids[2], self.uids[3]))  # all session files, session removed
-        self.assertEqual(len(annot["uids"]), 5)
-        self.assertEqual(len(annot["sessions"]), 5)
+        self.assertEqual(len(annot["uids"]), 7)
+        self.assertEqual(len(annot["sessions"]), 7)
         self.assertNotIn(1, annot["sessions"])
         remove_files_from_session((self.uids[4],))
         remove_files_from_session((self.uids[6],))
         remove_files_from_session((self.uids[7],))
         remove_files_from_session((self.uids[8],))
         remove_files_from_session((self.uids[9],))
+        remove_files_from_session((self.uids[10],))
+        remove_files_from_session((self.uids[11],))
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)

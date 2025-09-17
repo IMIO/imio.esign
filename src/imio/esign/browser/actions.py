@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from collective.contact.core.interfaces import IContactable
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
@@ -71,11 +70,10 @@ class AddToSessionView(BrowserView):
         # signers is a list of held_positions
         for hp in signers:
             # get email from user
-            contact_details = IContactable(hp).get_contact_details()
-            email = contact_details.get("email")
-            person_title = hp.get_person().get_title(include_person_title=False)
-            hp_title = hp.get_title()
-            res.append((hp.UID(), email, person_title, hp_title))
+            signer_person = hp.get_person()
+            email = api.user.get(signer_person.userid).getProperty("email")
+            person_title = signer_person.get_title(include_person_title=False)
+            res.append((signer_person.userid, email, person_title, hp.label or u""))
         return tuple(res)
 
     def get_observers(self):

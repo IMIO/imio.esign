@@ -6,6 +6,10 @@
         xmlns:browser="http://namespaces.zope.org/browser"
         i18n_domain="imio.esign">
 
+    <include package="eea.facetednavigation" />
+    <include package="imio.prettylink" />
+    <include package="z3c.table" />
+
     <!-- Publish static files -->
     <browser:resourceDirectory
         name="imio.esign"

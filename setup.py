@@ -53,13 +53,18 @@ setup(
     install_requires=[
         "setuptools",
         # -*- Extra requirements: -*-
+        "collective.compoundcriterion",
+        "collective.eeafaceted.z3ctable",
+        "eea.facetednavigation",
         "imio.helpers",
+        "imio.prettylink",
         "imio.pyutils",
         # 'z3c.jbot',
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "plone.restapi",
         "requests",
+        "z3c.table",
     ],
     extras_require={
         "test": [

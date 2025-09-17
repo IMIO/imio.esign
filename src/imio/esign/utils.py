@@ -165,8 +165,9 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
             ]
         ),
         "watchers": PersistentList(watchers),
-        "state": "draft",
+        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned
         "title": title,
+        "returns": PersistentList(),
     })
     return session_id, sessions[session_id]
 

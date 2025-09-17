@@ -1,0 +1,9 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope">
+
+  <permission
+      id="imio.esign.ManageSessions"
+      title="imio.esign: Manage Sessions"
+      />
+
+</configure>

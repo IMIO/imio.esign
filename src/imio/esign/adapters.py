@@ -1,4 +1,6 @@
-from imio.esign.browser.views import DUMMY_SESSIONS
+from imio.esign.utils import get_session_annotation
+from plone.memoize import ram
+from zope.interface import Interface
 
 
 class DefaultContextUidProvider(object):
@@ -20,12 +22,13 @@ class FilesBelongingToAGivenSession(object):
         self.context = context
         self.request = self.context.REQUEST
 
+    def query_session_files_cachekey(method, self):
+        return (get_session_annotation()._p_mtime, self.get_session_id())
+
     @property
+    @ram.cache(query_session_files_cachekey)
     def query_session_files(self):
-        if "esign_session_id[]" in self.request.form.keys():
-            session_id = self.request.form["esign_session_id[]"]
-        else:
-            session_id = self.request.get("esign_session_id", None)
+        session_id = self.get_session_id()
         if not session_id:
             return {"UID": {"query": []}}
         session = self.get_session(session_id)
@@ -34,7 +37,28 @@ class FilesBelongingToAGivenSession(object):
             obj_uids.append(f["context_uid"])
         return {"UID": {"query": obj_uids}}
 
-    def get_session(self, session_id):
-        return DUMMY_SESSIONS["sessions"].get(int(session_id), {})
+    def get_session_id(self):
+        if "esign_session_id[]" in self.request.form.keys():
+            return self.request.form["esign_session_id[]"]
+        else:
+            return self.request.get("esign_session_id", None)
+
+    def get_session(self, session_id=None):
+        if session_id is None:
+            session_id = self.get_session_id()
+        return get_session_annotation()["sessions"].get(int(session_id), {})
 
     query = query_session_files
+
+
+class ISignable(Interface):
+    def get_signers(self):
+        """
+        List signers for that item.
+        returns a list of dict with keys: name, function, held_position
+        """
+
+    def get_files_uids(self):
+        """
+        List of file uids to sign.
+        """

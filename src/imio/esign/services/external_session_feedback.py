@@ -13,7 +13,7 @@ class ExternalSessionFeedbackPost(Service):
             * "app_session_id": "123456", app_session_id
             * "code": "some_code", feedback identification code
             * "session_state": "to_create_session"; session state
-            * "sign_url": "http://example.com/sign", sign URL
+            * "value": like sign URL or signer email
             * "message": "some message", optional message with feedback
         """
         if not self.authorized():
@@ -28,6 +28,7 @@ class ExternalSessionFeedbackPost(Service):
         if not code:
             self.request.response.setStatus(400)
             return {"message": "code is required"}
+        value = data.get("value")
         try:
             annot = get_session_annotation()
             session_id = int(app_session_id[7:])
@@ -35,16 +36,32 @@ class ExternalSessionFeedbackPost(Service):
                 self.request.response.setStatus(400)
                 return {"message": "Session ID {} not found".format(session_id)}
             session = annot["sessions"][session_id]
-            session_update = {}
+            session_update = {"returns": session["returns"]}
+            session_update["returns"].append((code, data.get("message", ""), datetime.now()))
+            if code == "21":
+                session_update["state"] = "to_sign"
+                if value:
+                    session_update["sign_url"] = value
+            elif code == "22":
+                signer_idx = [i for i, d in enumerate(session["signers"]) if d["email"] == value][0]
+                session_update["signers"][signer_idx]["state"] = "signed"
+            elif code == "23":
+                session_update["state"] = "returned"
+            elif code == "52":
+                session_update["state"] = "refused"
+                signer_idx = [i for i, d in enumerate(session["signers"]) if d["email"] == value][0]
+                session_update["signers"][signer_idx]["state"] = "refused"
+            elif code == "53":
+                session_update["state"] = "signed"
+            elif code in ("50", "40", "51", "41"):
+                session_update["state"] = "errored"
             session_state = data.get("session_state")
             if session_state and session_state != session["state"]:
                 session_update["state"] = session_state
-            sign_url = data.get("sign_url")
-            if sign_url:
-                session_update["sign_url"] = sign_url
             if session_update:
                 session.update(session_update)
                 session["last_update"] = datetime.now()
+
         except Exception as e:
             self.request.response.setStatus(500)
             return {"message": str(e)}
@@ -56,17 +73,6 @@ class ExternalSessionFeedbackPost(Service):
 
 
 """
-Events
-{
-    6: "SIGNATURE_SIGNED",
-    7: "DOCUMENT_DECLINED",
-    8: "DOCUMENT_REINSTATE",
-    10: "STEP_DECLINED",
-    18: "STEP_COMMENT_ADDED",
-    24: "STEP_SUSPENDED",
-    25: "STEP_RESUMED",
-    26: "STEP_CANCELED",
-}
 State:
 to_create_session
 to_sign

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from collective.iconifiedcategory.utils import get_categorized_elements
 from imio.esign import _
+from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
-# from imio.esign.utils import remove_files_from_session
+from imio.esign.utils import remove_context_from_session
 from plone import api
 from Products.Five import BrowserView
 
@@ -23,7 +23,7 @@ class AddToSessionView(BrowserView):
         self.request.RESPONSE.redirect(self.context.absolute_url())
 
     def index(self):
-        files_uids = self.get_files_uids()
+        files_uids = ISignable(self.context).get_files_uids()
         if not files_uids:
             return self._finished(failed_msgid="Could not get files uids to add to the session!")
         signers = self.get_signers()
@@ -45,8 +45,7 @@ class AddToSessionView(BrowserView):
         :return: list of held_position objects
         """
         res = []
-        # make sure signers are sorted by signature number
-        for signer_number, signer_infos in sorted(self.context.getCertifiedSignatures(listify=False).items()):
+        for signer_infos in ISignable(self.context).get_signers():
             if not signer_infos["held_position"]:
                 api.portal.show_message(
                     _(
@@ -70,23 +69,11 @@ class AddToSessionView(BrowserView):
         signers = self._get_signers()
         # signers is a list of held_positions
         for hp in signers:
-            userid = hp.userid or ""
-            user = api.user.get(userid)
-            if not userid or not user:
-                api.portal.show_message(
-                    _(
-                        'Problem with "userid" defined for "held_position" at "${held_position_url}!"',
-                        mapping={"held_position_url": hp.absolute_url()},
-                    ),
-                    request=self.request,
-                    type="warning",
-                )
-                return ()
             # get email from user
-            email = user.getProperty("email")
-            person_title = hp.get_person().get_title(include_person_title=False)
-            hp_title = hp.get_title()
-            res.append((userid, email, person_title, hp_title))
+            signer_person = hp.get_person()
+            email = api.user.get(signer_person.userid).getProperty("email")
+            person_title = signer_person.get_title(include_person_title=False)
+            res.append((signer_person.userid, email, person_title, hp.label or u""))
         return tuple(res)
 
     def get_observers(self):
@@ -96,15 +83,6 @@ class AddToSessionView(BrowserView):
     def get_context_uid(self):
         """ """
         return self.context.UID()
-
-    def get_files_uids(self):
-        """List of file uids.
-
-        :return: list of uid of files marked as "to_sign/True" but "signed/False"
-        """
-        return [
-            elt["UID"] for elt in get_categorized_elements(self.context, filters={"to_sign": True, "signed": False})
-        ]
 
     def get_session_title(self):
         """The title for the session.
@@ -122,16 +100,15 @@ class RemoveFromSessionView(BrowserView):
     """View to remove an element from an esign session."""
 
     def __init__(self, context, request):
-        super(AddToSessionView, self).__init__(context, request)
+        super(RemoveFromSessionView, self).__init__(context, request)
 
     def _finished(self):
-        msg = _("Element removed from session!", context=self.request)
+        msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
         self.request.RESPONSE.redirect(self.context.absolute_url())
 
     def index(self):
-        # remove_files_from_session(
-        #     uid=self.get_uid_to_remove())
+        remove_context_from_session(context_uids=[self.get_uid_to_remove()])
         self._finished()
 
     def get_uid_to_remove(self):

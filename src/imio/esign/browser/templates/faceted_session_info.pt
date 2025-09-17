@@ -4,8 +4,7 @@
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
          i18n:domain="imio.esign">
-<div class="faceted-session-info" tal:define="has view/has_session"
-         tal:condition="has">
+<div class="faceted-session-info">
     <h2 tal:content="python:view.session['title']">Session title</h2>
     <fieldset>
         <legend i18n:translate="">Session information</legend>
@@ -55,7 +54,7 @@
                         <tbody>
                         <tr tal:repeat="s signers">
                             <td tal:content="python:s['fullname']">Jean Dupont</td>
-                            <td tal:content="python:s['held_position']">Directeur Général</td>
+                            <td tal:content="python:s['position']">Directeur Général</td>
                             <td tal:content="python:s['email']">user1@sign.com</td>
                             <td tal:content="python:s['status']">pending</td>
                         </tr>

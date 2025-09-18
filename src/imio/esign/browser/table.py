@@ -52,7 +52,7 @@ class SignersColumn(Column):
         parts = [
             "<li>%s, %s (%s)</li>" % (s.get("fullname", ""), s.get("position"), s.get("status", "")) for s in signers
         ]
-        return "<ol>%s</ol>" % "".join(parts)
+        return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 
 class FilesColumn(Column):
@@ -98,7 +98,7 @@ class ActionsColumn(Column):
         portal_url = api.portal.get().absolute_url()
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
-        return """
+        return u"""
         <img title="Supprimer" onclick="javascript:confirmDeleteObject(base_url='{portal_url}', object_uid=null, this, msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);window.location.reload();" style="cursor:pointer" src="delete_icon.png">
         <img title="Envoyer" onclick="javascript:callViewAndReload('{portal_url}', '@@external-esign-session-create', {{'session_id': '{session_id}'}});" style="cursor:pointer" src="++resource++imio.esign/digital_signature_pen.png">
         <a href="{dashboard_link}"><img title="Voir" style="cursor:pointer" src="++resource++imio.esign/view_element.png"></a>

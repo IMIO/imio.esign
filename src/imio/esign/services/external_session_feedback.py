@@ -45,10 +45,12 @@ class ExternalSessionFeedbackPost(Service):
             session_update["returns"].append((code, db_state, data.get("value", ""), data.get("message", ""),
                                               datetime.now()))
             if code == 21:
+                # sign_session_confirmed
                 session_update["state"] = "to_sign"
                 if value and "sign_session_url" in value and not session["sign_url"]:
                     session_update["sign_url"] = value["sign_session_url"]
             elif code == 22:
+                # one_signer_accepted
                 if value and "signed_user_emails" in value:
                     for i, d in enumerate(session["signers"]):
                         if d["state"] in ("signed", "refused"):
@@ -56,15 +58,19 @@ class ExternalSessionFeedbackPost(Service):
                         if d["email"] in value["signed_user_emails"]:
                             session_update["signers"][i]["state"] = "signed"
             elif code == 23:
+                # upload_success (files returned)
                 session_update["state"] = "returned"
             elif code == 52:
+                # one_signer_refused
                 session_update["state"] = "refused"
                 if value and "refused_user_email" in value:
                     signer_idx = [i for i, d in enumerate(session["signers"]) if d["refused_user_email"] == value][0]
                     session_update["signers"][signer_idx]["state"] = "refused"
             elif code == 53:
+                # upload_failed
                 session_update["state"] = "signed"
             elif code in (50, 40, 51, 41):
+                # seal_creation_error, seal_creation_not_available, sign_creation_error, sign_creation_not_available
                 session_update["state"] = "errored"
             if session_update:
                 session.update(session_update)

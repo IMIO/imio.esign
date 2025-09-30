@@ -99,6 +99,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
             "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, _ in files],
             "imioAppSessionId": app_session_id,
+            "sessionName": session["title"] or "Session {}".format(session_id),
         }
     }
 

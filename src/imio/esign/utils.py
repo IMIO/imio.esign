@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from imio.esign import _tr as _
 from imio.esign import E_SIGN_ROOT_URL
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
@@ -97,9 +98,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
-            "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, _ in files],
+            "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, z in files],
             "imioAppSessionId": app_session_id,
-            "sessionName": session["title"] or "Session {}".format(session_id),
+            "sessionName": session["title"] or _("Session ${id}", mapping={"id": session_id}),
         }
     }
 
@@ -115,7 +116,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     if session["seal"] is not None:
         data_payload["sealData"] = {"sealCode": session["seal"]}
 
-    files_payload = [("files", (filename, file_content)) for _, filename, file_content in files]
+    files_payload = [("files", (filename, file_content)) for z, filename, file_content in files]
 
     # Headers avec autorisation
     headers = {"accept": "application/json"}
@@ -202,7 +203,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
             continue
 
         signers_match = all(
-            (userid, email) == (s["userid"], s["email"]) for (userid, email, _, _), s in zip(signers, session_signers)
+            (userid, email) == (s["userid"], s["email"]) for (userid, email, z, z), s in zip(signers, session_signers)
         )
         if signers_match:
             return session_id, session

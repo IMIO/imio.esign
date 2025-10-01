@@ -290,13 +290,31 @@ def post_request(url, data=None, json=None, headers=None, files=None):
     else:
         kwargs["data"] = data
 
-    with requests.post(url, **kwargs) as response:
-        if response.status_code != 200:
-            # if files:
-            # del kwargs["files"]  # remove files from kwargs to avoid sending them in the log
-            kwargs["files"] = [(tup[0], (tup[1][0], len(tup[1][1]))) for tup in kwargs["files"]]
-            logger.error("Error while posting data '%s' to '%s': %s" % (kwargs, url, response.text))
-        return response
+    try:
+        with requests.post(url, **kwargs) as response:
+            if response.status_code != 200:
+                # if files:
+                # del kwargs["files"]  # remove files from kwargs to avoid sending them in the log
+                if files:
+                    kwargs["files"] = [(tup[0], (tup[1][0], len(tup[1][1]))) for tup in kwargs["files"]]
+                logger.error("Error while posting data '%s' to '%s': %s" % (kwargs, url, response.text))
+            return response
+    except requests.ConnectionError as e:
+        msg = "Connection error while posting data to '{}': {}".format(url, str(e))
+        logger.error(msg)
+        mock_response = requests.Response()
+        mock_response.status_code = 503
+        mock_response._content = "{'error': '%s'}" % msg
+        mock_response.url = url
+        return mock_response
+    except Exception as e:
+        msg = "Unexpected error while posting data to '{}': {}".format(url, str(e))
+        logger.error(msg)
+        mock_response = requests.Response()
+        mock_response.status_code = 500
+        mock_response._content = "{'error': '%s'}" % msg
+        mock_response.url = url
+        return mock_response
 
 
 def remove_context_from_session(context_uids):

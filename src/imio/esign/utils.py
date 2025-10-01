@@ -49,7 +49,8 @@ def add_files_to_session(
         session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators)
     if not session:
         session_id, session = create_session(
-            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators, watchers=watchers
+            signers, seal, acroform=acroform, title=title or "", annot=annot, discriminators=discriminators,
+            watchers=watchers
         )
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
@@ -94,7 +95,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
     app_session_id = "{}{:05d}".format(session["client_id"], session_id)
-    portal = api.portal.get()
+    portal = api.portal.get()  # noqa F841
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",

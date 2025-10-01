@@ -5,6 +5,10 @@ from plone.restapi.deserializer import json_body
 from plone.restapi.services import Service
 
 import json
+import logging
+
+
+logger = logging.getLogger("imio.esign")
 
 
 class ExternalSessionFeedbackPost(Service):
@@ -23,6 +27,7 @@ class ExternalSessionFeedbackPost(Service):
             return {"message": "Unauthorized access"}
         data = json_body(self.request)
         app_session_id = data.get("app_session_id")
+        logger.info("External session feedback received: {}".format(data))
         if not app_session_id:
             self.request.response.setStatus(400)
             return {"message": "app_session_id is required"}

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-08-14 12:37+0000\n"
+"POT-Creation-Date: 2025-10-02 04:06+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,97 +16,125 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ./browser/table.py:100
+#: ../browser/table.py:93
 msgid "Actions"
 msgstr "Actions"
 
-#: ./browser/table.py:59
-msgid "Documents"
-msgstr ""
+#: ../profiles/default/actions.xml
+msgid "Add to esign session"
+msgstr "Ajouter à la session"
 
-#: ./browser/views.py:222
+#: ../browser/actions.py:106
+msgid "Element removed from session!"
+msgstr "Élément retiré de la session !"
+
+#: ../browser/views.py:117
+msgid "Error while sending session: ${error}"
+msgstr "Erreur lors de l'envoi de la session : ${error}"
+
+#: ../browser/views.py:114
+msgid "External session sent successfully!"
+msgstr "Session externe envoyée avec succès !"
+
+#: ../browser/table.py:59
 msgid "Files"
 msgstr "Fichiers"
 
-#: ./browser/table.py:91
-msgid "Go to dashboard"
-msgstr "Aller vers le tableau de bord"
-
-#: ./browser/templates/sessions.pt:14
+#: ../browser/templates/sessions.pt:14
 msgid "Here you can find the list of all sessions of electronic signatures."
 msgstr "Ici vous trouverez la liste de toutes les sessions de signatures électroniques."
 
-#: ./browser/table.py:11
+#: ../browser/table.py:12
 msgid "ID"
 msgstr "Identifiant"
 
-#: ./configure.zcml:23
+#: ../configure.zcml:23
 msgid "Installs the imio.esign add-on."
-msgstr ""
+msgstr "Installs the imio.esign add-on."
 
-#: ./browser/table.py:37
-#: ./browser/templates/faceted_session_info.pt:32
-#: ./browser/views.py:219
+#: ../browser/table.py:38
+#: ../browser/templates/faceted_session_info.pt:28
 msgid "Last update"
 msgstr "Dernière mise à jour"
 
-#: ./browser/templates/sessions.pt:11
+#: ../browser/templates/sessions.pt:11
 msgid "List of electronic signing sessions"
 msgstr "Liste des sessions de signatures électroniques"
 
-#: ./browser/views.py:194
-msgid "No"
-msgstr "Non"
+#: ../browser/views.py:79
+msgid "No session ID provided!"
+msgstr "Aucun identifiant de session fourni !"
 
-#: ./browser/table.py:67
+#: ../browser/actions.py:51
+msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
+msgstr "Problème avec les signataires certifiées, assurez-vous qu'une fonction occupée est sélectionnée pour chaque signataire (vérifiez \"${name}/${function}\") !"
+
+#: ../browser/table.py:67
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
-#: ./browser/templates/faceted_session_info.pt:40
-#: ./browser/views.py:228
+#: ../profiles/default/actions.xml
+msgid "Remove from esign session"
+msgstr "Retirer de la session"
+
+#: ../browser/templates/faceted_session_info.pt:36
 msgid "Sealed"
 msgstr "Sceau"
 
-#: ./browser/templates/faceted_session_info.pt:18
+#: ../utils.py:104
+msgid "Session ${id}"
+msgstr "Session ${id}"
+
+#: ../browser/templates/faceted_session_info.pt:15
 msgid "Session ID"
 msgstr "Identifiant de la session"
 
-#: ./browser/views.py:213
+#: ../browser/views.py:86
+msgid "Session deleted successfully!"
+msgstr "Session effacée avec succès !"
+
+#: ../browser/templates/faceted_session_info.pt:10
 msgid "Session information"
 msgstr "Informations de la session"
 
-#: ./browser/table.py:46
-#: ./browser/templates/faceted_session_info.pt:46
-#: ./browser/views.py:225
+#: ../browser/views.py:88
+msgid "Session not found!"
+msgstr "Session non trouvée !"
+
+#: ../browser/views.py:109
+msgid "Session with ID ${id} doesn't exist anymore !"
+msgstr "La session avec l'ID ${id} n'existe plus !"
+
+#: ../browser/table.py:47
+#: ../browser/templates/faceted_session_info.pt:42
 msgid "Signers"
 msgstr "Signataires"
 
-#: ./browser/table.py:19
-#: ./browser/templates/faceted_session_info.pt:23
-#: ./browser/views.py:216
+#: ../browser/table.py:20
+#: ../browser/templates/faceted_session_info.pt:20
 msgid "State"
 msgstr "État"
 
-#: ./browser/table.py:29
+#: ../profiles/default/actions.xml
+msgid "This will add this element or configured sub elements to the relevant esign session"
+msgstr "Cela ajoutera cet élément ou les sous-éléments configurés à une session de signature"
+
+#: ../profiles/default/actions.xml
+msgid "This will remove this element or configured sub elements from the relevant esign session"
+msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
+
+#: ../browser/table.py:30
 msgid "Title"
 msgstr "Titre"
 
-#: ./configure.zcml:32
+#: ../configure.zcml:32
 msgid "Uninstalls the imio.esign add-on."
-msgstr ""
+msgstr "Uninstalls the imio.esign add-on."
 
-#: ./browser/views.py:194
-msgid "Yes"
-msgstr "Oui"
-
-#: ./configure.zcml:23
+#: ../configure.zcml:23
 msgid "imio.esign"
-msgstr ""
+msgstr "imio.esign"
 
-#: ./configure.zcml:32
+#: ../configure.zcml:32
 msgid "imio.esign (uninstall)"
-msgstr ""
-
-#: ./browser/views.py:164
-msgid "state_%s"
-msgstr ""
+msgstr "imio.esign (uninstall)"

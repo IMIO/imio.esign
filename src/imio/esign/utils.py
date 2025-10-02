@@ -96,12 +96,14 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     files = get_files_from_uids(files_uids)
     app_session_id = "{}{:05d}".format(session["client_id"], session_id)
     portal = api.portal.get()  # noqa F841
+    if not session["title"]:
+        session["title"] = _("Session ${id}", mapping={"id": session_id})
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
             "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, z in files],
             "imioAppSessionId": app_session_id,
-            "sessionName": session["title"] or _("Session ${id}", mapping={"id": session_id}),
+            "sessionName": session["title"],
         }
     }
 

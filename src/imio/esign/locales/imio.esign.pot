@@ -1,10 +1,8 @@
-#--- PLEASE EDIT THE LINES BELOW CORRECTLY ---
-#SOME DESCRIPTIVE TITLE.
-#FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Manual msgids
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-02 04:06+0000\n"
+"POT-Creation-Date: 2025-10-02 04:59+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +13,7 @@ msgstr ""
 "Language-Code: en\n"
 "Language-Name: English\n"
 "Preferred-Encodings: utf-8 latin1\n"
-"Domain: imio.esign\n"
+"Domain: DOMAIN\n"
 
 #: ../browser/table.py:93
 msgid "Actions"
@@ -23,6 +21,14 @@ msgstr ""
 
 #: ../profiles/default/actions.xml
 msgid "Add to esign session"
+msgstr ""
+
+#: ../browser/table.py:109
+msgid "Create external session"
+msgstr ""
+
+#: ../browser/table.py:106
+msgid "Delete session"
 msgstr ""
 
 #: ../browser/actions.py:106
@@ -132,10 +138,42 @@ msgstr ""
 msgid "Uninstalls the imio.esign add-on."
 msgstr ""
 
+#: ../browser/table.py:111
+msgid "View session in dashboard"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "draft"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "errored"
+msgstr ""
+
 #: ../configure.zcml:23
 msgid "imio.esign"
 msgstr ""
 
 #: ../configure.zcml:32
 msgid "imio.esign (uninstall)"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "refused"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "returned"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "sent"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "signed"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "to_sign"
 msgstr ""

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-10-02 04:06+0000\n"
+"POT-Creation-Date: 2025-10-02 04:59+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -23,6 +23,14 @@ msgstr "Actions"
 #: ../profiles/default/actions.xml
 msgid "Add to esign session"
 msgstr "Ajouter à la session"
+
+#: ../browser/table.py:109
+msgid "Create external session"
+msgstr "Créer une session externe de signature"
+
+#: ../browser/table.py:106
+msgid "Delete session"
+msgstr "Effacer la session"
 
 #: ../browser/actions.py:106
 msgid "Element removed from session!"
@@ -131,6 +139,18 @@ msgstr "Titre"
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
 
+#: ../browser/table.py:111
+msgid "View session in dashboard"
+msgstr "Voir la session dans un tableau de bord"
+
+#: ../browser/table.py:25
+msgid "draft"
+msgstr "En création"
+
+#: ../browser/table.py:25
+msgid "errored"
+msgstr "En erreur"
+
 #: ../configure.zcml:23
 msgid "imio.esign"
 msgstr "imio.esign"
@@ -138,3 +158,23 @@ msgstr "imio.esign"
 #: ../configure.zcml:32
 msgid "imio.esign (uninstall)"
 msgstr "imio.esign (uninstall)"
+
+#: ../browser/table.py:25
+msgid "refused"
+msgstr "Refusée"
+
+#: ../browser/table.py:25
+msgid "returned"
+msgstr "Finalisée"
+
+#: ../browser/table.py:25
+msgid "sent"
+msgstr "Envoyée"
+
+#: ../browser/table.py:25
+msgid "signed"
+msgstr "Signée"
+
+#: ../browser/table.py:25
+msgid "to_sign"
+msgstr "À signer"

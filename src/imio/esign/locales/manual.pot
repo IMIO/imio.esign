@@ -1,3 +1,32 @@
 # Manual msgids
 msgid ""
 msgstr ""
+
+#: ../browser/table.py:25
+msgid "draft"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "errored"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "refused"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "returned"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "sent"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "signed"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "to_sign"
+msgstr ""
+

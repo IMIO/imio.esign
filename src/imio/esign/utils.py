@@ -303,7 +303,7 @@ def post_request(url, data=None, json=None, headers=None, files=None):
         msg = "Connection error while posting data to '{}': {}".format(url, str(e))
         logger.error(msg)
         mock_response = requests.Response()
-        mock_response.status_code = 503
+        mock_response.status_code = 503  # service unavailable
         mock_response._content = "{'error': '%s'}" % msg
         mock_response.url = url
         return mock_response
@@ -311,7 +311,7 @@ def post_request(url, data=None, json=None, headers=None, files=None):
         msg = "Unexpected error while posting data to '{}': {}".format(url, str(e))
         logger.error(msg)
         mock_response = requests.Response()
-        mock_response.status_code = 500
+        mock_response.status_code = 500  # Internal server error
         mock_response._content = "{'error': '%s'}" % msg
         mock_response.url = url
         return mock_response

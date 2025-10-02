@@ -11,6 +11,8 @@ from plone.app.layout.viewlets import ViewletBase
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 
+import os
+
 
 class SessionsListingView(BrowserView):
     """View to list sessions."""
@@ -96,8 +98,37 @@ class ExternalSessionCreateView(BrowserView):
             session_id = self.request.get("session_id", None)
         if not session_id:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
-            return self.request.RESPONSE.redirect(self.context.absolute_url())
-        create_external_session(int(session_id))
+            return self.context.absolute_url() + "/@@esign-sessions-listing"
+        resp = create_external_session(
+            int(session_id),
+            b64_cred=self._get_credentials(),
+            esign_root_url=self._get_esign_root_url()
+        )
+        if resp is None:
+            api.portal.show_message(
+                _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
+        elif resp.status_code == 200:
+            api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
+        else:
+            api.portal.show_message(
+                _("Error while sending session: ${error}", mapping={"error": "{} {} {}".format(
+                    resp.status_code, resp.reason, resp.text)}),
+                request=self.request,
+                type="error",
+            )
+        return self.context.absolute_url() + "/@@esign-sessions-listing"
+
+    def _get_credentials(self):
+        """Get the credentials to connect to microservice."""
+        # get it from environment variable
+        return os.getenv("ESIGN_CREDENTIALS", "")
+
+    def _get_esign_root_url(self):
+        """Get the esign root url to connect to microservice."""
+        return os.getenv("ESIGN_ROOT_URL", "")
 
 
 class FacetedSessionInfoViewlet(ViewletBase):

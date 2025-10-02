@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-02 04:59+0000\n"
+"POT-Creation-Date: 2025-10-02 14:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,12 +60,16 @@ msgid "Installs the imio.esign add-on."
 msgstr ""
 
 #: ../browser/table.py:38
-#: ../browser/templates/faceted_session_info.pt:28
+#: ../browser/templates/faceted_session_info.pt:27
 msgid "Last update"
 msgstr ""
 
 #: ../browser/templates/sessions.pt:11
 msgid "List of electronic signing sessions"
+msgstr ""
+
+#: ../browser/templates/faceted_session_info.pt
+msgid "No"
 msgstr ""
 
 #: ../browser/views.py:79
@@ -84,11 +88,11 @@ msgstr ""
 msgid "Remove from esign session"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:36
+#: ../browser/templates/faceted_session_info.pt:35
 msgid "Sealed"
 msgstr ""
 
-#: ../utils.py:104
+#: ../utils.py:100
 msgid "Session ${id}"
 msgstr ""
 
@@ -140,6 +144,10 @@ msgstr ""
 
 #: ../browser/table.py:111
 msgid "View session in dashboard"
+msgstr ""
+
+#: ../browser/templates/faceted_session_info.pt
+msgid "Yes"
 msgstr ""
 
 #: ../browser/table.py:25

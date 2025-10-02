@@ -8,7 +8,7 @@
     <h2 tal:content="python:view.session['title']">Session title</h2>
     <fieldset>
         <legend i18n:translate="">Session information</legend>
-        <table class="no-style-table table-view-widgets">
+        <table id="context_viewlet_session_table" class="no-style-table table-view-widgets">
             <tbody>
 
             <tr>
@@ -19,8 +19,7 @@
             <tr>
                 <td class="table_widget_label"><label i18n:translate="">State</label></td>
                 <td class="table_widget_value">
-          <span tal:define="state python:view.session['state']"
-                   tal:content="python:view.session['state']">draft</span>
+          <span tal:content="python:view.session['state']" i18n:translate="">draft</span>
                 </td>
             </tr>
 
@@ -35,13 +34,14 @@
             <tr>
                 <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
                 <td class="table_widget_value"
-                         tal:content="python:'Yes' if view.session['seal'] else 'No'">No
+                         tal:content="python:'Yes' if view.session['seal'] else 'No'"
+                         i18n:translate="">No
                 </td>
             </tr>
             <tr>
                 <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
                 <td class="table_widget_value">
-                    <table class="no-border no-style-table"
+                    <table id="context_viewlet_signers_table" class="no-border no-style-table"
                              tal:define="signers python:view.session.get('signers', [])">
                         <thead>
                         <tr>

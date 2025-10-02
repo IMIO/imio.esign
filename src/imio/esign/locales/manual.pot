@@ -2,6 +2,14 @@
 msgid ""
 msgstr ""
 
+#: ../browser/templates/faceted_session_info.pt
+msgid "No"
+msgstr ""
+
+#: ../browser/templates/faceted_session_info.pt
+msgid "Yes"
+msgstr ""
+
 #: ../browser/table.py:25
 msgid "draft"
 msgstr ""

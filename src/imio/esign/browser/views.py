@@ -175,12 +175,12 @@ class ItemSessionInfoViewlet(ViewletBase):
 
     @property
     def session(self):
-        sessions = get_session_annotation()["sessions"]
-        for session in sessions.values():
-            for file in session.get("files", []):
-                if self.context.UID() == file.get("context_uid"):
-                    session["id"] = session.get("id", None)
-                    return session
+        annot = get_session_annotation()
+        for f_uid in annot["c_uids"].get(self.context.UID(), []):
+            if f_uid in annot["uids"]:
+                session = annot["sessions"].get(annot["uids"][f_uid], {})
+                session["id"] = annot["uids"][f_uid]
+                return session
         return {}
 
 

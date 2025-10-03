@@ -5,71 +5,94 @@
       lang="en"
          i18n:domain="imio.esign">
 <div class="faceted-session-info">
-    <h2 tal:content="python:view.session['title']">Session title</h2>
+    <!--h2 tal:content="python:view.session['title']">Session title</h2-->
     <fieldset>
-        <legend i18n:translate="">Session information</legend>
-        <table id="context_viewlet_session_table" class="no-style-table table-view-widgets">
-            <tbody>
+        <legend tal:define="sessionTitle python:view.session.get('title', '')" i18n:translate="">
+            Session information : <span tal:replace="sessionTitle" i18n:name="title">title</span>
+        </legend>
+        <div class="session-info-container">
+            <div class="session-info-column">
+                <table id="context_viewlet_session_table" class="no-style-table table-view-widgets">
+                    <tbody>
+                    <tr>
+                        <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
+                        <td class="table_widget_value" tal:content="python: view.session['id']">25452 - College</td>
+                    </tr>
 
-            <tr>
-                <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
-                <td class="table_widget_value" tal:content="python:view.session['id']">25452</td>
-            </tr>
+                    <tr>
+                        <td class="table_widget_label"><label i18n:translate="">State</label></td>
+                        <td class="table_widget_value">
+                  <span tal:content="python:view.session['state']" i18n:translate="">draft</span>
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="table_widget_label"><label i18n:translate="">State</label></td>
-                <td class="table_widget_value">
-          <span tal:content="python:view.session['state']" i18n:translate="">draft</span>
-                </td>
-            </tr>
+                    <tr>
+                        <td class="table_widget_label"><label i18n:translate="">Last update</label></td>
+                        <td class="table_widget_value"
+                                 tal:content="python:view.session['last_update'].strftime('%Y-%m-%d %H:%M')">
+                            2025-08-13 10:44
+                        </td>
+                    </tr>
 
-            <tr>
-                <td class="table_widget_label"><label i18n:translate="">Last update</label></td>
-                <td class="table_widget_value"
-                         tal:content="python:view.session['last_update'].strftime('%Y-%m-%d %H:%M')">
-                    2025-08-13 10:44
-                </td>
-            </tr>
+                    <tr>
+                        <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
+                        <td class="table_widget_value"
+                                 tal:content="python:'Yes' if view.session['seal'] else 'No'"
+                                 i18n:translate="">No
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-            <tr>
-                <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
-                <td class="table_widget_value"
-                         tal:content="python:'Yes' if view.session['seal'] else 'No'"
-                         i18n:translate="">No
-                </td>
-            </tr>
-            <tr>
-                <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
-                <td class="table_widget_value">
-                    <table id="context_viewlet_signers_table" class="no-border no-style-table"
-                             tal:define="signers python:view.session.get('signers', [])">
-                        <thead>
-                        <tr>
-                            <th>Full name</th>
-                            <th>Position</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr tal:repeat="s signers">
-                            <td tal:content="python:s['fullname']">Jean Dupont</td>
-                            <td tal:content="python:s['position']">Directeur Général</td>
-                            <td tal:content="python:s['email']">user1@sign.com</td>
-                            <td tal:content="python:s['status']">pending</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+            <div class="session-info-column">
+                <table id="context_viewlet_session_signers" class="no-style-table table-view-widgets">
+                    <tbody>
+                    <tr>
+                        <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
+                        <td class="table_widget_value">
+                            <table id="context_viewlet_signers_table" class="no-border no-style-table"
+                                     tal:define="signers python:view.session.get('signers', [])">
+                                <thead>
+                                <tr>
+                                    <th>Full name</th>
+                                    <th>Position</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr tal:repeat="s signers">
+                                    <td tal:content="python:s['fullname']">Jean Dupont</td>
+                                    <td tal:content="python:s['position']">Directeur Général</td>
+                                    <td tal:content="python:s['email']">user1@sign.com</td>
+                                    <td tal:content="python:s['status']" i18n:translate="" >pending</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </fieldset>
 </div>
 
 <style>
     table.no-border td {
         border: none !important;
+    }
+
+    .session-info-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .session-info-column {
+        flex: 1;
+        min-width: 300px;
     }
 </style>
 </html>

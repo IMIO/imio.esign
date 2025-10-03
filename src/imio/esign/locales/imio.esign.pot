@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-02 14:30+0000\n"
+"POT-Creation-Date: 2025-10-03 05:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -60,7 +60,7 @@ msgid "Installs the imio.esign add-on."
 msgstr ""
 
 #: ../browser/table.py:38
-#: ../browser/templates/faceted_session_info.pt:27
+#: ../browser/templates/faceted_session_info.pt:30
 msgid "Last update"
 msgstr ""
 
@@ -88,7 +88,7 @@ msgstr ""
 msgid "Remove from esign session"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:35
+#: ../browser/templates/faceted_session_info.pt:38
 msgid "Sealed"
 msgstr ""
 
@@ -96,7 +96,7 @@ msgstr ""
 msgid "Session ${id}"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:15
+#: ../browser/templates/faceted_session_info.pt:18
 msgid "Session ID"
 msgstr ""
 
@@ -104,8 +104,8 @@ msgstr ""
 msgid "Session deleted successfully!"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:10
-msgid "Session information"
+#: ../browser/templates/faceted_session_info.pt:11
+msgid "Session information : ${title}"
 msgstr ""
 
 #: ../browser/views.py:88
@@ -117,12 +117,12 @@ msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
 #: ../browser/table.py:47
-#: ../browser/templates/faceted_session_info.pt:42
+#: ../browser/templates/faceted_session_info.pt:52
 msgid "Signers"
 msgstr ""
 
 #: ../browser/table.py:20
-#: ../browser/templates/faceted_session_info.pt:20
+#: ../browser/templates/faceted_session_info.pt:23
 msgid "State"
 msgstr ""
 

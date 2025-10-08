@@ -136,12 +136,19 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
     sessions_listing_view = SessionsListingView  # to be overridden in subclass
-    sessions_collection_uid = None  # to be overridden in subclass
+
+    def available(self):
+        """Global availability of the viewlet."""
+        if self.sessions_collection_uid is None:
+            return False
+        return True
+
+    @property
+    def sessions_collection_uid(self):
+        raise NotImplementedError("You must set sessions_collection_uid in subclass.")
 
     def render(self):
         """Render the viewlet."""
-        if self.sessions_collection_uid is None:
-            raise NotImplementedError("You must set sessions_collection_uid in subclass.")
         if self.request.form.get("c1[]", None) == self.sessions_collection_uid:
             if self.session:
                 return self.index()

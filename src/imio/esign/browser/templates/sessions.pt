@@ -10,11 +10,11 @@
 <metal:custom_title fill-slot="content-title">
     <h1 class="documentFirstHeading" i18n:translate="">List of electronic signing sessions</h1>
 </metal:custom_title>
-<metal:description fill-slot="content-description">
+<!--metal:description fill-slot="content-description">
     <div class="documentDescription" i18n:translate="">Here you can find the list of all sessions of electronic
         signatures.
     </div>
-</metal:description>
+</metal:description-->
 
 <metal:content-core fill-slot="content-core">
     <style>

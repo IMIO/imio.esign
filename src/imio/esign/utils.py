@@ -117,7 +117,13 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             data_payload["signData"]["watchers"] = list(session["watchers"])
 
     if session["seal"] is not None:
-        data_payload["sealData"] = {"sealCode": session["seal"]}
+        data_payload["sealData"] = {
+            "users": [],
+            # "placeholderName": "SCEAU",  # default
+            "acroform": True,  # default False
+            # "watchers": [],  # default
+            "sealCode": session["seal"],
+        }
 
     files_payload = [("files", (filename, file_content)) for z, filename, file_content in files]
 

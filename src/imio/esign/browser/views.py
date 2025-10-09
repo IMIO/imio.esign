@@ -174,6 +174,10 @@ class ItemSessionInfoViewlet(ViewletBase):
 
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
 
+    def available(self):
+        """Global availability of the viewlet."""
+        return True
+
     def render(self):
         """Render the viewlet."""
         if self.session:

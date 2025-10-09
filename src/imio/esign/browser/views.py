@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from imio.esign import _
+from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
@@ -168,6 +169,9 @@ class FacetedSessionInfoViewlet(ViewletBase):
         session["id"] = session_id
         return session
 
+    def ext_session_link(self, session):
+        return external_session_link(session)
+
 
 class ItemSessionInfoViewlet(ViewletBase):
     """Show selected session info for an item."""
@@ -194,5 +198,7 @@ class ItemSessionInfoViewlet(ViewletBase):
                 return session
         return {}
 
+    def ext_session_link(self, session):
+        return external_session_link(session)
 
 # TODO clean up css

@@ -316,6 +316,7 @@ class TestUtils(unittest.TestCase):
             "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
             "returns": []
             "seal": None,
+            "sign_id": None,
             "sign_url": None,
             "signers": [
                 {

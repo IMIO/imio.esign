@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-03 05:12+0000\n"
+"POT-Creation-Date: 2025-10-09 13:02+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
-#: ../browser/table.py:93
+#: ../browser/table.py:113
 msgid "Actions"
 msgstr ""
 
@@ -23,11 +23,11 @@ msgstr ""
 msgid "Add to esign session"
 msgstr ""
 
-#: ../browser/table.py:109
+#: ../browser/table.py:129
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:106
+#: ../browser/table.py:126
 msgid "Delete session"
 msgstr ""
 
@@ -35,20 +35,28 @@ msgstr ""
 msgid "Element removed from session!"
 msgstr ""
 
-#: ../browser/views.py:117
+#: ../browser/templates/faceted_session_info.pt:67
+msgid "Email"
+msgstr ""
+
+#: ../browser/views.py:118
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:114
+#: ../browser/views.py:115
 msgid "External session sent successfully!"
 msgstr ""
 
-#: ../browser/table.py:59
+#: ../browser/templates/faceted_session_info.pt:52
+msgid "External session url"
+msgstr ""
+
+#: ../browser/table.py:79
 msgid "Files"
 msgstr ""
 
-#: ../browser/templates/sessions.pt:14
-msgid "Here you can find the list of all sessions of electronic signatures."
+#: ../browser/templates/faceted_session_info.pt:65
+msgid "Full name"
 msgstr ""
 
 #: ../browser/table.py:12
@@ -59,7 +67,7 @@ msgstr ""
 msgid "Installs the imio.esign add-on."
 msgstr ""
 
-#: ../browser/table.py:38
+#: ../browser/table.py:58
 #: ../browser/templates/faceted_session_info.pt:30
 msgid "Last update"
 msgstr ""
@@ -72,15 +80,19 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/views.py:79
+#: ../browser/views.py:80
 msgid "No session ID provided!"
+msgstr ""
+
+#: ../browser/templates/faceted_session_info.pt:66
+msgid "Position"
 msgstr ""
 
 #: ../browser/actions.py:51
 msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
 msgstr ""
 
-#: ../browser/table.py:67
+#: ../browser/table.py:87
 msgid "Quick look"
 msgstr ""
 
@@ -100,7 +112,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/views.py:86
+#: ../browser/views.py:87
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -108,22 +120,34 @@ msgstr ""
 msgid "Session information : ${title}"
 msgstr ""
 
-#: ../browser/views.py:88
+#: ../browser/views.py:89
 msgid "Session not found!"
 msgstr ""
 
-#: ../browser/views.py:109
+#: ../browser/views.py:137
+msgid "Session not yet sent."
+msgstr ""
+
+#: ../browser/views.py:110
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
-#: ../browser/table.py:47
-#: ../browser/templates/faceted_session_info.pt:52
+#: ../browser/views.py:139
+msgid "Sign url not yet received."
+msgstr ""
+
+#: ../browser/table.py:67
+#: ../browser/templates/faceted_session_info.pt:59
 msgid "Signers"
 msgstr ""
 
-#: ../browser/table.py:20
+#: ../browser/table.py:34
 #: ../browser/templates/faceted_session_info.pt:23
 msgid "State"
+msgstr ""
+
+#: ../browser/templates/faceted_session_info.pt:68
+msgid "Status"
 msgstr ""
 
 #: ../profiles/default/actions.xml
@@ -134,7 +158,7 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:30
+#: ../browser/table.py:50
 msgid "Title"
 msgstr ""
 
@@ -142,7 +166,7 @@ msgstr ""
 msgid "Uninstalls the imio.esign add-on."
 msgstr ""
 
-#: ../browser/table.py:111
+#: ../browser/table.py:131
 msgid "View session in dashboard"
 msgstr ""
 

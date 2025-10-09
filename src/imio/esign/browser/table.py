@@ -16,14 +16,34 @@ class IdColumn(Column):
         return str(item.get("id"))
 
 
+def external_session_link(session, title=None):
+    """Return a tag with the sign external session."""
+    if not session["sign_id"]:
+        return u"Session not yet sent."
+    if not session["sign_url"]:
+        return u"Sign url not yet received."
+    if not title:
+        title = session["sign_id"]
+    return u'<a href="{url}" target="_blank">{title}</a>'.format(
+        url=session["sign_url"],
+        title=title,
+    )
+
+
 class StateColumn(Column):
     header = _("State")
     weight = 20
 
     def renderCell(self, item):
-        return translate(
+        state = translate(
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign"
         )
+        if item["sign_url"]:
+            return external_session_link(item, title=state)
+        elif item["sign_id"]:
+            return u"{} ({})".format(state, item["sign_id"])
+        else:
+            return state
 
 
 class TitleColumn(Column):

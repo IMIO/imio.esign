@@ -98,6 +98,8 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     portal = api.portal.get()  # noqa F841
     if not session["title"]:
         session["title"] = _("Session ${id}", mapping={"id": session_id})
+    if not session["sign_id"]:
+        session["sign_id"] = app_session_id
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
@@ -168,6 +170,7 @@ def create_session(signers, seal, acroform=True, title=None, annot=None, discrim
         "files": PersistentList(),
         "last_update": datetime.now(),
         "seal": seal,
+        "sign_id": None,
         "sign_url": None,
         "signers": PersistentList(
             [

@@ -49,16 +49,23 @@
                 <table id="context_viewlet_session_signers" class="no-style-table table-view-widgets">
                     <tbody>
                     <tr>
+                        <td class="table_widget_label"><label i18n:translate="">External session url</label></td>
+                        <td class="table_widget_value"
+                                 tal:content="python:view.ext_session_link(view.session)"
+                                 i18n:translate="">url
+                        </td>
+                    </tr>
+                    <tr>
                         <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
                         <td class="table_widget_value">
                             <table id="context_viewlet_signers_table" class="no-border no-style-table"
                                      tal:define="signers python:view.session.get('signers', [])">
                                 <thead>
                                 <tr>
-                                    <th>Full name</th>
-                                    <th>Position</th>
-                                    <th>Email</th>
-                                    <th>Status</th>
+                                    <th i18n:translate="">Full name</th>
+                                    <th i18n:translate="">Position</th>
+                                    <th i18n:translate="">Email</th>
+                                    <th i18n:translate="">Status</th>
                                 </tr>
                                 </thead>
                                 <tbody>

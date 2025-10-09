@@ -6,6 +6,14 @@ msgstr ""
 msgid "No"
 msgstr ""
 
+#: ../browser/views.py:137
+msgid "Session not yet sent."
+msgstr ""
+
+#: ../browser/views.py:139
+msgid "Sign url not yet received."
+msgstr ""
+
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
 msgstr ""

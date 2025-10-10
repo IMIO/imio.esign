@@ -4,7 +4,6 @@ from imio.esign.utils import get_session_annotation
 from plone.restapi.deserializer import json_body
 from plone.restapi.services import Service
 
-import json
 import logging
 
 
@@ -36,8 +35,6 @@ class ExternalSessionFeedbackPost(Service):
             self.request.response.setStatus(400)
             return {"message": "code is required"}
         value = data.get("value") or {}
-        if value:
-            value = json.loads(value)
         db_state = data.get("session_state")
         try:
             annot = get_session_annotation()
@@ -56,21 +53,24 @@ class ExternalSessionFeedbackPost(Service):
                     session_update["sign_url"] = value["sign_session_url"]
             elif code == 22:
                 # one_signer_accepted
-                if value and "signed_user_emails" in value:
+                if value and "signed_users" in value:
                     for i, d in enumerate(session["signers"]):
-                        if d["state"] in ("signed", "refused"):
+                        if d["status"] in ("signed", "refused"):
                             continue
-                        if d["email"] in value["signed_user_emails"]:
-                            session_update["signers"][i]["state"] = "signed"
+                        if d["email"] in value["signed_users"]:
+                            session_update["signers"][i]["status"] = "signed"
             elif code == 23:
                 # upload_success (files returned)
                 session_update["state"] = "returned"
             elif code == 52:
                 # one_signer_refused
                 session_update["state"] = "refused"
-                if value and "refused_user_email" in value:
-                    signer_idx = [i for i, d in enumerate(session["signers"]) if d["refused_user_email"] == value][0]
-                    session_update["signers"][signer_idx]["state"] = "refused"
+                if value and "refused_users" in value:
+                    for i, d in enumerate(session["signers"]):
+                        if d["status"] in ("signed", "refused"):  # useful ?
+                            continue
+                        if d["email"] in value["refused_users"]:
+                            session_update["signers"][i]["status"] = "refused"
             elif code == 53:
                 # upload_failed
                 session_update["state"] = "signed"
@@ -83,6 +83,7 @@ class ExternalSessionFeedbackPost(Service):
 
         except Exception as e:
             self.request.response.setStatus(500)
+            logger.error(str(e))
             return {"message": str(e)}
         return {"message": "Information correctly handled"}
     """ microservice session state

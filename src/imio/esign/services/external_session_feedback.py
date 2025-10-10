@@ -54,6 +54,7 @@ class ExternalSessionFeedbackPost(Service):
             elif code == 22:
                 # one_signer_accepted
                 if value and "signed_users" in value:
+                    session_update["signers"] = session["signers"]
                     for i, d in enumerate(session["signers"]):
                         if d["status"] in ("signed", "refused"):
                             continue
@@ -66,6 +67,7 @@ class ExternalSessionFeedbackPost(Service):
                 # one_signer_refused
                 session_update["state"] = "refused"
                 if value and "refused_users" in value:
+                    session_update["signers"] = session["signers"]
                     for i, d in enumerate(session["signers"]):
                         if d["status"] in ("signed", "refused"):  # useful ?
                             continue

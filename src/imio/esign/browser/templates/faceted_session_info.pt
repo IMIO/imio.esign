@@ -49,9 +49,9 @@
                 <table id="context_viewlet_session_signers" class="no-style-table table-view-widgets">
                     <tbody>
                     <tr>
-                        <td class="table_widget_label"><label i18n:translate="">External session url</label></td>
+                        <td class="table_widget_label"><label i18n:translate="">External session</label></td>
                         <td class="table_widget_value"
-                                 tal:content="python:view.ext_session_link(view.session)"
+                                 tal:content="structure python: view.ext_session_link(view.session)"
                                  i18n:translate="">url
                         </td>
                     </tr>

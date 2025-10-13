@@ -24,9 +24,10 @@ def external_session_link(session, title=None):
         return u"Sign url not yet received."
     if not title:
         title = session["sign_id"]
-    return u'<a href="{url}" target="_blank">{title}</a>'.format(
+    return u'<a href="{url}" target="_blank">{title} ({id})</a>'.format(
         url=session["sign_url"],
         title=title,
+        id=session["sign_id"],
     )
 
 
@@ -35,15 +36,9 @@ class StateColumn(Column):
     weight = 20
 
     def renderCell(self, item):
-        state = translate(
+        return translate(
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign"
         )
-        if item["sign_url"]:
-            return external_session_link(item, title=state)
-        elif item["sign_id"]:
-            return u"{} ({})".format(state, item["sign_id"])
-        else:
-            return state
 
 
 class TitleColumn(Column):
@@ -51,7 +46,13 @@ class TitleColumn(Column):
     weight = 30
 
     def renderCell(self, item):
-        return safe_unicode(item.get("title", ""))
+        title = safe_unicode(item.get("title", ""))
+        if item["sign_url"]:
+            return external_session_link(item)
+        elif item["sign_id"]:
+            return u"{} ({})".format(title, item["sign_id"])
+        else:
+            return title
 
 
 class LastUpdateColumn(Column):

@@ -66,13 +66,12 @@ class ExternalSessionFeedbackPost(Service):
             elif code == 52:
                 # one_signer_refused
                 session_update["state"] = "refused"
-                if value and "refused_users" in value:
+                if value and "user" in value:
                     session_update["signers"] = session["signers"]
                     for i, d in enumerate(session["signers"]):
-                        if d["status"] in ("signed", "refused"):  # useful ?
-                            continue
-                        if d["email"] in value["refused_users"]:
+                        if d["email"] == value["user"]:
                             session_update["signers"][i]["status"] = "refused"
+                            break
             elif code == 53:
                 # upload_failed
                 session_update["state"] = "signed"

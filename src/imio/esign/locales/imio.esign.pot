@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-09 13:02+0000\n"
+"POT-Creation-Date: 2025-10-13 12:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
-#: ../browser/table.py:113
+#: ../browser/table.py:114
 msgid "Actions"
 msgstr ""
 
@@ -23,11 +23,11 @@ msgstr ""
 msgid "Add to esign session"
 msgstr ""
 
-#: ../browser/table.py:129
+#: ../browser/table.py:130
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:126
+#: ../browser/table.py:127
 msgid "Delete session"
 msgstr ""
 
@@ -43,15 +43,15 @@ msgstr ""
 msgid "Error while sending session: ${error}"
 msgstr ""
 
+#: ../browser/templates/faceted_session_info.pt:52
+msgid "External session"
+msgstr ""
+
 #: ../browser/views.py:115
 msgid "External session sent successfully!"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:52
-msgid "External session url"
-msgstr ""
-
-#: ../browser/table.py:79
+#: ../browser/table.py:80
 msgid "Files"
 msgstr ""
 
@@ -67,7 +67,7 @@ msgstr ""
 msgid "Installs the imio.esign add-on."
 msgstr ""
 
-#: ../browser/table.py:58
+#: ../browser/table.py:59
 #: ../browser/templates/faceted_session_info.pt:30
 msgid "Last update"
 msgstr ""
@@ -92,7 +92,7 @@ msgstr ""
 msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
 msgstr ""
 
-#: ../browser/table.py:87
+#: ../browser/table.py:88
 msgid "Quick look"
 msgstr ""
 
@@ -136,12 +136,12 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/table.py:67
+#: ../browser/table.py:68
 #: ../browser/templates/faceted_session_info.pt:59
 msgid "Signers"
 msgstr ""
 
-#: ../browser/table.py:34
+#: ../browser/table.py:35
 #: ../browser/templates/faceted_session_info.pt:23
 msgid "State"
 msgstr ""
@@ -158,7 +158,7 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:50
+#: ../browser/table.py:45
 msgid "Title"
 msgstr ""
 
@@ -166,7 +166,7 @@ msgstr ""
 msgid "Uninstalls the imio.esign add-on."
 msgstr ""
 
-#: ../browser/table.py:131
+#: ../browser/table.py:132
 msgid "View session in dashboard"
 msgstr ""
 

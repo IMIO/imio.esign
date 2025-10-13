@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-10-09 13:02+0000\n"
+"POT-Creation-Date: 2025-10-13 12:04+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/table.py:113
+#: ../browser/table.py:114
 msgid "Actions"
 msgstr "Actions"
 
@@ -24,11 +24,11 @@ msgstr "Actions"
 msgid "Add to esign session"
 msgstr "Ajouter à la session"
 
-#: ../browser/table.py:129
+#: ../browser/table.py:130
 msgid "Create external session"
 msgstr "Créer une session externe de signature"
 
-#: ../browser/table.py:126
+#: ../browser/table.py:127
 msgid "Delete session"
 msgstr "Effacer la session"
 
@@ -44,15 +44,15 @@ msgstr "Email"
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
+#: ../browser/templates/faceted_session_info.pt:52
+msgid "External session"
+msgstr "Session de signature"
+
 #: ../browser/views.py:115
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
-#: ../browser/templates/faceted_session_info.pt:52
-msgid "External session url"
-msgstr "Session de signature"
-
-#: ../browser/table.py:79
+#: ../browser/table.py:80
 msgid "Files"
 msgstr "Fichiers"
 
@@ -68,7 +68,7 @@ msgstr "Identifiant"
 msgid "Installs the imio.esign add-on."
 msgstr "Installs the imio.esign add-on."
 
-#: ../browser/table.py:58
+#: ../browser/table.py:59
 #: ../browser/templates/faceted_session_info.pt:30
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -93,7 +93,7 @@ msgstr "Fonction occupée"
 msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
 msgstr "Problème avec les signataires certifiées, assurez-vous qu'une fonction occupée est sélectionnée pour chaque signataire (vérifiez \"${name}/${function}\") !"
 
-#: ../browser/table.py:87
+#: ../browser/table.py:88
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
@@ -137,12 +137,12 @@ msgstr "La session avec l'ID ${id} n'existe plus !"
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/table.py:67
+#: ../browser/table.py:68
 #: ../browser/templates/faceted_session_info.pt:59
 msgid "Signers"
 msgstr "Signataires"
 
-#: ../browser/table.py:34
+#: ../browser/table.py:35
 #: ../browser/templates/faceted_session_info.pt:23
 msgid "State"
 msgstr "État"
@@ -159,7 +159,7 @@ msgstr "Cela ajoutera cet élément ou les sous-éléments configurés à une se
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
 
-#: ../browser/table.py:50
+#: ../browser/table.py:45
 msgid "Title"
 msgstr "Titre"
 
@@ -167,7 +167,7 @@ msgstr "Titre"
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
 
-#: ../browser/table.py:131
+#: ../browser/table.py:132
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 

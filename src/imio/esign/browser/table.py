@@ -23,10 +23,10 @@ def external_session_link(session, title=None):
     if not session["sign_url"]:
         return u"Sign url not yet received."
     if not title:
-        title = session["sign_id"]
+        title = session.get("title", "") or session.get("sign_id", "")
     return u'<a href="{url}" target="_blank">{title} ({id})</a>'.format(
         url=session["sign_url"],
-        title=title,
+        title=safe_unicode(title),
         id=session["sign_id"],
     )
 
@@ -48,7 +48,7 @@ class TitleColumn(Column):
     def renderCell(self, item):
         title = safe_unicode(item.get("title", ""))
         if item["sign_url"]:
-            return external_session_link(item)
+            return external_session_link(item, title=title)
         elif item["sign_id"]:
             return u"{} ({})".format(title, item["sign_id"])
         else:

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<object name="portal_controlpanel" xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    i18n:domain="imio.esign">
+
+    <!-- -*- extra stuff goes here -*- -->
+
+  <configlet
+      i18n:attributes="title"
+      title="Imio Esign Settings"
+      action_id="imio_esign_settings"
+      appId="imio_esign_settings"
+      category="Products"
+      condition_expr=""
+      icon_expr=""
+      url_expr="string:${portal_url}/@@imio_esign_settings-controlpanel"
+      visible="True">
+    <permission>Plone Site Setup: Site</permission>
+  </configlet>
+
+
+</object>

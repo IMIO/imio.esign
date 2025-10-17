@@ -16,6 +16,13 @@
         directory="static" />
 
     <browser:page
+        name="imio_esign_settings"
+        for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+        class=".settings.ImioEsignSettingsView"
+        permission="cmf.ManagePortal"
+        />
+
+    <browser:page
             name="esign-sessions-listing"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionsListingView"

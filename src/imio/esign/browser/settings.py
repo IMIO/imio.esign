@@ -24,7 +24,7 @@ class IImioEsignSettings(Interface):
 
 class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings
-    # schema_prefix = "imio.esign.settings"
+    schema_prefix = "imio.esign"
     label = _("Imio Esign Settings")
 
 

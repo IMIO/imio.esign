@@ -1,7 +1,7 @@
 <registry xmlns:i18n="http://xml.zope.org/namespaces/i18n"
           i18n:domain="imio.esign">
 
-    <records interface="imio.esign.browser.settings.IImioEsignSettings">
+    <records interface="imio.esign.browser.settings.IImioEsignSettings" prefix="imio.esign">
     </records>
 
 </registry>

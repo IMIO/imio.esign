@@ -118,13 +118,14 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         if session.get("watchers", ()):
             data_payload["signData"]["watchers"] = list(session["watchers"])
 
-    if session["seal"] is not None:
+    if session["seal"]:
+        seal_email = api.portal.get_registry_record("imio.esign.seal_email", default="")
         data_payload["sealData"] = {
-            "users": [],
+            "users": seal_email and [seal_email] or [],
             # "placeholderName": "SCEAU",  # default
-            "acroform": True,  # default False
+            "acroform": bool(seal_email),  # default False
             # "watchers": [],  # default
-            "sealCode": session["seal"],
+            "sealCode": api.portal.get_registry_record("imio.esign.seal_code", default=""),  # PADES_SEAL
         }
 
     files_payload = [("files", (filename, file_content)) for z, filename, file_content in files]
@@ -145,11 +146,11 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal, acroform=True, title=None, annot=None, discriminators=(), watchers=()):
+def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=()):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
-    :param seal: a seal code, if any
+    :param seal: seal boolean
     :param acroform: acroform boolean
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
@@ -190,7 +191,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     """Discriminate sessions based on seal value and signers in the same order.
 
     :param signers: a list of signers, each is a tuple with userid and email
-    :param seal: a seal code, if any
+    :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators
     :param annot: esign annotation, if not provided it will be fetched

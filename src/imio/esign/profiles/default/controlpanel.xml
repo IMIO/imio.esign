@@ -12,7 +12,7 @@
       category="Products"
       condition_expr=""
       icon_expr=""
-      url_expr="string:${portal_url}/@@imio_esign_settings-controlpanel"
+      url_expr="string:${portal_url}/@@imio_esign_settings"
       visible="True">
     <permission>Plone Site Setup: Site</permission>
   </configlet>

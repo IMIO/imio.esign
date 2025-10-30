@@ -95,9 +95,9 @@ class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
 
     def __call__(self, session_id=None):
-        if not session_id:
+        if session_id is None:
             session_id = self.request.get("session_id", None)
-        if not session_id:
+        if session_id is None:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
             return self.context.absolute_url() + "/@@esign-sessions-listing"
         resp = create_external_session(

@@ -91,6 +91,17 @@ class SessionDeleteView(BrowserView):
         return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@esign-sessions-listing")
 
 
+def get_microservice_credentials(self):
+    """Get the credentials to connect to microservice."""
+    # get it from environment variable
+    return os.getenv("ESIGN_CREDENTIALS", "")
+
+
+def get_esign_root_url(self):
+    """Get the esign root url to connect to microservice."""
+    return os.getenv("ESIGN_ROOT_URL", "")
+
+
 class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
 
@@ -102,8 +113,8 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@esign-sessions-listing"
         resp = create_external_session(
             int(session_id),
-            b64_cred=self._get_credentials(),
-            esign_root_url=self._get_esign_root_url()
+            b64_cred=get_microservice_credentials(),
+            esign_root_url=get_esign_root_url()
         )
         if resp is None:
             api.portal.show_message(
@@ -121,15 +132,6 @@ class ExternalSessionCreateView(BrowserView):
                 type="error",
             )
         return self.context.absolute_url() + "/@@esign-sessions-listing"
-
-    def _get_credentials(self):
-        """Get the credentials to connect to microservice."""
-        # get it from environment variable
-        return os.getenv("ESIGN_CREDENTIALS", "")
-
-    def _get_esign_root_url(self):
-        """Get the esign root url to connect to microservice."""
-        return os.getenv("ESIGN_ROOT_URL", "")
 
 
 class FacetedSessionInfoViewlet(ViewletBase):

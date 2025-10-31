@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from imio.esign import _tr as _
-from imio.esign import E_SIGN_ROOT_URL
+from imio.esign import ESIGN_CREDENTIALS
+from imio.esign import ESIGN_ROOT_URL
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
@@ -83,7 +84,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 
     :param session_id: internal session id
     :param b64_cred: base64 encoded credentials for authentication
-    :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default E_SIGN_ROOT_URL
+    :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default ESIGN_ROOT_URL
     :return: session information
     """
     session_url = get_esign_session_url(esign_root_url)
@@ -132,6 +133,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 
     # Headers avec autorisation
     headers = {"accept": "application/json"}
+    b64_cred = b64_cred or ESIGN_CREDENTIALS
     if b64_cred:
         headers["Authorization"] = "Basic {}".format(b64_cred)
 
@@ -229,7 +231,7 @@ def get_esign_session_url(esign_root_url):
     if esign_root_url:
         return "{}/{}".format(esign_root_url, SESSION_URL)
     else:
-        return "{}/{}".format(E_SIGN_ROOT_URL, SESSION_URL)
+        return "{}/{}".format(ESIGN_ROOT_URL, SESSION_URL)
 
 
 def get_files_from_uids(uids):

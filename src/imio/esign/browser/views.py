@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from imio.esign import _
+from imio.esign import ESIGN_CREDENTIALS
+from imio.esign import ESIGN_ROOT_URL
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.utils import create_external_session
@@ -11,8 +13,6 @@ from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
-
-import os
 
 
 class SessionsListingView(BrowserView):
@@ -91,17 +91,6 @@ class SessionDeleteView(BrowserView):
         return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@esign-sessions-listing")
 
 
-def get_microservice_credentials(self):
-    """Get the credentials to connect to microservice."""
-    # get it from environment variable
-    return os.getenv("ESIGN_CREDENTIALS", "")
-
-
-def get_esign_root_url(self):
-    """Get the esign root url to connect to microservice."""
-    return os.getenv("ESIGN_ROOT_URL", "")
-
-
 class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
 
@@ -113,8 +102,8 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@esign-sessions-listing"
         resp = create_external_session(
             int(session_id),
-            b64_cred=get_microservice_credentials(),
-            esign_root_url=get_esign_root_url()
+            b64_cred=ESIGN_CREDENTIALS,
+            esign_root_url=ESIGN_ROOT_URL,
         )
         if resp is None:
             api.portal.show_message(

@@ -5,10 +5,13 @@ from zope.component import queryUtility
 from zope.i18n import ITranslationDomain
 from zope.i18nmessageid import MessageFactory
 
+import os
+
 
 _ = MessageFactory("imio.esign")
 PLONE_VERSION = int(api.env.plone_version()[0])
-E_SIGN_ROOT_URL = "http://127.0.0.1:8000"
+ESIGN_ROOT_URL = os.getenv("ESIGN_ROOT_URL", "http://127.0.0.1:8000")
+ESIGN_CREDENTIALS = os.getenv("ESIGN_CREDENTIALS", "")
 
 
 def _tr(msgid, domain="imio.esign", mapping=None):

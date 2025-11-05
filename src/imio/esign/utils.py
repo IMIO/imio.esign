@@ -125,7 +125,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "users": seal_email and [seal_email] or [],
             # "placeholderName": "SCEAU",  # default
             "acroform": bool(seal_email),  # default False
-            # "watchers": [],  # default
+            "watchers": list(session.get("watchers", [])),
             "sealCode": api.portal.get_registry_record("imio.esign.seal_code", default=""),  # PADES_SEAL
         }
 

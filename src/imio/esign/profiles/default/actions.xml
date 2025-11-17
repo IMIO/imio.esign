@@ -13,7 +13,7 @@
    </property>
    <property name="visible">True</property>
   </object>
-  <object name="add_to_esign_session" meta_type="CMF Action" i18n:domain="imio.esign">
+  <object name="remove_from_esign_session" meta_type="CMF Action" i18n:domain="imio.esign">
    <property name="title" i18n:translate="">Remove from esign session</property>
    <property name="description" i18n:translate="">This will remove this element or configured sub elements from the relevant esign session</property>
    <property name="url_expr">string:${object/absolute_url}/@@remove-from-esign-session</property>

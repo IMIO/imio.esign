@@ -19,6 +19,10 @@ msgid "Yes"
 msgstr ""
 
 #: ../browser/table.py:25
+msgid "finalized"
+msgstr ""
+
+#: ../browser/table.py:25
 msgid "draft"
 msgstr ""
 

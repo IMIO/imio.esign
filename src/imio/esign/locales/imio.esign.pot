@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-10-13 12:04+0000\n"
+"POT-Creation-Date: 2025-11-17 09:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,6 +39,10 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
+#: ../browser/settings.py:20
+msgid "Email of the eidas provider account containing the seal image."
+msgstr ""
+
 #: ../browser/views.py:118
 msgid "Error while sending session: ${error}"
 msgstr ""
@@ -61,6 +65,11 @@ msgstr ""
 
 #: ../browser/table.py:12
 msgid "ID"
+msgstr ""
+
+#: ../browser/settings.py:28
+#: ../profiles/default/controlpanel.xml
+msgid "Imio Esign Settings"
 msgstr ""
 
 #: ../configure.zcml:23
@@ -100,11 +109,23 @@ msgstr ""
 msgid "Remove from esign session"
 msgstr ""
 
+#: ../browser/settings.py:13
+msgid "Seal code"
+msgstr ""
+
+#: ../browser/settings.py:14
+msgid "Seal code given by eidas provider."
+msgstr ""
+
+#: ../browser/settings.py:19
+msgid "Seal email"
+msgstr ""
+
 #: ../browser/templates/faceted_session_info.pt:38
 msgid "Sealed"
 msgstr ""
 
-#: ../utils.py:100
+#: ../utils.py:102
 msgid "Session ${id}"
 msgstr ""
 
@@ -180,6 +201,10 @@ msgstr ""
 
 #: ../browser/table.py:25
 msgid "errored"
+msgstr ""
+
+#: ../browser/table.py:25
+msgid "finalized"
 msgstr ""
 
 #: ../configure.zcml:23

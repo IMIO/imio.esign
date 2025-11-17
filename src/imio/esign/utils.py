@@ -183,7 +183,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
             ]
         ),
         "watchers": PersistentList(watchers),
-        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned, closed
+        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned, finalized
         "title": title,
         "returns": PersistentList(),
     })

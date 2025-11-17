@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-10-13 12:04+0000\n"
+"POT-Creation-Date: 2025-11-17 09:58+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -40,6 +40,10 @@ msgstr "Élément retiré de la session !"
 msgid "Email"
 msgstr "Email"
 
+#: ../browser/settings.py:20
+msgid "Email of the eidas provider account containing the seal image."
+msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
+
 #: ../browser/views.py:118
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
@@ -63,6 +67,11 @@ msgstr "Nom"
 #: ../browser/table.py:12
 msgid "ID"
 msgstr "Identifiant"
+
+#: ../browser/settings.py:28
+#: ../profiles/default/controlpanel.xml
+msgid "Imio Esign Settings"
+msgstr "Configuration du module de signature externe"
 
 #: ../configure.zcml:23
 msgid "Installs the imio.esign add-on."
@@ -101,11 +110,23 @@ msgstr "Aperçu rapide"
 msgid "Remove from esign session"
 msgstr "Retirer de la session"
 
+#: ../browser/settings.py:13
+msgid "Seal code"
+msgstr "Code du sceau"
+
+#: ../browser/settings.py:14
+msgid "Seal code given by eidas provider."
+msgstr "Code fourni par le fournisseur eidas."
+
+#: ../browser/settings.py:19
+msgid "Seal email"
+msgstr "Email du compte avec l'image du sceau"
+
 #: ../browser/templates/faceted_session_info.pt:38
 msgid "Sealed"
 msgstr "Sceau"
 
-#: ../utils.py:100
+#: ../utils.py:102
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -183,6 +204,10 @@ msgstr "En création"
 msgid "errored"
 msgstr "En erreur"
 
+#: ../browser/table.py:25
+msgid "finalized"
+msgstr "Finalisée"
+
 #: ../configure.zcml:23
 msgid "imio.esign"
 msgstr "imio.esign"
@@ -197,7 +222,7 @@ msgstr "Refusée"
 
 #: ../browser/table.py:25
 msgid "returned"
-msgstr "Finalisée"
+msgstr "Retournée"
 
 #: ../browser/table.py:25
 msgid "sent"

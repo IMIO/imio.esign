@@ -121,7 +121,8 @@ class TestUtils(unittest.TestCase):
                     "scan_id": "012345600000000",
                     "title": "Annex 0",
                     "uid": self.uids[0],
-                    "filename": "annex0.pdf",
+                    "status": "",
+                    "filename": u"annex0.pdf",
                 }
             ],
         )

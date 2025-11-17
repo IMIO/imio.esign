@@ -67,6 +67,7 @@ def add_files_to_session(
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
+                "status": "",
             }
         )
         existing_files.append(new_filename)
@@ -182,7 +183,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
             ]
         ),
         "watchers": PersistentList(watchers),
-        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned
+        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned, closed
         "title": title,
         "returns": PersistentList(),
     })

@@ -91,4 +91,12 @@
             i18n:domain="imio.esign"
     />
 
+    <browser:page
+            name="all-users-csv"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".views.AllUsersCsv"
+            permission="cmf.ManagePortal"
+            i18n:domain="imio.esign"
+    />
+
 </configure>

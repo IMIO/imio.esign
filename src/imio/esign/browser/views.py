@@ -116,9 +116,15 @@ class ExternalSessionCreateView(BrowserView):
             b64_cred=ESIGN_CREDENTIALS,
             esign_root_url=ESIGN_ROOT_URL,
         )
-        if resp is None:
+        if resp == "_session_not_found_":
             api.portal.show_message(
                 _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
+        elif resp == "_no_seal_code_":
+            api.portal.show_message(
+                _("No seal code defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )

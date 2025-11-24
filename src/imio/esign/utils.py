@@ -93,7 +93,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     session = annot["sessions"].get(session_id)
     if not session:
         logger.error("Session with id %s not found.", session_id)
-        return None
+        return "_session_not_found_"
     files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
     app_session_id = "{}{:05d}".format(session["client_id"], session_id)
@@ -122,12 +122,16 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
 
     if session["seal"]:
         seal_email = api.portal.get_registry_record("imio.esign.seal_email", default="")
+        seal_code = api.portal.get_registry_record("imio.esign.seal_code", default="")  # PADES_SEAL
+        if not seal_code:
+            logger.error("No seal code configured in registry.")
+            return "_no_seal_code_"
         data_payload["sealData"] = {
             "users": seal_email and [seal_email] or [],
             # "placeholderName": "SCEAU",  # default
             "acroform": bool(seal_email),  # default False
             "watchers": list(session.get("watchers", [])),
-            "sealCode": api.portal.get_registry_record("imio.esign.seal_code", default=""),  # PADES_SEAL
+            "sealCode": seal_code,
         }
 
     files_payload = [("files", (filename, file_content)) for z, filename, file_content in files]

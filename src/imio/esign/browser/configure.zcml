@@ -92,9 +92,9 @@
     />
 
     <browser:page
-            name="all-users-csv"
+            name="signing-users-csv"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
-            class=".views.AllUsersCsv"
+            class=".views.SigningUsersCsv"
             permission="cmf.ManagePortal"
             i18n:domain="imio.esign"
     />

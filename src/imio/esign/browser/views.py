@@ -211,29 +211,44 @@ class ItemSessionInfoViewlet(ViewletBase):
 # TODO clean up css
 
 
-class AllUsersCsv(BrowserView):
-    """Get all users, checking for duplicate emails, and output a CSV."""
+class SigningUsersCsv(BrowserView):
+    """Get users, checking for duplicate emails, and output a CSV.
+    This view can be subclassed to redefine custom filtering logic.
+    """
 
     def __call__(self):
         fn_first = True
         if self.request.get("fn_first", "1") == "0":
             fn_first = False
+        apply_filter = self.request.get("apply_filter", "1") == "1"
         if self.request.get("download", "") == "1":
-            return self._generate_csv(fn_first)
-        return self._generate_html(fn_first)
+            return self._generate_csv(fn_first, apply_filter)
+        return self._generate_html(fn_first, apply_filter=apply_filter)
+
+    def filter_user(self, user_data):
+        """Filter method to determine if a user should be included in CSV output.
+
+        :param user_data: dict containing user data (userid, email, lastname, firstname, fullname)
+        :return: True to include the user in CSV, False to exclude
+        """
+        return True
 
     def _collect_users_data(self, fn_first):
-        """Get users and duplicates."""
+        """Get users and duplicates.
+
+        :param fn_first: Boolean indicating if firstname comes first
+        :return: (all_users_data, filtered_users_data, duplicates)
+        """
         portal = api.portal.get()
         catalog = getToolByName(portal, "portal_catalog")
         acl_users = getToolByName(portal, "acl_users")
 
-        users_data = {}
+        all_users_data = {}
         email_registry = {}
 
         for user_info in acl_users.searchUsers():
             userid = user_info.get("userid")
-            if not userid or userid in users_data:
+            if not userid or userid in all_users_data:
                 continue
             user_obj = api.user.get(userid=userid)
             if not user_obj:
@@ -261,20 +276,28 @@ class AllUsersCsv(BrowserView):
                     fn_first = start == "firstname"
                 firstname, lastname = separate_fullname(user_obj, fn_first=fn_first)
 
-            users_data[userid] = {
+            user_data = {
                 "userid": userid,
                 "email": email,
                 "lastname": lastname,
                 "firstname": firstname,
                 "fullname": fullname,
             }
+            all_users_data[userid] = user_data
 
             if email:
                 email_registry.setdefault(email, []).append(userid)
 
         duplicates = {email: userids for email, userids in email_registry.items() if len(userids) > 1}
 
-        return users_data, duplicates
+        # Apply custom filter
+        filtered_users_data = {}
+
+        for userid, user_data in all_users_data.items():
+            if self.filter_user(user_data):
+                filtered_users_data[userid] = user_data
+
+        return all_users_data, filtered_users_data, duplicates
 
     def _create_csv(self, users_data):
         csv_output = StringIO()
@@ -296,19 +319,29 @@ class AllUsersCsv(BrowserView):
             })
         return csv_output.getvalue()
 
-    def _generate_csv(self, fn_first):
-        """Generate csv file"""
-        users_data, duplicates = self._collect_users_data(fn_first)
+    def _generate_csv(self, fn_first, apply_filter=True):
+        """Generate csv file
+
+        :param fn_first: Boolean indicating if firstname comes first
+        :param apply_filter: Boolean to apply or not the filter_user method
+        """
+        all_users_data, filtered_users_data, duplicates = self._collect_users_data(fn_first)
+        users_data = filtered_users_data if apply_filter else all_users_data
         output = self._create_csv(users_data)
         response = self.request.RESPONSE
         response.setHeader("Content-Type", "text/csv; charset=utf-8")
-        response.setHeader("Content-Disposition", "attachment; filename=plone_users_list.csv")
+        filename = "plone_users_list_filtered.csv" if apply_filter else "plone_users_list_all.csv"
+        response.setHeader("Content-Disposition", "attachment; filename={}".format(filename))
         return output
 
-    def _generate_html(self, fn_first):
+    def _generate_html(self, fn_first, apply_filter=True):
         """Generate html output with duplicates."""
-        users_data, duplicates = self._collect_users_data(fn_first)
+        # Get all users and filtered users in one call
+        all_users_data, filtered_users_data, duplicates = self._collect_users_data(fn_first)
+        users_data = filtered_users_data if apply_filter else all_users_data
         csv_text = self._create_csv(users_data)
+
+        base_url = self.context.absolute_url() + "/@@signing-users-csv"
 
         html = [
             "<!DOCTYPE html>",
@@ -328,14 +361,17 @@ class AllUsersCsv(BrowserView):
             ".csv-content { background-color: #f5f5f5; border: 1px solid #ddd; padding: 15px; margin: 20px 0; "
             "font-family: monospace; white-space: pre-wrap; overflow-x: auto; max-height: 400px; overflow-y: auto; }",
             ".download-btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; "
-            "text-decoration: none; border-radius: 5px; margin: 10px 0; }",
+            "text-decoration: none; border-radius: 5px; margin: 0 0 10px; }",
             ".download-btn:hover { background-color: #0056b3; }",
+            ".download-btn.secondary { background-color: #6c757d; }",
+            ".download-btn.secondary:hover { background-color: #5a6268; }",
             ".stats { margin: 20px 0; }",
             "</style>",
             "</head><body>",
             "<h1>Plone list users</h1>",
             "<div class='stats'>",
-            "<p><strong>Total users :</strong> {}</p>".format(len(users_data)),
+            "<p><strong>Total users (all) :</strong> {}</p>".format(len(all_users_data)),
+            "<p><strong>Total users (filtered) :</strong> {}</p>".format(len(filtered_users_data)),
             "<p><strong>Total duplicated emails :</strong> {}</p>".format(len(duplicates)),
             "</div>",
         ]
@@ -354,11 +390,11 @@ class AllUsersCsv(BrowserView):
             html.append("</div>")
 
         html.append("<h2>Download CSV file</h2>")
-        html.append("<a href='{}?download=1' class='download-btn'>📥 Download CSV file</a>".format(
-            self.context.absolute_url() + "/@@all-users-csv"
-        ))
-
-        html.append("<h2>Overview of CSV file</h2>")
+        html.append("<a href='{}?download=1&apply_filter=1' class='download-btn'>📥 Download CSV "
+                    "(filtered)</a>".format(base_url))
+        html.append("<a href='{}?download=1&apply_filter=0' class='download-btn secondary'>📥 Download CSV "
+                    "(all users)</a>".format(base_url))
+        html.append("<h2>Overview of CSV file{}</h2>".format(" (filtered)" if apply_filter else ""))
         html.append("<div class='csv-content'>{}</div>".format(csv_text.replace("<", "&lt;").replace(">", "&gt;")))
         html.append("</body></html>")
 

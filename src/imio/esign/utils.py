@@ -7,17 +7,16 @@ from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
+from imio.pyutils.system import post_request
 from os import path
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from plone import api
-from plone.api.validation import mutually_exclusive_parameters
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
 
 import json
 import logging
-import requests
 
 
 logger = logging.getLogger("imio.esign")
@@ -281,59 +280,6 @@ def get_session_annotation(portal=None):
             }
         )
     return annotations["imio.esign"]
-
-
-@mutually_exclusive_parameters("json", "files")
-def post_request(url, data=None, json=None, headers=None, files=None):
-    """Post data to url.
-
-    :param url: the url to post to
-    :param data: a data struct to consider
-    :param json: a json serializable object
-    :param headers: headers to use
-    :param files: files to upload (dict or list of tuples)
-    """
-    kwargs = {}
-
-    if files:
-        kwargs["files"] = files
-        if headers:
-            # Exclude Content-Type with multipart/form-data
-            kwargs["headers"] = {k: v for k, v in headers.items() if k.lower() != "content-type"}
-    if "headers" not in kwargs:
-        kwargs["headers"] = headers or (
-            {"Content-Type": "application/json"} if json else {"Content-Type": "application/x-www-form-urlencoded"}
-        )
-    if json:
-        kwargs["json"] = json
-    else:
-        kwargs["data"] = data
-
-    try:
-        with requests.post(url, **kwargs) as response:
-            if response.status_code != 200:
-                # if files:
-                # del kwargs["files"]  # remove files from kwargs to avoid sending them in the log
-                if files:
-                    kwargs["files"] = [(tup[0], (tup[1][0], len(tup[1][1]))) for tup in kwargs["files"]]
-                logger.error("Error while posting data '%s' to '%s': %s" % (kwargs, url, response.text))
-            return response
-    except requests.ConnectionError as e:
-        msg = "Connection error while posting data to '{}': {}".format(url, str(e))
-        logger.error(msg)
-        mock_response = requests.Response()
-        mock_response.status_code = 503  # service unavailable
-        mock_response._content = "{'error': '%s'}" % msg
-        mock_response.url = url
-        return mock_response
-    except Exception as e:
-        msg = "Unexpected error while posting data to '{}': {}".format(url, str(e))
-        logger.error(msg)
-        mock_response = requests.Response()
-        mock_response.status_code = 500  # Internal server error
-        mock_response._content = "{'error': '%s'}" % msg
-        mock_response.url = url
-        return mock_response
 
 
 def remove_context_from_session(context_uids):

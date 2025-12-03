@@ -24,9 +24,9 @@
 
     <browser:page
             name="esign-sessions-listing"
-            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            for="imio.esign.interfaces.IImioSessionsManagementContext"
             class=".views.SessionsListingView"
-            permission="zope2.Public"
+            permission="zope2.View"
             template="templates/sessions.pt"
             i18n:domain="imio.esign"
     />
@@ -35,7 +35,7 @@
             name="esign-session-files"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionFilesView"
-            permission="zope2.Public"
+            permission="zope2.View"
             template="templates/session_files.pt"
             i18n:domain="imio.esign"
     />

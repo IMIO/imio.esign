@@ -12,6 +12,7 @@ _ = MessageFactory("imio.esign")
 PLONE_VERSION = int(api.env.plone_version()[0])
 ESIGN_ROOT_URL = os.getenv("ESIGN_ROOT_URL", "http://127.0.0.1:8000")
 ESIGN_CREDENTIALS = os.getenv("ESIGN_CREDENTIALS", "")
+manage_permission = "imio.esign: Manage Sessions"
 
 
 def _tr(msgid, domain="imio.esign", mapping=None):

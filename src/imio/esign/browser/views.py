@@ -4,6 +4,7 @@ from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
+from imio.esign.interfaces import IImioSessionsManagementContext
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_session
@@ -16,6 +17,7 @@ from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.security.interfaces import Unauthorized
 
 import csv
 
@@ -35,6 +37,11 @@ class SessionsListingView(BrowserView):
         super(SessionsListingView, self).__init__(context, request)
 
     def __call__(self):
+        # Verify that the context provides the correct interface
+        if not IImioSessionsManagementContext.providedBy(self.context):
+            raise Unauthorized(
+                "This view can only be called on a context providing IImioSessionsManagementContext"
+            )
         return self.index()
 
     def render_table(self):

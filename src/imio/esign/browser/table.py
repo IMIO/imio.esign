@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
 from imio.esign import _
+from imio.esign import manage_permission
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -119,18 +120,29 @@ class ActionsColumn(Column):
         portal_url = api.portal.get().absolute_url()
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
-        return u"""
-        <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{portal_url}', object_uid=null, this, msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);window.location.reload();" style="cursor:pointer" src="delete_icon.png">
-        <img title="{send}" onclick="javascript:callViewAndReload('{portal_url}', '@@external-esign-session-create', {{'session_id': '{session_id}'}});" style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
-        <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer" src="++resource++imio.esign/view_element.png"></a>
-        """.format(  # noqa E501
+        admin_buttons = u"""
+        <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{portal_url}', object_uid=null, this,
+        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}',
+        redirect=null);window.location.reload();" style="cursor:pointer" src="delete_icon.png">
+        <img title="{send}" onclick="javascript:callViewAndReload('{portal_url}', '@@external-esign-session-create',
+        {{'session_id': '{session_id}'}});" style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
+        """.format(
             delete=translate(_("Delete session"), context=self.request),
             portal_url=portal_url,
             session_id=session_id,
             send=translate(_("Create external session"), context=self.request),
+        )
+        dashboard_button = u"""
+        <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer" 
+        src="++resource++imio.esign/view_element.png"></a>
+        """.format(  # noqa E501
             dashboard_link=dashboard_link,
             dashboard_view=translate(_("View session in dashboard"), context=self.request),
         )
+        if api.user.has_permission(manage_permission, obj=self.context):
+            return admin_buttons + dashboard_button
+
+        return dashboard_button
 
 
 class SessionsTable(Table):

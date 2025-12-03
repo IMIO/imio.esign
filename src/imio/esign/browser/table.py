@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from DateTime import DateTime
 from imio.esign import _
-from imio.esign import manage_permission
+from imio.esign import manage_session_perm
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -139,7 +139,7 @@ class ActionsColumn(Column):
             dashboard_link=dashboard_link,
             dashboard_view=translate(_("View session in dashboard"), context=self.request),
         )
-        if api.user.has_permission(manage_permission, obj=self.context):
+        if api.user.has_permission(manage_session_perm, obj=self.context):
             return admin_buttons + dashboard_button
 
         return dashboard_button

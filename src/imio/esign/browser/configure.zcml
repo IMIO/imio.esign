@@ -42,7 +42,7 @@
 
     <browser:page
             name="esign-session-delete"
-            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            for="imio.esign.interfaces.IImioSessionsManagementContext"
             class=".views.SessionDeleteView"
             permission="imio.esign.ManageSessions"
             i18n:domain="imio.esign"
@@ -50,7 +50,7 @@
 
     <browser:page
             name="external-esign-session-create"
-            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            for="imio.esign.interfaces.IImioSessionsManagementContext"
             class=".views.ExternalSessionCreateView"
             permission="imio.esign.ManageSessions"
             i18n:domain="imio.esign"

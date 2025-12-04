@@ -59,6 +59,9 @@ class SessionsListingView(BrowserView):
     def get_dashboard_link(self, session):
         raise NotImplementedError
 
+    def get_sessions_url(self):
+        raise NotImplementedError
+
 
 class SessionFilesView(BrowserView):
     """View to display documents of a session."""

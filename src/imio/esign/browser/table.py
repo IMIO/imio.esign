@@ -117,18 +117,18 @@ class ActionsColumn(Column):
     cssClasses = {"td": "actions-column"}
 
     def renderCell(self, item):
-        portal_url = api.portal.get().absolute_url()
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
+        sessions_url = self.table.view.get_sessions_url()
         admin_buttons = u"""
-        <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{portal_url}', object_uid=null, this,
-        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}',
-        redirect=null);window.location.reload();" style="cursor:pointer" src="delete_icon.png">
-        <img title="{send}" onclick="javascript:callViewAndReload('{portal_url}', '@@external-esign-session-create',
+        <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
+        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}');
+        window.location.reload();" style="cursor:pointer" src="delete_icon.png">
+        <img title="{send}" onclick="javascript:callViewAndReload('{sessions_url}', '@@external-esign-session-create',
         {{'session_id': '{session_id}'}});" style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
         """.format(
             delete=translate(_("Delete session"), context=self.request),
-            portal_url=portal_url,
+            sessions_url=sessions_url,
             session_id=session_id,
             send=translate(_("Create external session"), context=self.request),
         )

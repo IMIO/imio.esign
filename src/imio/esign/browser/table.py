@@ -120,6 +120,8 @@ class ActionsColumn(Column):
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
         sessions_url = self.table.view.get_sessions_url()
+        if not sessions_url.endswith("/"):
+            sessions_url += "/"
         admin_buttons = u"""
         <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
         msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}');

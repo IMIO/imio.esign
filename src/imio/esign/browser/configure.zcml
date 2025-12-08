@@ -33,7 +33,7 @@
 
     <browser:page
             name="esign-session-files"
-            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            for="imio.esign.interfaces.IImioSessionsManagementContext"
             class=".views.SessionFilesView"
             permission="zope2.View"
             template="templates/session_files.pt"

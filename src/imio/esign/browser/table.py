@@ -92,19 +92,19 @@ class FilesColumn(Column):
             try:
                 base_url = self.context.absolute_url()
             except Exception:
-                base_url = ""
+                base_url = api.portal.get().absolute_url()
 
         html = (
             u'<div id="session-files" class="collapsible" '
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
-            u"load_view='{3}/@@esign-session-files?session_id={0}', "
+            u"load_view='@@esign-session-files?session_id={0}', "
             u"base_url='{1}');\"> {2}</div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
             u"</div></div>"
-        ).format(session_id, base_url, details_msg, api.portal.get().absolute_url())
+        ).format(session_id, base_url, details_msg)
 
         return html
 

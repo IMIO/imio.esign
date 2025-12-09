@@ -83,5 +83,6 @@ setup(
     target = plone
     [console_scripts]
     update_locale = imio.esign.locales.update:update_locale
+    cosi_esign_push_acroform = imio.esign.scripts.cosi_esign_push_acroform:main
     """,
 )

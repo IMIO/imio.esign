@@ -33,7 +33,7 @@ def add_files_to_session(
     :param seal: seal or not
     :param acroform: boolean to indicate if signer tag is in files
     :param session_id: session number
-    :param title: optional string
+    :param title: optional string for session title. If it contains {sign_id} or {session_id} it will be replaced
     :param discriminators: optional list of string discriminators to use for session discrimination
     :param watchers: optional list of external esign session watchers emails (used only when creating a new session)
     :return: session_id, session
@@ -75,6 +75,11 @@ def add_files_to_session(
     if session["client_id"] is None:
         # FIXME what if scan_id is None ?
         session["client_id"] = session["files"][0]["scan_id"][0:7]
+        session["sign_id"] = "{}{:05d}".format(session["client_id"], session_id)
+        if u"{sign_id}" in session["title"]:
+            session["title"] = session["title"].replace(u"{sign_id}", session["sign_id"])
+        if u"{session_id}" in session["title"]:
+            session["title"] = session["title"].replace(u"{session_id}", str(session_id))
     session["last_update"] = datetime.now()
     return session_id, session
 
@@ -95,17 +100,14 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         return "_session_not_found_"
     files_uids = [fdic["uid"] for fdic in session["files"]]
     files = get_files_from_uids(files_uids)
-    app_session_id = "{}{:05d}".format(session["client_id"], session_id)
     portal = api.portal.get()  # noqa F841
     if not session["title"]:
         session["title"] = _("Session ${id}", mapping={"id": session_id})
-    if not session["sign_id"]:
-        session["sign_id"] = app_session_id
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
             "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, z in files],
-            "imioAppSessionId": app_session_id,
+            "imioAppSessionId": session["sign_id"],
             "sessionName": session["title"],
         }
     }

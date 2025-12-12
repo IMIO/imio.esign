@@ -38,6 +38,13 @@ def validate_vat_number(va_nb):
 
 class IImioEsignSettings(Interface):
 
+    vat_number = schema.TextLine(
+        title=_("VAT number"),
+        description=_("VAT number used for esign billing (BE0123456789)."),
+        constraint=validate_vat_number,
+        required=True,
+    )
+
     seal_code = schema.TextLine(
         title=_("Seal code"),
         description=_("Seal code given by eidas provider."),
@@ -50,11 +57,10 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
-    vat_number = schema.TextLine(
-        title=_("VAT number"),
-        description=_("VAT number used for esign billing (BE0123456789)."),
-        constraint=validate_vat_number,
-        required=True,
+    sign_code = schema.TextLine(
+        title=_("Sign code"),
+        description=_("Sign code used to specify sign method. Keep empty to use default method."),
+        required=False,
     )
 
 

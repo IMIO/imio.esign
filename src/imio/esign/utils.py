@@ -123,6 +123,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "users": list(signers),
             "acroform": session["acroform"],
         }
+        sign_code = api.portal.get_registry_record("imio.esign.sign_code", default="")
+        if sign_code:
+            data_payload["signData"]["signCode"] = sign_code
         if session.get("watchers", ()):
             data_payload["signData"]["watchers"] = list(session["watchers"])
 

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-11-17 09:58+0000\n"
+"POT-Creation-Date: 2025-12-12 08:59+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/table.py:114
+#: ../browser/table.py:112
 msgid "Actions"
 msgstr "Actions"
 
@@ -24,11 +24,11 @@ msgstr "Actions"
 msgid "Add to esign session"
 msgstr "Ajouter à la session"
 
-#: ../browser/table.py:130
+#: ../browser/table.py:132
 msgid "Create external session"
 msgstr "Créer une session externe de signature"
 
-#: ../browser/table.py:127
+#: ../browser/table.py:129
 msgid "Delete session"
 msgstr "Effacer la session"
 
@@ -40,11 +40,11 @@ msgstr "Élément retiré de la session !"
 msgid "Email"
 msgstr "Email"
 
-#: ../browser/settings.py:20
+#: ../browser/settings.py:56
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
-#: ../browser/views.py:118
+#: ../browser/views.py:145
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
@@ -52,11 +52,11 @@ msgstr "Erreur lors de l'envoi de la session : ${error}"
 msgid "External session"
 msgstr "Session de signature"
 
-#: ../browser/views.py:115
+#: ../browser/views.py:142
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
-#: ../browser/table.py:80
+#: ../browser/table.py:78
 msgid "Files"
 msgstr "Fichiers"
 
@@ -64,11 +64,11 @@ msgstr "Fichiers"
 msgid "Full name"
 msgstr "Nom"
 
-#: ../browser/table.py:12
+#: ../browser/table.py:13
 msgid "ID"
 msgstr "Identifiant"
 
-#: ../browser/settings.py:28
+#: ../browser/settings.py:70
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
@@ -77,7 +77,11 @@ msgstr "Configuration du module de signature externe"
 msgid "Installs the imio.esign add-on."
 msgstr "Installs the imio.esign add-on."
 
-#: ../browser/table.py:59
+#: ../browser/settings.py:34
+msgid "Invalid VAT number: checksum verification failed"
+msgstr "Numéro de TVA invalide : échec de la vérification de la somme de contrôle"
+
+#: ../browser/table.py:57
 #: ../browser/templates/faceted_session_info.pt:30
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -90,7 +94,11 @@ msgstr "Liste des sessions de signatures électroniques"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/views.py:80
+#: ../browser/views.py:137
+msgid "No seal code defined in configuration ! Session ${id} not sent."
+msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
+
+#: ../browser/views.py:101
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
@@ -102,7 +110,7 @@ msgstr "Fonction occupée"
 msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
 msgstr "Problème avec les signataires certifiées, assurez-vous qu'une fonction occupée est sélectionnée pour chaque signataire (vérifiez \"${name}/${function}\") !"
 
-#: ../browser/table.py:88
+#: ../browser/table.py:86
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
@@ -110,15 +118,15 @@ msgstr "Aperçu rapide"
 msgid "Remove from esign session"
 msgstr "Retirer de la session"
 
-#: ../browser/settings.py:13
+#: ../browser/settings.py:49
 msgid "Seal code"
 msgstr "Code du sceau"
 
-#: ../browser/settings.py:14
+#: ../browser/settings.py:50
 msgid "Seal code given by eidas provider."
 msgstr "Code fourni par le fournisseur eidas."
 
-#: ../browser/settings.py:19
+#: ../browser/settings.py:55
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
@@ -126,7 +134,7 @@ msgstr "Email du compte avec l'image du sceau"
 msgid "Sealed"
 msgstr "Sceau"
 
-#: ../utils.py:102
+#: ../utils.py:105
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -134,7 +142,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/views.py:87
+#: ../browser/views.py:108
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -142,7 +150,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information : ${title}"
 msgstr "Session de signature : ${title}"
 
-#: ../browser/views.py:89
+#: ../browser/views.py:110
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -150,15 +158,23 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:110
+#: ../browser/views.py:131
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
+
+#: ../browser/settings.py:61
+msgid "Sign code"
+msgstr "Méthode de signature"
+
+#: ../browser/settings.py:62
+msgid "Sign code used to specify sign method. Keep empty to use default method."
+msgstr "Méthode de signature utilisée pour spécifier la méthode de signature. Laisser vide pour utiliser la méthode par défaut."
 
 #: ../browser/views.py:139
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/table.py:68
+#: ../browser/table.py:66
 #: ../browser/templates/faceted_session_info.pt:59
 msgid "Signers"
 msgstr "Signataires"
@@ -188,7 +204,27 @@ msgstr "Titre"
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
 
-#: ../browser/table.py:132
+#: ../browser/settings.py:42
+msgid "VAT number"
+msgstr "Numéro de TVA"
+
+#: ../browser/settings.py:22
+msgid "VAT number must be 12 characters (BE + 10 digits)"
+msgstr "Le numéro de TVA doit contenir 12 caractères (BE + 10 chiffres, sans autres caractères)"
+
+#: ../browser/settings.py:26
+msgid "VAT number must contain 10 digits after 'BE'"
+msgstr "Le numéro de TVA doit contenir uniquement 10 chiffres après 'BE'"
+
+#: ../browser/settings.py:19
+msgid "VAT number must start with 'BE'"
+msgstr "Le numéro de TVA doit commencer par 'BE'"
+
+#: ../browser/settings.py:43
+msgid "VAT number used for esign billing (BE0123456789)."
+msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
+
+#: ../browser/table.py:139
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 

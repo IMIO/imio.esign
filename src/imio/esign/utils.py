@@ -112,10 +112,8 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         }
     }
     # not mandatory now
-    # vat_number = api.portal.get_registry_record("imio.esign.vat_number", default="BE0000000097")
-    vat_number = api.portal.get_registry_record("imio.esign.vat_number", default="")
-    if vat_number:
-        data_payload["commonData"]["vatNumber"] = vat_number
+    vat_number = api.portal.get_registry_record("imio.esign.vat_number", default="BE0000000097")
+    data_payload["commonData"]["vatNumber"] = vat_number
 
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:

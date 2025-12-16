@@ -6,6 +6,9 @@ This script allows to:
 - check for existing users in the Luxtrust directory
 - create a new user if it does not exist
 - upload an acroform image for the user
+
+Created from https://gitlab.imio.be/imio-api/apims-esign/-/blob/se-221-create_users_update_watermark-jean/notebooks/
+COSI_eSign_put_acroform.ipynb
 """
 from imio.pyutils.system import post_request
 from imio.pyutils.system import stop

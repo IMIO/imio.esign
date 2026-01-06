@@ -106,7 +106,9 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
-            "documentData": [{"filename": filename, "uniqueCode": unique_code} for unique_code, filename, z in files],
+            # "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, uid)}
+            "documentData": [{"filename": filename, "uniqueCode": unique_code}
+                             for unique_code, filename, z, uid in files],
             "imioAppSessionId": session["sign_id"],
             "sessionName": session["title"],
         }
@@ -141,7 +143,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "sealCode": seal_code,
         }
 
-    files_payload = [("files", (filename, file_content)) for z, filename, file_content in files]
+    files_payload = [("files", (filename, file_content)) for z, filename, file_content, uid in files]
 
     # Headers avec autorisation
     headers = {"accept": "application/json"}
@@ -268,7 +270,7 @@ def get_files_from_uids(uids):
             filename = annex.file.filename or "no_filename"
             file_content = annex.file.data
 
-        files_data.append((scan_id, filename, file_content))
+        files_data.append((scan_id, filename, file_content, annex.UID()))
 
     return files_data
 

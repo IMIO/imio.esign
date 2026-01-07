@@ -99,4 +99,12 @@
             i18n:domain="imio.esign"
     />
 
+    <browser:page
+            name="download-file"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".views.DownloadFileView"
+            permission="zope2.View"
+            i18n:domain="imio.esign"
+    />
+
 </configure>

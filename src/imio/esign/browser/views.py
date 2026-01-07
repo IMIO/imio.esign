@@ -17,6 +17,8 @@ from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.interface import implementer
+from zope.publisher.interfaces import IPublishTraverse
 from zope.security.interfaces import Unauthorized
 
 import csv
@@ -219,6 +221,67 @@ class ItemSessionInfoViewlet(ViewletBase):
     def ext_session_link(self, session):
         return external_session_link(session)
 # TODO clean up css
+
+
+@implementer(IPublishTraverse)
+class DownloadFileView(BrowserView):
+    """View to download a file based on an identifier passed in the URL path."""
+
+    def __init__(self, context, request):
+        super(DownloadFileView, self).__init__(context, request)
+        self.file_id = None
+
+    def publishTraverse(self, request, name):
+        """Capture the file identifier from the URL path.
+
+        This method is called by Zope's traversal mechanism when accessing
+        /download-file/1234-567. It captures '1234-567'.
+        """
+        if self.file_id is None:
+            self.file_id = name
+        else:
+            pass
+        return self
+
+    def __call__(self):
+        return self._handle_file_download(self.file_id)
+
+    def _handle_file_download(self, file_id):
+        """Handle the file download logic.
+
+        :param file_id: The file identifier extracted from the URL
+        :return: File content or HTML response
+        """
+        response = self.request.RESPONSE
+        response.setHeader('Content-Type', 'text/html; charset=utf-8')
+
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <title>Téléchargement de fichier</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 40px; }}
+                .info-box {{
+                    background-color: #e3f2fd;
+                    border: 1px solid #2196f3;
+                    padding: 20px;
+                    border-radius: 5px;
+                }}
+                h1 {{ color: #1976d2; }}
+            </style>
+        </head>
+        <body>
+            <div class='info-box'>
+                <h1>📄 Téléchargement de fichier</h1>
+                <p><strong>Vous avez demandé le document :</strong> {}</p>
+            </div>
+        </body>
+        </html>
+        """.format(safe_encode(file_id) if file_id else "Aucun identifiant fourni")
+
+        return html
 
 
 class SigningUsersCsv(BrowserView):

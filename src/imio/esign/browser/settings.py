@@ -45,6 +45,12 @@ class IImioEsignSettings(Interface):
         required=True,
     )
 
+    file_url = schema.URI(
+        title=_("File URL download domain"),
+        description=_("URL domain where the file can be donwloaded."),
+        required=False,
+    )
+
     seal_code = schema.TextLine(
         title=_("Seal code"),
         description=_("Seal code given by eidas provider."),

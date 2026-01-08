@@ -8,6 +8,7 @@ from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
 from imio.pyutils.system import post_request
+from imio.pyutils.utils import shortuid_encode_id
 from os import path
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
@@ -376,3 +377,21 @@ def remove_session(session_id):
 
     del sessions[session_id]
     # logger.info("Session %s removed", session_id)
+
+
+def get_file_uid_url(uid, separator="-", block_size=5, root_url=None):
+    """Get the file download URL for a given file UID.
+
+    :param uid: file UID
+    :param separator: separator used in short UID encoding
+    :param block_size: block size used in short UID encoding
+    :param root_url: root URL. If not provided, the settings value is used
+    :return: file download URL
+    """
+    if not root_url:
+        root_url = api.portal.get_registry_record("imio.esign.file_url", default="")
+
+    if not root_url:
+        raise Exception("No root URL provided for file download url.")
+    short_uid = shortuid_encode_id(uid, separator=separator, block_size=block_size)
+    return "{}/{}".format(root_url.strip('/'), short_uid)

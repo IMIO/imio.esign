@@ -2,10 +2,12 @@
 """utils tests for this package."""
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import get_file_uid_url
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.esign.utils import remove_session
+from imio.pyutils.utils import shortuid_decode_id
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
@@ -292,6 +294,33 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 2)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["sessions"]), 1)
+
+    def test_get_file_uid_url(self):
+        """Test generating file download URL from UID."""
+        uid = "f40682caafc045b4b81973bd82ea9ab6"
+        # Test error when no root_url is configured
+        with self.assertRaises(Exception) as cm:
+            get_file_uid_url(uid)
+        self.assertIn("No root URL provided", str(cm.exception))
+
+        api.portal.set_registry_record("imio.esign.file_url", "https://downloads.files.com")
+
+        result = get_file_uid_url(uid)
+        self.assertEqual(result, "https://downloads.files.com/Rzgwy-9BVG9-viEts-5GBkn-Rm")
+
+        result = get_file_uid_url(uid, separator="_", block_size=3)
+        self.assertEqual(result, "https://downloads.files.com/Rzg_wy9_BVG_9vi_Ets_5GB_knR_m")
+
+        custom_url = "https://custom.domain.org/"
+        result = get_file_uid_url(uid, root_url=custom_url)
+        self.assertEqual(result, "https://custom.domain.org/Rzgwy-9BVG9-viEts-5GBkn-Rm")
+
+        # Test with another UID to verify encoding works
+        uid2 = self.uids[0]
+        result2 = get_file_uid_url(uid2)
+        self.assertTrue(result2.startswith("https://downloads.files.com/"))
+        suid = result2[len("https://downloads.files.com/") :]
+        self.assertEqual(shortuid_decode_id(suid, separator="-"), uid2)  # correctly decoded
 
 
 # example of annotation content

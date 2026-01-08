@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2025-12-12 08:59+0000\n"
+"POT-Creation-Date: 2026-01-08 14:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,11 +39,11 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/settings.py:56
+#: ../browser/settings.py:62
 msgid "Email of the eidas provider account containing the seal image."
 msgstr ""
 
-#: ../browser/views.py:145
+#: ../browser/views.py:147
 msgid "Error while sending session: ${error}"
 msgstr ""
 
@@ -51,8 +51,12 @@ msgstr ""
 msgid "External session"
 msgstr ""
 
-#: ../browser/views.py:142
+#: ../browser/views.py:144
 msgid "External session sent successfully!"
+msgstr ""
+
+#: ../browser/settings.py:49
+msgid "File URL download domain"
 msgstr ""
 
 #: ../browser/table.py:78
@@ -67,7 +71,7 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
-#: ../browser/settings.py:70
+#: ../browser/settings.py:76
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr ""
@@ -93,11 +97,11 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/views.py:137
+#: ../browser/views.py:139
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:101
+#: ../browser/views.py:103
 msgid "No session ID provided!"
 msgstr ""
 
@@ -117,15 +121,15 @@ msgstr ""
 msgid "Remove from esign session"
 msgstr ""
 
-#: ../browser/settings.py:49
+#: ../browser/settings.py:55
 msgid "Seal code"
 msgstr ""
 
-#: ../browser/settings.py:50
+#: ../browser/settings.py:56
 msgid "Seal code given by eidas provider."
 msgstr ""
 
-#: ../browser/settings.py:55
+#: ../browser/settings.py:61
 msgid "Seal email"
 msgstr ""
 
@@ -133,7 +137,7 @@ msgstr ""
 msgid "Sealed"
 msgstr ""
 
-#: ../utils.py:105
+#: ../utils.py:106
 msgid "Session ${id}"
 msgstr ""
 
@@ -141,7 +145,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/views.py:108
+#: ../browser/views.py:110
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -149,7 +153,7 @@ msgstr ""
 msgid "Session information : ${title}"
 msgstr ""
 
-#: ../browser/views.py:110
+#: ../browser/views.py:112
 msgid "Session not found!"
 msgstr ""
 
@@ -157,15 +161,15 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:131
+#: ../browser/views.py:133
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
-#: ../browser/settings.py:61
+#: ../browser/settings.py:67
 msgid "Sign code"
 msgstr ""
 
-#: ../browser/settings.py:62
+#: ../browser/settings.py:68
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr ""
 
@@ -197,6 +201,10 @@ msgstr ""
 
 #: ../browser/table.py:45
 msgid "Title"
+msgstr ""
+
+#: ../browser/settings.py:50
+msgid "URL domain where the file can be donwloaded."
 msgstr ""
 
 #: ../configure.zcml:32

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2025-12-12 08:59+0000\n"
+"POT-Creation-Date: 2026-01-08 14:41+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -40,11 +40,11 @@ msgstr "Élément retiré de la session !"
 msgid "Email"
 msgstr "Email"
 
-#: ../browser/settings.py:56
+#: ../browser/settings.py:62
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
-#: ../browser/views.py:145
+#: ../browser/views.py:147
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
@@ -52,9 +52,13 @@ msgstr "Erreur lors de l'envoi de la session : ${error}"
 msgid "External session"
 msgstr "Session de signature"
 
-#: ../browser/views.py:142
+#: ../browser/views.py:144
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
+
+#: ../browser/settings.py:49
+msgid "File URL download domain"
+msgstr "Nom de domaine de téléchargement"
 
 #: ../browser/table.py:78
 msgid "Files"
@@ -68,7 +72,7 @@ msgstr "Nom"
 msgid "ID"
 msgstr "Identifiant"
 
-#: ../browser/settings.py:70
+#: ../browser/settings.py:76
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
@@ -94,11 +98,11 @@ msgstr "Liste des sessions de signatures électroniques"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/views.py:137
+#: ../browser/views.py:139
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:101
+#: ../browser/views.py:103
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
@@ -118,15 +122,15 @@ msgstr "Aperçu rapide"
 msgid "Remove from esign session"
 msgstr "Retirer de la session"
 
-#: ../browser/settings.py:49
+#: ../browser/settings.py:55
 msgid "Seal code"
 msgstr "Code du sceau"
 
-#: ../browser/settings.py:50
+#: ../browser/settings.py:56
 msgid "Seal code given by eidas provider."
 msgstr "Code fourni par le fournisseur eidas."
 
-#: ../browser/settings.py:55
+#: ../browser/settings.py:61
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
@@ -134,7 +138,7 @@ msgstr "Email du compte avec l'image du sceau"
 msgid "Sealed"
 msgstr "Sceau"
 
-#: ../utils.py:105
+#: ../utils.py:106
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -142,7 +146,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/views.py:108
+#: ../browser/views.py:110
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -150,7 +154,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information : ${title}"
 msgstr "Session de signature : ${title}"
 
-#: ../browser/views.py:110
+#: ../browser/views.py:112
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -158,15 +162,15 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:131
+#: ../browser/views.py:133
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
-#: ../browser/settings.py:61
+#: ../browser/settings.py:67
 msgid "Sign code"
 msgstr "Méthode de signature"
 
-#: ../browser/settings.py:62
+#: ../browser/settings.py:68
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr "Méthode de signature utilisée pour spécifier la méthode de signature. Laisser vide pour utiliser la méthode par défaut."
 
@@ -199,6 +203,10 @@ msgstr "Cela retirera cet élément ou les sous-éléments configurés de la ses
 #: ../browser/table.py:45
 msgid "Title"
 msgstr "Titre"
+
+#: ../browser/settings.py:50
+msgid "URL domain where the file can be donwloaded."
+msgstr "URL du domaine où un fichier signé peut être téléchargé. (https://xxx)"
 
 #: ../configure.zcml:32
 msgid "Uninstalls the imio.esign add-on."

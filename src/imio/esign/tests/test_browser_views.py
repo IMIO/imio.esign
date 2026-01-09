@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Browser views tests for this package."""
+from datetime import datetime
+from datetime import timedelta
 from imio.esign.browser.views import DownloadFileView
 from imio.esign.testing import IMIO_ESIGN_FUNCTIONAL_TESTING
 from imio.pyutils.utils import shortuid_encode_id
@@ -13,6 +15,7 @@ from plone.testing import z2
 
 import collective.iconifiedcategory
 import os
+import time
 import transaction
 import unittest
 
@@ -119,8 +122,20 @@ class TestDownloadFileView(unittest.TestCase):
         result = view()
         self.assertIn("The corresponding file content cannot be retrieved", result)
 
+        # valid id but file too old
+        view.file_id = self.encoded_uid
+        view.download_time_delta = timedelta(days=1)
+        self.test_annex.setModificationDate(datetime.now() - timedelta(days=3))
+        result = view()
+        self.assertIn("The download period for this file has expired", result)
+        view.download_time_delta = None  # Disable date verification
+        result = view()
+        self.assertNotIn("The download period for this file has expired", result)
+        self.assertIsInstance(result, str)
+
         # Download file with valid UID
         view.file_id = self.encoded_uid
+        view.download_time_delta = timedelta(days=7)
         result = view()
         # Check that we got binary data (the file content)
         self.assertIsInstance(result, str)  # In Python 2, binary data is str

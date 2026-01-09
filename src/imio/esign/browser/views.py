@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from datetime import timedelta
 from imio.esign import _
 from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
@@ -232,6 +234,7 @@ class DownloadFileView(BrowserView):
 
     shortuid_separator = "-"
     named_blob_file_attribute = "file"
+    download_time_delta = timedelta(days=120)
 
     def __init__(self, context, request):
         super(DownloadFileView, self).__init__(context, request)
@@ -250,7 +253,7 @@ class DownloadFileView(BrowserView):
         return self
 
     def __call__(self):
-        """Handle the file download request and return an html response."""
+        """Handle the file download request and return a html response."""
         if self.file_id is None:
             message = translate(_("A file identifier must be passed in the url !"), context=self.request)
             return self.html_message(message)
@@ -264,7 +267,20 @@ class DownloadFileView(BrowserView):
                                   mapping={"uid": safe_encode(self.file_id)}),
                                 context=self.request)
             return self.html_message(message)
-        # TODO Added a date verification
+        # Verify date - check if file is not too old
+        if self.download_time_delta is not None:
+            modification_date = file_obj.modified()
+            if hasattr(modification_date, 'asdatetime'):
+                modification_date = modification_date.asdatetime()
+            modification_date = modification_date.date()
+            if datetime.now().date() - modification_date > self.download_time_delta:
+                message = translate(
+                    _("The download period for this file has expired (was ${valid_date}) !",
+                      mapping={"valid_date": datetime.strftime(modification_date + self.download_time_delta,
+                                                               "%Y-%m-%d")}),
+                    context=self.request)
+                return self.html_message(message)
+        # Get file content
         nbf = getattr(file_obj, self.named_blob_file_attribute, None)
         if nbf is None:
             message = translate(_("The corresponding file content cannot be retrieved (${uid}) !",

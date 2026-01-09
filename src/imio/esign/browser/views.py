@@ -12,11 +12,13 @@ from imio.helpers.content import uuidToObject
 from imio.helpers.security import separate_fullname
 from imio.prettylink.interfaces import IPrettyLink
 from imio.pyutils.utils import safe_encode
+from imio.pyutils.utils import shortuid_decode_id
 from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.i18n import translate
 from zope.interface import implementer
 from zope.publisher.interfaces import IPublishTraverse
 from zope.security.interfaces import Unauthorized
@@ -227,6 +229,9 @@ class ItemSessionInfoViewlet(ViewletBase):
 class DownloadFileView(BrowserView):
     """View to download a file based on an identifier passed in the URL path."""
 
+    shortuid_separator = "-"
+    named_blob_file_attribute = "file"
+
     def __init__(self, context, request):
         super(DownloadFileView, self).__init__(context, request)
         self.file_id = None
@@ -244,42 +249,78 @@ class DownloadFileView(BrowserView):
         return self
 
     def __call__(self):
-        return self._handle_file_download(self.file_id)
+        """Handle the file download request and return an html response."""
+        if self.file_id is None:
+            message = translate(_("A file identifier must be passed in the url !"), context=self.request)
+            return self.html_message(message)
+        decoded_uid = shortuid_decode_id(self.file_id, self.shortuid_separator)
+        if decoded_uid is None:
+            message = translate(_("This file identifier is not correct !"), context=self.request)
+            return self.html_message(message)
+        file_obj = uuidToObject(decoded_uid, unrestricted=True)
+        if file_obj is None:
+            message = translate(_("The corresponding file identifier cannot be retrieved (${uid}) !",
+                                  mapping={"uid": safe_encode(self.file_id)}),
+                                context=self.request)
+            return self.html_message(message)
+        # TODO Added a date verification
+        nbf = getattr(file_obj, self.named_blob_file_attribute, None)
+        if nbf is None:
+            message = translate(_("The corresponding file content cannot be retrieved (${uid}) !",
+                                  mapping={"uid": safe_encode(decoded_uid)}),
+                                context=self.request)
+            return self.html_message(message)
+        # Serve the file
+        response = self.request.RESPONSE
+        filename = safe_encode(nbf.filename)
+        response.setHeader("Content-Type", nbf.contentType)
+        response.setHeader("Content-Disposition", 'inline; filename="{}"'.format(filename))
+        response.setHeader("Content-Length", str(len(nbf.data)))
+        return nbf.data
 
-    def _handle_file_download(self, file_id):
-        """Handle the file download logic.
+    def html_message(self, message):
+        """Returns a html message
 
-        :param file_id: The file identifier extracted from the URL
+        :param message: translated message to display
         :return: File content or HTML response
         """
         response = self.request.RESPONSE
         response.setHeader('Content-Type', 'text/html; charset=utf-8')
 
-        html = """
+        # Translate HTML content
+        page_title = translate(_("Signed file download"), context=self.request)
+        heading = translate(_("Signed file download"), context=self.request)
+
+        html = u"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset='utf-8'>
-            <title>Téléchargement de fichier</title>
+            <title>{title}</title>
             <style>
                 body {{ font-family: Arial, sans-serif; margin: 40px; }}
                 .info-box {{
-                    background-color: #e3f2fd;
-                    border: 1px solid #2196f3;
+                    background-color: #fff3cd;
+                    border: 2px solid #ff9800;
                     padding: 20px;
                     border-radius: 5px;
                 }}
-                h1 {{ color: #1976d2; }}
+                h1 {{ color: #e65100; }}
+                p {{ color: #663c00; }}
             </style>
         </head>
         <body>
             <div class='info-box'>
-                <h1>📄 Téléchargement de fichier</h1>
-                <p><strong>Vous avez demandé le document :</strong> {}</p>
+                <h1>⚠️ {heading}</h1>
+                <p>{message}</p>
             </div>
         </body>
         </html>
-        """.format(safe_encode(file_id) if file_id else "Aucun identifiant fourni")
+        """.format(
+            title=page_title,
+            heading=heading,
+            message=message
+        )
 
         return html
 

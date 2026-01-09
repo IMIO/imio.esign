@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-01-09 08:37+0000\n"
+"POT-Creation-Date: 2026-01-09 12:23+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../browser/views.py:254
+#: ../browser/views.py:258
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
@@ -47,7 +47,7 @@ msgstr ""
 msgid "Email of the eidas provider account containing the seal image."
 msgstr ""
 
-#: ../browser/views.py:149
+#: ../browser/views.py:152
 msgid "Error while sending session: ${error}"
 msgstr ""
 
@@ -55,7 +55,7 @@ msgstr ""
 msgid "External session"
 msgstr ""
 
-#: ../browser/views.py:146
+#: ../browser/views.py:149
 msgid "External session sent successfully!"
 msgstr ""
 
@@ -101,11 +101,11 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/views.py:141
+#: ../browser/views.py:144
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:105
+#: ../browser/views.py:108
 msgid "No session ID provided!"
 msgstr ""
 
@@ -149,7 +149,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/views.py:112
+#: ../browser/views.py:115
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Session information : ${title}"
 msgstr ""
 
-#: ../browser/views.py:114
+#: ../browser/views.py:117
 msgid "Session not found!"
 msgstr ""
 
@@ -165,7 +165,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:135
+#: ../browser/views.py:138
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -181,7 +181,7 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:289
+#: ../browser/views.py:310
 msgid "Signed file download"
 msgstr ""
 
@@ -199,15 +199,19 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:268
+#: ../browser/views.py:286
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:262
+#: ../browser/views.py:266
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:258
+#: ../browser/views.py:278
+msgid "The download period for this file has expired (was ${valid_date}) !"
+msgstr ""
+
+#: ../browser/views.py:262
 msgid "This file identifier is not correct !"
 msgstr ""
 

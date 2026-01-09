@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-09 08:37+0000\n"
+"POT-Creation-Date: 2026-01-09 12:23+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/views.py:254
+#: ../browser/views.py:258
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
@@ -48,7 +48,7 @@ msgstr "Email"
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
-#: ../browser/views.py:149
+#: ../browser/views.py:152
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
@@ -56,7 +56,7 @@ msgstr "Erreur lors de l'envoi de la session : ${error}"
 msgid "External session"
 msgstr "Session de signature"
 
-#: ../browser/views.py:146
+#: ../browser/views.py:149
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
@@ -102,11 +102,11 @@ msgstr "Liste des sessions de signatures électroniques"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/views.py:141
+#: ../browser/views.py:144
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:105
+#: ../browser/views.py:108
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
@@ -150,7 +150,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/views.py:112
+#: ../browser/views.py:115
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -158,7 +158,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information : ${title}"
 msgstr "Session de signature : ${title}"
 
-#: ../browser/views.py:114
+#: ../browser/views.py:117
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -166,7 +166,7 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:135
+#: ../browser/views.py:138
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
@@ -182,7 +182,7 @@ msgstr "Méthode de signature utilisée pour spécifier la méthode de signature
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/views.py:289
+#: ../browser/views.py:310
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
@@ -200,15 +200,19 @@ msgstr "État"
 msgid "Status"
 msgstr "Statut"
 
-#: ../browser/views.py:268
+#: ../browser/views.py:286
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr "Le contenu du fichier correspondant ne peut pas être récupéré (${uid}) !"
 
-#: ../browser/views.py:262
+#: ../browser/views.py:266
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 
-#: ../browser/views.py:258
+#: ../browser/views.py:278
+msgid "The download period for this file has expired (was ${valid_date}) !"
+msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
+
+#: ../browser/views.py:262
 msgid "This file identifier is not correct !"
 msgstr "Le format de cet identifiant de fichier n'est pas correct !"
 

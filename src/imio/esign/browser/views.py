@@ -24,6 +24,7 @@ from zope.publisher.interfaces import IPublishTraverse
 from zope.security.interfaces import Unauthorized
 
 import csv
+import os
 
 
 try:
@@ -273,6 +274,8 @@ class DownloadFileView(BrowserView):
         # Serve the file
         response = self.request.RESPONSE
         filename = safe_encode(nbf.filename)
+        if "__" in filename:
+            filename = filename.split("__")[0] + os.path.splitext(filename)[1]
         response.setHeader("Content-Type", nbf.contentType)
         response.setHeader("Content-Disposition", 'inline; filename="{}"'.format(filename))
         response.setHeader("Content-Length", str(len(nbf.data)))

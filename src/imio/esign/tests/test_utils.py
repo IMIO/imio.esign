@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from datetime import timedelta
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_file_uid_url
+from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
@@ -321,6 +323,12 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(result2.startswith("https://downloads.files.com/"))
         suid = result2[len("https://downloads.files.com/") :]
         self.assertEqual(shortuid_decode_id(suid, separator="-"), uid2)  # correctly decoded
+
+    def test_get_max_download_date(self):
+        annex = self.folders[0]
+        mod_date = annex.modified().asdatetime().date()
+        self.assertEqual(get_max_download_date(annex), mod_date + timedelta(days=120))
+        self.assertEqual(get_max_download_date(annex, timedelta(days=0)), mod_date)
 
 
 # example of annotation content

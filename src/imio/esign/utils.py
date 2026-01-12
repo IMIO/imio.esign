@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
@@ -395,3 +396,14 @@ def get_file_uid_url(uid, separator="-", block_size=5, root_url=None):
         raise Exception("No root URL provided for file download url.")
     short_uid = shortuid_encode_id(uid, separator=separator, block_size=block_size)
     return "{}/{}".format(root_url.strip('/'), short_uid)
+
+
+def get_max_download_date(obj, delta=timedelta(days=120)):
+    """Get the maximum download date for e-sign files. Is takes the modification date and adds delta.
+
+    :param obj: content object
+    :param delta: timedelta to add to modification date
+    :return: maximum download date
+    """
+    mod_date = obj.modified().asdatetime().date()
+    return mod_date + delta

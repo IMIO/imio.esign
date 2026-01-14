@@ -55,7 +55,7 @@ setup(
         "collective.compoundcriterion",
         "collective.eeafaceted.z3ctable",
         "eea.facetednavigation",
-        "imio.helpers",
+        "imio.helpers>1.3.8",
         "imio.prettylink",
         "imio.pyutils",
         # 'z3c.jbot',

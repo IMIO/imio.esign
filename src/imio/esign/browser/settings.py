@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
 from imio.esign import _
+from plone import api
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
+from plone.registry.interfaces import IRecordModifiedEvent
 from plone.z3cform import layout
 from zope import schema
 from zope.interface import Interface
@@ -37,6 +40,12 @@ def validate_vat_number(va_nb):
 
 
 class IImioEsignSettings(Interface):
+
+    enabled = schema.Bool(
+        title=_("Enabled?"),
+        description=_("Is the eSign service enabled?"),
+        default=True,
+    )
 
     vat_number = schema.TextLine(
         title=_("VAT number"),
@@ -79,3 +88,18 @@ class ImioEsignSettings(RegistryEditForm):
 ImioEsignSettingsView = layout.wrap_form(
     ImioEsignSettings, ControlPanelFormWrapper
 )
+
+
+def detect_settings_changed(event):
+    """
+        Manage our record changes
+    """
+    if IRecordModifiedEvent.providedBy(event) and event.record.interface == IImioEsignSettings:
+        new_value = event.newValue
+        if event.record.fieldName == 'enabled':
+            portal = api.portal.get()
+            # hide "sessions" link from navigation depending on eSign enable or not
+            if new_value is True:
+                portal.get('sessions').setExcludeFromNav(False)
+            else:
+                portal.get('sessions').setExcludeFromNav(True)

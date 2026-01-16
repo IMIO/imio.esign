@@ -44,6 +44,10 @@
   <adapter for="*"
     factory=".adapters.FilesBelongingToAGivenSession"
     provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"
-    name="files-belonging-to-a-given-session"/>
+    name="files-belonging-to-a-given-session" />
+
+  <subscriber
+      for="plone.registry.interfaces.IRecordModifiedEvent"
+      handler=".browser.settings.detect_settings_changed" />
 
 </configure>

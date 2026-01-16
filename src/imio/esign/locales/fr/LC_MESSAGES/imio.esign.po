@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-09 12:23+0000\n"
+"POT-Creation-Date: 2026-01-16 12:42+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,7 +16,7 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/views.py:258
+#: ../browser/views.py:259
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
@@ -44,11 +44,15 @@ msgstr "Élément retiré de la session !"
 msgid "Email"
 msgstr "Email"
 
-#: ../browser/settings.py:62
+#: ../browser/settings.py:71
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
-#: ../browser/views.py:152
+#: ../browser/settings.py:45
+msgid "Enabled?"
+msgstr "Activé?"
+
+#: ../browser/views.py:153
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
@@ -56,11 +60,11 @@ msgstr "Erreur lors de l'envoi de la session : ${error}"
 msgid "External session"
 msgstr "Session de signature"
 
-#: ../browser/views.py:149
+#: ../browser/views.py:150
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
-#: ../browser/settings.py:49
+#: ../browser/settings.py:58
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
@@ -76,7 +80,7 @@ msgstr "Nom"
 msgid "ID"
 msgstr "Identifiant"
 
-#: ../browser/settings.py:76
+#: ../browser/settings.py:85
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
@@ -85,9 +89,13 @@ msgstr "Configuration du module de signature externe"
 msgid "Installs the imio.esign add-on."
 msgstr "Installs the imio.esign add-on."
 
-#: ../browser/settings.py:34
+#: ../browser/settings.py:37
 msgid "Invalid VAT number: checksum verification failed"
 msgstr "Numéro de TVA invalide : échec de la vérification de la somme de contrôle"
+
+#: ../browser/settings.py:46
+msgid "Is the eSign service enabled?"
+msgstr "Active/désactive la fonctionnalité globalement sur le site."
 
 #: ../browser/table.py:57
 #: ../browser/templates/faceted_session_info.pt:30
@@ -102,11 +110,11 @@ msgstr "Liste des sessions de signatures électroniques"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/views.py:144
+#: ../browser/views.py:145
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:108
+#: ../browser/views.py:109
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
@@ -126,15 +134,15 @@ msgstr "Aperçu rapide"
 msgid "Remove from esign session"
 msgstr "Retirer de la session"
 
-#: ../browser/settings.py:55
+#: ../browser/settings.py:64
 msgid "Seal code"
 msgstr "Code du sceau"
 
-#: ../browser/settings.py:56
+#: ../browser/settings.py:65
 msgid "Seal code given by eidas provider."
 msgstr "Code fourni par le fournisseur eidas."
 
-#: ../browser/settings.py:61
+#: ../browser/settings.py:70
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
@@ -150,7 +158,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/views.py:115
+#: ../browser/views.py:116
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -158,7 +166,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information : ${title}"
 msgstr "Session de signature : ${title}"
 
-#: ../browser/views.py:117
+#: ../browser/views.py:118
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -166,15 +174,15 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:138
+#: ../browser/views.py:139
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
-#: ../browser/settings.py:67
+#: ../browser/settings.py:76
 msgid "Sign code"
 msgstr "Méthode de signature"
 
-#: ../browser/settings.py:68
+#: ../browser/settings.py:77
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr "Méthode de signature utilisée pour spécifier la méthode de signature. Laisser vide pour utiliser la méthode par défaut."
 
@@ -182,7 +190,7 @@ msgstr "Méthode de signature utilisée pour spécifier la méthode de signature
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/views.py:310
+#: ../browser/views.py:311
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
@@ -200,19 +208,19 @@ msgstr "État"
 msgid "Status"
 msgstr "Statut"
 
-#: ../browser/views.py:286
+#: ../browser/views.py:287
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr "Le contenu du fichier correspondant ne peut pas être récupéré (${uid}) !"
 
-#: ../browser/views.py:266
+#: ../browser/views.py:267
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 
-#: ../browser/views.py:278
+#: ../browser/views.py:279
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
 
-#: ../browser/views.py:262
+#: ../browser/views.py:263
 msgid "This file identifier is not correct !"
 msgstr "Le format de cet identifiant de fichier n'est pas correct !"
 
@@ -228,31 +236,31 @@ msgstr "Cela retirera cet élément ou les sous-éléments configurés de la ses
 msgid "Title"
 msgstr "Titre"
 
-#: ../browser/settings.py:50
+#: ../browser/settings.py:59
 msgid "URL domain where the file can be donwloaded."
-msgstr "URL du domaine où un fichier signé peut être téléchargé. (https://xxx)"
+msgstr "URL du domaine où un fichier signé peut être téléchargé (https://xxx)."
 
 #: ../configure.zcml:32
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
 
-#: ../browser/settings.py:42
+#: ../browser/settings.py:51
 msgid "VAT number"
 msgstr "Numéro de TVA"
 
-#: ../browser/settings.py:22
+#: ../browser/settings.py:25
 msgid "VAT number must be 12 characters (BE + 10 digits)"
 msgstr "Le numéro de TVA doit contenir 12 caractères (BE + 10 chiffres, sans autres caractères)"
 
-#: ../browser/settings.py:26
+#: ../browser/settings.py:29
 msgid "VAT number must contain 10 digits after 'BE'"
 msgstr "Le numéro de TVA doit contenir uniquement 10 chiffres après 'BE'"
 
-#: ../browser/settings.py:19
+#: ../browser/settings.py:22
 msgid "VAT number must start with 'BE'"
 msgstr "Le numéro de TVA doit commencer par 'BE'"
 
-#: ../browser/settings.py:43
+#: ../browser/settings.py:52
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 

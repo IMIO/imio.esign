@@ -94,7 +94,8 @@ def detect_settings_changed(event):
     """
         Manage our record changes
     """
-    if IRecordModifiedEvent.providedBy(event) and event.record.interface == IImioEsignSettings:
+    if (IRecordModifiedEvent.providedBy(event) and event.record.interfaceName
+            and event.record.interface == IImioEsignSettings):
         new_value = event.newValue
         if event.record.fieldName == 'enabled':
             portal = api.portal.get()

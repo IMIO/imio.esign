@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from imio.esign import logger
 from imio.esign.utils import get_session_annotation
 from plone.restapi.deserializer import json_body
 from plone.restapi.services import Service
-
-import logging
-
-
-logger = logging.getLogger("imio.esign")
 
 
 class ExternalSessionFeedbackPost(Service):

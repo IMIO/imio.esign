@@ -4,6 +4,7 @@ from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
+from imio.esign import logger
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
@@ -18,10 +19,8 @@ from zope.annotation import IAnnotations
 from zope.component import getAdapter
 
 import json
-import logging
 
 
-logger = logging.getLogger("imio.esign")
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 

@@ -5,6 +5,11 @@ from imio.esign import _tr as _
 from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import logger
+from imio.esign.config import get_registry_file_url
+from imio.esign.config import get_registry_seal_code
+from imio.esign.config import get_registry_seal_email
+from imio.esign.config import get_registry_sign_code
+from imio.esign.config import get_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
@@ -115,7 +120,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         }
     }
     # not mandatory now
-    vat_number = api.portal.get_registry_record("imio.esign.vat_number", default="BE0000000097")
+    vat_number = get_registry_vat_number(default="BE0000000097")
     data_payload["commonData"]["vatNumber"] = vat_number
 
     signers = [fdic["email"] for fdic in session["signers"]]
@@ -124,15 +129,15 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "users": list(signers),
             "acroform": session["acroform"],
         }
-        sign_code = api.portal.get_registry_record("imio.esign.sign_code", default="")
+        sign_code = get_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code
         if session.get("watchers", ()):
             data_payload["signData"]["watchers"] = list(session["watchers"])
 
     if session["seal"]:
-        seal_email = api.portal.get_registry_record("imio.esign.seal_email", default="")
-        seal_code = api.portal.get_registry_record("imio.esign.seal_code", default="")  # PADES_SEAL
+        seal_email = get_registry_seal_email()
+        seal_code = get_registry_seal_code()  # PADES_SEAL
         if not seal_code:
             logger.error("No seal code configured in registry.")
             return "_no_seal_code_"
@@ -389,7 +394,7 @@ def get_file_uid_url(uid, separator="-", block_size=5, root_url=None):
     :return: file download URL
     """
     if not root_url:
-        root_url = api.portal.get_registry_record("imio.esign.file_url", default="")
+        root_url = get_registry_file_url()
 
     if not root_url:
         raise Exception("No root URL provided for file download url.")

@@ -39,25 +39,26 @@ class AddToSessionView(BrowserView):
         )
         self._finished()
 
-    def _get_signers(self):
+    def _get_signers(self, show_message=True):
         """Get the list of held_positions to be used as signer.
 
-        :return: list of held_position objects
+        :return: list of signer infos with "held_position", "name" and "function"
         """
         res = []
-        for signer_infos in ISignable(self.context).get_signers():
-            if not signer_infos["held_position"]:
-                api.portal.show_message(
-                    _(
-                        "Problem with certified signatories, make sure a held position "
-                        'is selected for each signatory (check "${name}/${function}")!',
-                        mapping={"name": signer_infos["name"], "function": signer_infos["function"]},
-                    ),
-                    request=self.request,
-                    type="warning",
-                )
+        for signer_info in ISignable(self.context).get_signers():
+            if not signer_info["held_position"]:
+                if show_message is True:
+                    api.portal.show_message(
+                        _(
+                            "Problem with certified signatories, make sure a held position "
+                            'is selected for each signatory (check "${name}/${function}")!',
+                            mapping={"name": signer_info["name"], "function": signer_info["function"]},
+                        ),
+                        request=self.request,
+                        type="warning",
+                    )
                 return []
-            res.append(signer_infos["held_position"])
+            res.append(signer_info)
         return res
 
     def get_signers(self):
@@ -66,14 +67,18 @@ class AddToSessionView(BrowserView):
         :return: list of signer infos (userid, email, fullname, position)
         """
         res = []
-        signers = self._get_signers()
+        signer_infos = self._get_signers()
         # signers is a list of held_positions
-        for hp in signers:
+        for signer_info in signer_infos:
             # get email from user
+            hp = signer_info["held_position"]
             signer_person = hp.get_person()
-            email = api.user.get(signer_person.userid).getProperty("email")
-            person_title = signer_person.get_title(include_person_title=False)
-            res.append((signer_person.userid, email, person_title, hp.label or u""))
+            userid = signer_person.userid
+            user = api.user.get(userid)
+            email = user.getProperty("email")
+            person_title = signer_info["name"] or signer_person.get_title(include_person_title=False)
+            hp_label = signer_info["function"] or hp.label or u""
+            res.append((userid, email, person_title, hp_label))
         return tuple(res)
 
     def get_observers(self):

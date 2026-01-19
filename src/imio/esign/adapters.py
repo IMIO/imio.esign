@@ -56,6 +56,7 @@ class ISignable(Interface):
         """
         List signers for that item.
         returns a list of dict with keys: name, function, held_position
+        Must make sure a valid userid if linked to the held_position.person
         """
 
     def get_files_uids(self):

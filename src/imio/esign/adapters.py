@@ -54,12 +54,20 @@ class FilesBelongingToAGivenSession(object):
 class ISignable(Interface):
     def get_signers(self):
         """
-        List signers for that item.
-        returns a list of dict with keys: name, function, held_position
-        Must make sure a valid userid if linked to the held_position.person
+        List signers for that element.
+        returns a list of dict with keys:
+        name, function, held_position, userid and email
+        Ensure a valid userid is linked to the held_position.person and a
+        unique email is used for every signers
+        Raise ValueError in case an error occurs.
         """
 
     def get_files_uids(self):
         """
         List of file uids to sign.
+        """
+
+    def get_observers(self):
+        """
+        List of observers for that element.
         """

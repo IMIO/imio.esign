@@ -39,51 +39,29 @@ class AddToSessionView(BrowserView):
         )
         self._finished()
 
-    def _get_signers(self, show_message=True):
+    def get_signers(self):
         """Get the list of held_positions to be used as signer.
 
-        :return: list of signer infos with "held_position", "name" and "function"
+        :return: list of signer infos with "held_position", "name",
+                 "function", "userid" and "email"
         """
-        res = []
-        for signer_info in ISignable(self.context).get_signers():
-            if not signer_info["held_position"]:
-                if show_message is True:
-                    api.portal.show_message(
-                        _(
-                            "Problem with certified signatories, make sure a held position "
-                            'is selected for each signatory (check "${name}/${function}")!',
-                            mapping={"name": signer_info["name"], "function": signer_info["function"]},
-                        ),
-                        request=self.request,
-                        type="warning",
-                    )
-                return []
-            res.append(signer_info)
-        return res
-
-    def get_signers(self):
-        """List of signers, should not be overrided, rely on self._get_signers.
-
-        :return: list of signer infos (userid, email, fullname, position)
-        """
-        res = []
-        signer_infos = self._get_signers()
-        # signers is a list of held_positions
-        for signer_info in signer_infos:
-            # get email from user
-            hp = signer_info["held_position"]
-            signer_person = hp.get_person()
-            userid = signer_person.userid
-            user = api.user.get(userid)
-            email = user.getProperty("email")
-            person_title = signer_info["name"] or signer_person.get_title(include_person_title=False)
-            hp_label = signer_info["function"] or hp.label or u""
-            res.append((userid, email, person_title, hp_label))
-        return tuple(res)
+        try:
+            signers = ISignable(self.context).get_signers()
+        except ValueError, msg:
+            signers = []
+            api.portal.show_message(
+                _(
+                    "Problem getting signers: \"${error}\")!",
+                    mapping={"error": msg},
+                ),
+                request=self.request,
+                type="warning",
+            )
+        return signers
 
     def get_observers(self):
         """List of observers."""
-        return ()
+        return ISignable(self.context).get_observers()
 
     def get_context_uid(self):
         """ """

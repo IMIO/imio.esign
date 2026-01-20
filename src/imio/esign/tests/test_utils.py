@@ -325,6 +325,10 @@ class TestUtils(unittest.TestCase):
         self.assertTrue(result2[0].startswith("https://downloads.files.com/"))
         self.assertEqual(shortuid_decode_id(result2[1], separator="-"), uid2)  # correctly decoded
 
+        # Test with pre-computed short_uid parameter
+        result3 = get_file_download_url(None, short_uid="MyCustom-Short-UID")
+        self.assertEqual(result3, ("https://downloads.files.com/MyCustom-Short-UID", "MyCustom-Short-UID"))
+
     def test_get_max_download_date(self):
         annex = self.folders[0]
         mod_date = annex.modified().asdatetime().date()

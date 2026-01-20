@@ -384,14 +384,14 @@ def remove_session(session_id):
     # logger.info("Session %s removed", session_id)
 
 
-def get_file_uid_url(uid, separator="-", block_size=5, root_url=None):
+def get_file_download_url(uid, separator="-", block_size=5, root_url=None):
     """Get the file download URL for a given file UID.
 
     :param uid: file UID
     :param separator: separator used in short UID encoding
     :param block_size: block size used in short UID encoding
     :param root_url: root URL. If not provided, the settings value is used
-    :return: file download URL
+    :return: file download URL, short_uid
     """
     if not root_url:
         root_url = get_registry_file_url()
@@ -399,7 +399,7 @@ def get_file_uid_url(uid, separator="-", block_size=5, root_url=None):
     if not root_url:
         raise Exception("No root URL provided for file download url.")
     short_uid = shortuid_encode_id(uid, separator=separator, block_size=block_size)
-    return "{}/{}".format(root_url.strip('/'), short_uid)
+    return "{}/{}".format(root_url.strip('/'), short_uid), short_uid
 
 
 def get_max_download_date(obj, delta=timedelta(days=120)):

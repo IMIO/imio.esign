@@ -402,12 +402,14 @@ def get_file_download_url(uid, separator="-", block_size=5, root_url=None):
     return "{}/{}".format(root_url.strip('/'), short_uid), short_uid
 
 
-def get_max_download_date(obj, delta=timedelta(days=120)):
+def get_max_download_date(obj, delta=timedelta(days=90), adate=None):
     """Get the maximum download date for e-sign files. Is takes the modification date and adds delta.
 
     :param obj: content object
     :param delta: timedelta to add to modification date
+    :param adate: use date instead of modification date
     :return: maximum download date
     """
-    mod_date = obj.modified().asdatetime().date()
-    return mod_date + delta
+    if adate is None:
+        adate = obj.modified().asdatetime().date()
+    return adate + delta

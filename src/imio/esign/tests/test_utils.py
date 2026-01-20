@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from datetime import date
 from datetime import timedelta
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
 from imio.esign.utils import add_files_to_session
@@ -327,8 +328,10 @@ class TestUtils(unittest.TestCase):
     def test_get_max_download_date(self):
         annex = self.folders[0]
         mod_date = annex.modified().asdatetime().date()
-        self.assertEqual(get_max_download_date(annex), mod_date + timedelta(days=120))
+        self.assertEqual(get_max_download_date(annex), mod_date + timedelta(days=90))
         self.assertEqual(get_max_download_date(annex, timedelta(days=0)), mod_date)
+        today = date.today()
+        self.assertEqual(get_max_download_date(None, timedelta(days=0), today), today)
 
 
 # example of annotation content

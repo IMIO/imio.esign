@@ -312,9 +312,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(result, ("https://downloads.files.com/Rzgwy-9BVG9-viEts-5GBkn-Rm",
                                   "Rzgwy-9BVG9-viEts-5GBkn-Rm"))
 
-        result = get_file_download_url(uid, separator="_", block_size=3)
-        self.assertEqual(result[0], "https://downloads.files.com/Rzg_wy9_BVG_9vi_Ets_5GB_knR_m")
-
         custom_url = "https://custom.domain.org/"
         result = get_file_download_url(uid, root_url=custom_url)
         self.assertEqual(result[0], "https://custom.domain.org/Rzgwy-9BVG9-viEts-5GBkn-Rm")

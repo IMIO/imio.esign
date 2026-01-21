@@ -87,6 +87,7 @@ def add_files_to_session(
         if u"{session_id}" in session["title"]:
             session["title"] = session["title"].replace(u"{session_id}", str(session_id))
     session["last_update"] = datetime.now()
+    annot._p_changed = True
     return session_id, session
 
 

@@ -114,7 +114,8 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
             # "documentData": [{"filename": filename, "uniqueCode": unique_code}
-            "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, uid)}
+            "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, uid),
+                              "docUuid": get_suid_from_uuid(uid)}
                              for unique_code, filename, z, uid in files],
             "imioAppSessionId": session["sign_id"],
             "sessionName": session["title"],

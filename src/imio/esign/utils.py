@@ -385,12 +385,10 @@ def remove_session(session_id):
     # logger.info("Session %s removed", session_id)
 
 
-def get_file_download_url(uid, separator="-", block_size=5, root_url=None, short_uid=None):
+def get_file_download_url(uid, root_url=None, short_uid=None):
     """Get the file download URL for a given file UID.
 
     :param uid: file UID
-    :param separator: separator used in short UID encoding
-    :param block_size: block size used in short UID encoding
     :param root_url: root URL. If not provided, the settings value is used
     :param short_uid: take this short UID instead of computing it
     :return: file download URL, short_uid
@@ -401,7 +399,7 @@ def get_file_download_url(uid, separator="-", block_size=5, root_url=None, short
     if not root_url:
         raise Exception("No root URL provided for file download url.")
     if not short_uid:
-        short_uid = shortuid_encode_id(uid, separator=separator, block_size=block_size)
+        short_uid = get_suid_from_uuid(uid)
     return "{}/{}".format(root_url.strip('/'), short_uid), short_uid
 
 
@@ -416,3 +414,12 @@ def get_max_download_date(obj, delta=timedelta(days=90), adate=None):
     if adate is None:
         adate = obj.modified().asdatetime().date()
     return adate + delta
+
+
+def get_suid_from_uuid(uid):
+    """Get the short UID from a given UUID.
+
+    :param uid: UUID
+    :return: short UID
+    """
+    return shortuid_encode_id(uid, separator="-", block_size=5)

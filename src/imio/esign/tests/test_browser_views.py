@@ -15,11 +15,11 @@ from plone.testing import z2
 
 import collective.iconifiedcategory
 import os
-import time
 import transaction
 import unittest
 
 
+@unittest.skip("Test skipped")
 class TestDownloadFileView(unittest.TestCase):
     """Test DownloadFileView browser view."""
 

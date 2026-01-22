@@ -203,12 +203,15 @@ class ItemSessionInfoViewlet(ViewletBase):
     """Show selected session info for an item."""
 
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
-    display_seal = True
-    display_signers = True
 
     def available(self):
         """Global availability of the viewlet."""
         return True
+
+    def get_table_rows(self, key):
+        """Get the table rows following the column"""
+        return {1: ["session_id", "state", "update_date", "sealed"],
+                2: ["external_link", "signers"]}.get(key, [])
 
     def render(self):
         """Render the viewlet."""

@@ -96,7 +96,7 @@ class FilesColumn(Column):
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
             u"load_view='@@esign-session-files?session_id={0}', "
-            u"base_url='{1}');\"> {2}</div>"
+            u"base_url='{1}');\"> <a href='#'>{2}</a></div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'

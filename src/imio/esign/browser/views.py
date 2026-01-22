@@ -208,10 +208,10 @@ class ItemSessionInfoViewlet(ViewletBase):
         """Global availability of the viewlet."""
         return True
 
-    def get_table_rows(self, key):
+    def get_table_rows(self, column):
         """Get the table rows following the column"""
         return {1: ["session_id", "state", "update_date", "sealed"],
-                2: ["external_link", "signers"]}.get(key, [])
+                2: ["external_link", "signers"]}.get(column, [])
 
     def render(self):
         """Render the viewlet."""
@@ -240,7 +240,9 @@ class ItemSessionInfoViewlet(ViewletBase):
 
 @implementer(IPublishTraverse)
 class DownloadFileView(BrowserView):
-    """View to download a file based on an identifier passed in the URL path."""
+    """View to download a file based on an identifier passed in the URL path.
+
+    Finally not used !"""
 
     shortuid_separator = "-"
     named_blob_file_attribute = "file"

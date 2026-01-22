@@ -96,12 +96,3 @@ class ExternalSessionFeedbackPost(Service):
     def authorized(self):
         """Check if the user is authorized to access this service."""
         return True
-
-
-"""
-State:
-to_create_session
-to_sign
-to_upload
-refused
-"""

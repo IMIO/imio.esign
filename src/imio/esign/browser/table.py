@@ -123,14 +123,21 @@ class ActionsColumn(Column):
         <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
         msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}');
         window.location.reload();" style="cursor:pointer" src="delete_icon.png">
-        <img title="{send}" onclick="javascript:callViewAndReload('{sessions_url}', '@@external-esign-session-create',
-        {{'session_id': '{session_id}'}});" style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
         """.format(
             delete=translate(_("Delete session"), context=self.request),
             sessions_url=sessions_url,
             session_id=session_id,
-            send=translate(_("Create external session"), context=self.request),
         )
+        if item.get("state") == "draft":
+            admin_buttons += u"""
+            <img title="{send}" onclick="javascript:callViewAndReload('{sessions_url}',
+            '@@external-esign-session-create', {{'session_id': '{session_id}'}});"
+            style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
+            """.format(
+                sessions_url=sessions_url,
+                session_id=session_id,
+                send=translate(_("Create external session"), context=self.request),
+            )
         dashboard_button = u"""
         <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer" 
         src="++resource++imio.esign/view_element.png"></a>

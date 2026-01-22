@@ -14,7 +14,7 @@ class IdColumn(Column):
     weight = 10
 
     def renderCell(self, item):
-        return str(item.get("id"))
+        return "<span id='{0}'>{0}</span>".format(str(item.get("id")))
 
 
 def external_session_link(session, title=None):

@@ -203,6 +203,8 @@ class ItemSessionInfoViewlet(ViewletBase):
     """Show selected session info for an item."""
 
     index = ViewPageTemplateFile("templates/faceted_session_info.pt")
+    display_seal = True
+    display_signers = True
 
     def available(self):
         """Global availability of the viewlet."""
@@ -223,6 +225,10 @@ class ItemSessionInfoViewlet(ViewletBase):
                 session["id"] = annot["uids"][f_uid]
                 return session
         return {}
+
+    @property
+    def session_listing_url(self):
+        return api.portal.get().absolute_url() + "/@@esign-sessions-listing"
 
     def ext_session_link(self, session):
         return external_session_link(session)

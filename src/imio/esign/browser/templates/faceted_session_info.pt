@@ -16,7 +16,10 @@
                     <tbody>
                     <tr>
                         <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
-                        <td class="table_widget_value" tal:content="python: view.session['id']">25452 - College</td>
+                        <td class="table_widget_value">
+                            <a href="#" target="_blank"
+                               tal:content="python: view.session['id']"
+                               tal:attributes="href python:'{}#{}'.format(view.session_listing_url, view.session['id'])">25452 - College</a></td>
                     </tr>
 
                     <tr>
@@ -34,7 +37,7 @@
                         </td>
                     </tr>
 
-                    <tr>
+                    <tr tal:condition="python:view.display_seal">
                         <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
                         <td class="table_widget_value"
                                  tal:content="python:'Yes' if view.session['seal'] else 'No'"
@@ -55,7 +58,7 @@
                                  i18n:translate="">url
                         </td>
                     </tr>
-                    <tr>
+                    <tr tal:condition="python:view.display_signers">
                         <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
                         <td class="table_widget_value">
                             <table id="context_viewlet_signers_table" class="no-border no-style-table"

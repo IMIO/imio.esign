@@ -61,13 +61,22 @@ class ISignable(Interface):
         unique email is used for every signers
         Raise ValueError in case an error occurs.
         """
+        return []
 
     def get_files_uids(self):
         """
         List of file uids to sign.
         """
+        return []
 
-    def get_observers(self):
+    def get_watchers(self):
         """
-        List of observers for that element.
+        List of watchers email for that element.
         """
+        return []
+
+    def get_discriminators(self):
+        """
+        List of watchers email for that element.
+        """
+        return []

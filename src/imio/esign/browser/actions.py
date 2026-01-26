@@ -29,12 +29,13 @@ class AddToSessionView(BrowserView):
         signers = self.get_signers()
         if not signers:
             return self._finished(failed_msgid="Could not get signers to add to the session!")
-        # observers = self.get_observers()
+        # watchers = self.get_watchers()
         add_files_to_session(
             signers=signers,
-            # observers=observers,
+            # watchers=watchers,
             files_uids=files_uids,
             title=self.get_session_title(),
+            watchers=self.get_watchers(),
             discriminators=self.get_discriminators(),
         )
         self._finished()
@@ -59,9 +60,9 @@ class AddToSessionView(BrowserView):
             )
         return signers
 
-    def get_observers(self):
-        """List of observers."""
-        return ISignable(self.context).get_observers()
+    def get_watchers(self):
+        """List of watchers email."""
+        return ISignable(self.context).get_watchers()
 
     def get_context_uid(self):
         """ """
@@ -76,7 +77,7 @@ class AddToSessionView(BrowserView):
 
     def get_discriminators(self):
         """ """
-        return ()
+        return ISignable(self.context).get_discriminators()
 
 
 class RemoveFromSessionView(BrowserView):

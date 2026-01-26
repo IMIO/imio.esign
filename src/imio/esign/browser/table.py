@@ -12,9 +12,12 @@ from zope.i18n import translate
 class IdColumn(Column):
     header = _("ID")
     weight = 10
+    cssClasses = {"th": "th_header_sessions_id"}
 
     def renderCell(self, item):
-        return "<span id='{0}'>{0}</span>".format(str(item.get("id")))
+        # this will hide the "No results" link when displayed in faceted dashboard
+        return "<script>$('div.table_faceted_results').hide();</script>" \
+            "<span id='{0}'>{0}</span>".format(str(item.get("id")))
 
 
 def external_session_link(session, title=None):
@@ -34,6 +37,7 @@ def external_session_link(session, title=None):
 class StateColumn(Column):
     header = _("State")
     weight = 20
+    cssClasses = {"th": "th_header_sessions_state"}
 
     def renderCell(self, item):
         return translate(
@@ -44,6 +48,7 @@ class StateColumn(Column):
 class TitleColumn(Column):
     header = _("Title")
     weight = 30
+    cssClasses = {"th": "th_header_sessions_title"}
 
     def renderCell(self, item):
         title = safe_unicode(item.get("title", ""))
@@ -56,6 +61,7 @@ class TitleColumn(Column):
 class LastUpdateColumn(Column):
     header = _("Last update")
     weight = 40
+    cssClasses = {"th": "th_header_sessions_last_update"}
 
     def renderCell(self, item):
         last_update = item.get("last_update")
@@ -65,6 +71,7 @@ class LastUpdateColumn(Column):
 class SignersColumn(Column):
     header = _("Signers")
     weight = 50
+    cssClasses = {"th": "th_header_sessions_signers"}
 
     def renderCell(self, item):
         signers = item.get("signers") or []
@@ -77,7 +84,8 @@ class SignersColumn(Column):
 class FilesColumn(Column):
     header = _("Files")
     weight = 60
-    cssClasses = {"td": "documents-column"}
+    cssClasses = {"th": "th_header_sessions_documents",
+                  "td": "documents-column"}
 
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""
@@ -111,7 +119,8 @@ class ActionsColumn(Column):
 
     header = _("Actions")
     weight = 70
-    cssClasses = {"td": "actions-column"}
+    cssClasses = {"th": "th_header_sessions_actions",
+                  "td": "actions-column"}
 
     def renderCell(self, item):
         session_id = item.get("id")
@@ -139,7 +148,7 @@ class ActionsColumn(Column):
                 send=translate(_("Create external session"), context=self.request),
             )
         dashboard_button = u"""
-        <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer" 
+        <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer"
         src="++resource++imio.esign/view_element.png"></a>
         """.format(  # noqa E501
             dashboard_link=dashboard_link,

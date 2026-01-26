@@ -31,6 +31,7 @@
             i18n:domain="imio.esign"
     />
 
+    <!-- @@esign-session-files on sessions folder -->
     <browser:page
             name="esign-session-files"
             for="imio.esign.interfaces.IImioSessionsManagementContext"
@@ -39,6 +40,16 @@
             template="templates/session_files.pt"
             i18n:domain="imio.esign"
     />
+    <!-- @@esign-session-files in faceted navigation -->
+    <browser:page
+            name="esign-session-files"
+            for="eea.facetednavigation.subtypes.interfaces.IFacetedNavigable"
+            class=".views.SessionFilesView"
+            permission="zope2.View"
+            template="templates/session_files.pt"
+            i18n:domain="imio.esign"
+    />
+
 
     <browser:page
             name="esign-session-delete"

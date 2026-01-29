@@ -30,7 +30,7 @@ SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
 def add_files_to_session(
-    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=()
+    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=(), create_session_custom_data={}
 ):
     """Add files to a session with the given signers.
 
@@ -42,6 +42,7 @@ def add_files_to_session(
     :param title: optional string for session title. If it contains {sign_id} or {session_id} it will be replaced
     :param discriminators: optional list of string discriminators to use for session discrimination
     :param watchers: optional list of external esign session watchers emails (used only when creating a new session)
+    :param create_session_custom_data: optional custom dict of custom session data
     :return: session_id, session
     """
     annot = get_session_annotation()
@@ -56,7 +57,8 @@ def add_files_to_session(
     if not session:
         session_id, session = create_session(
             signers, seal, acroform=acroform, title=title or "", annot=annot, discriminators=discriminators,
-            watchers=watchers
+            watchers=watchers,
+            create_session_custom_data=create_session_custom_data,
         )
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
@@ -170,7 +172,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=()):
+def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=(), create_session_custom_data={}):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -180,6 +182,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
     :param annot: esign annotation, if not provided it will be fetched
     :param discriminators: optional list of string discriminators
     :param watchers: optional list of external esign session watchers emails
+    :param create_session_custom_data: optional custom dict of custom session data
     :return: session id and session information
     """
     if not annot:
@@ -208,6 +211,8 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
         "title": title,
         "returns": PersistentList(),
     })
+    for k, v in create_session_custom_data.items():
+        sessions[session_id][k] = v
     return session_id, sessions[session_id]
 
 
@@ -298,6 +303,17 @@ def get_session_annotation(portal=None):
             }
         )
     return annotations["imio.esign"]
+
+
+def get_session_info(session_id, portal=None):
+    """Return a session info for a given numbering.
+
+    :param session_id: the session id to return
+    :param portal: portal if necessary to get the session annotation
+    """
+    annot = get_session_annotation(portal=portal)
+    if session_id in annot['sessions']:
+        return annot['sessions'][session_id]
 
 
 def remove_context_from_session(context_uids):

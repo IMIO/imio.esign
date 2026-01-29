@@ -77,6 +77,12 @@ class ISignable(Interface):
 
     def get_discriminators(self):
         """
-        List of watchers email for that element.
+        List of discriminators for that element to associate it to an available session.
         """
         return []
+
+    def get_create_session_custom_data(self):
+        """
+        Dict of custom data that will be stored on session at creation time.
+        """
+        return {}

@@ -7,6 +7,7 @@ from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_info
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.esign.utils import remove_session
@@ -297,6 +298,20 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 2)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["sessions"]), 1)
+
+    def test_get_session_info(self):
+        """Test getting info about a given session id."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+        self.assertIsNone(get_session_info(0))
+        self.assertIsNone(get_session_info(1))
+        self.assertIsNone(get_session_info(2))
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
+        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
+        self.assertEqual(get_session_info(sid), session)
 
     def test_get_file_download_url(self):
         """Test generating file download URL from UID."""

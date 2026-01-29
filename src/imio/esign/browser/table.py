@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from eea.facetednavigation.interfaces import IFacetedNavigable
 from DateTime import DateTime
 from imio.esign import _
 from imio.esign import manage_session_perm
@@ -14,10 +15,18 @@ class IdColumn(Column):
     weight = 10
     cssClasses = {"th": "th_header_sessions_id"}
 
+    def renderHeadCell(self):
+        """
+        Override to add JS that will the "No results" link when displayed in faceted dashboard.
+        """
+        res = super(IdColumn, self).renderHeadCell()
+        if IFacetedNavigable.providedBy(self.context):
+            res += "<script>$('div.table_faceted_results').hide();</script>"
+        return res
+
     def renderCell(self, item):
         # this will hide the "No results" link when displayed in faceted dashboard
-        return "<script>$('div.table_faceted_results').hide();</script>" \
-            "<span id='{0}'>{0}</span>".format(str(item.get("id")))
+        return "<span id='{0}'>{0}</span>".format(str(item.get("id")))
 
 
 def external_session_link(session, title=None):
@@ -104,7 +113,7 @@ class FilesColumn(Column):
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
             u"load_view='@@esign-session-files?session_id={0}', "
-            u"base_url='{1}');\"> <a href='#'>{2}</a></div>"
+            u"base_url='{1}');\"> {2}</div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
@@ -126,12 +135,11 @@ class ActionsColumn(Column):
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
         sessions_url = self.table.view.get_sessions_url()
-        if not sessions_url.endswith("/"):
-            sessions_url += "/"
+        #if not sessions_url.endswith("/"):
+        #    sessions_url += "/"
         admin_buttons = u"""
         <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
-        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}');
-        window.location.reload();" style="cursor:pointer" src="delete_icon.png">
+        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);" style="cursor:pointer" src="delete_icon.png">
         """.format(
             delete=translate(_("Delete session"), context=self.request),
             sessions_url=sessions_url,

@@ -161,7 +161,6 @@ class ExternalSessionCreateView(BrowserView):
 class FacetedSessionInfoViewlet(ViewletBase):
     """Show selected session info inside faceted results."""
 
-    index = ViewPageTemplateFile("templates/faceted_session_info.pt")
     sessions_listing_view = SessionsListingView  # to be overridden in subclass
 
     def available(self):
@@ -195,23 +194,25 @@ class FacetedSessionInfoViewlet(ViewletBase):
         session["id"] = session_id
         return session
 
-    def ext_session_link(self, session):
-        return external_session_link(session)
-
-
-class ItemSessionInfoViewlet(ViewletBase):
-    """Show selected session info for an item."""
-
-    index = ViewPageTemplateFile("templates/faceted_session_info.pt")
-
-    def available(self):
-        """Global availability of the viewlet."""
-        return True
-
     def get_table_rows(self, column):
         """Get the table rows following the column"""
         return {1: ["session_id", "state", "update_date", "sealed"],
                 2: ["external_link", "signers"]}.get(column, [])
+
+    def ext_session_link(self, session):
+        return external_session_link(session)
+
+    @property
+    def session_listing_url(self):
+        return api.portal.get().absolute_url() + "/sessions/@@esign-sessions-listing"
+
+
+class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
+    """Show selected session info for an item."""
+
+    def available(self):
+        """Global availability of the viewlet."""
+        return True
 
     def render(self):
         """Render the viewlet."""
@@ -228,14 +229,6 @@ class ItemSessionInfoViewlet(ViewletBase):
                 session["id"] = annot["uids"][f_uid]
                 return session
         return {}
-
-    @property
-    def session_listing_url(self):
-        return api.portal.get().absolute_url() + "/@@esign-sessions-listing"
-
-    def ext_session_link(self, session):
-        return external_session_link(session)
-# TODO clean up css
 
 
 @implementer(IPublishTraverse)

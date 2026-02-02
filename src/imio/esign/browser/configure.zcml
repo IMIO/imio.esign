@@ -118,4 +118,13 @@
             i18n:domain="imio.esign"
     /-->
 
+    <!-- Macros -->
+    <browser:page
+        name="esign-macros"
+        for="*"
+        class=".views.EsignMacros"
+        template="templates/macros.pt"
+        permission="zope2.View"
+        allowed_attributes="callMacro"/>
+
 </configure>

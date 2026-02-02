@@ -162,7 +162,7 @@ msgid "Session deleted successfully!"
 msgstr ""
 
 #: ../browser/templates/faceted_session_info.pt:11
-msgid "Session information : ${title}"
+msgid "Session information"
 msgstr ""
 
 #: ../browser/views.py:118

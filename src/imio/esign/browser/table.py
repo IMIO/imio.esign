@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+
 from eea.facetednavigation.interfaces import IFacetedNavigable
-from DateTime import DateTime
 from imio.esign import _
 from imio.esign import manage_session_perm
 from plone import api
@@ -31,12 +31,9 @@ class IdColumn(Column):
 
 def external_session_link(session, title=None):
     """Return a tag with the sign external session."""
-    if not session["sign_id"]:
-        return u"Session not yet sent."
-    if not session["sign_url"]:
-        return u"Sign url not yet received."
-    if not title:
-        title = session.get("title", "") or session.get("sign_id", "")
+    title = title or session.get("title", "") or session.get("sign_id", "")
+    if not session["sign_id"] or not session["sign_url"]:
+        return u"<p>{0}</p>".format(title)
     return u'<a href="{url}" target="_blank">{title}</a>'.format(
         url=session["sign_url"],
         title=safe_unicode(title),
@@ -74,7 +71,8 @@ class LastUpdateColumn(Column):
 
     def renderCell(self, item):
         last_update = item.get("last_update")
-        return self.context.toLocalizedTime(DateTime(last_update), long_format=True)
+        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
+            last_update, long_format=True)
 
 
 class SignersColumn(Column):
@@ -85,7 +83,11 @@ class SignersColumn(Column):
     def renderCell(self, item):
         signers = item.get("signers") or []
         parts = [
-            "<li>%s, %s (%s)</li>" % (s.get("fullname", ""), s.get("position"), s.get("status", "")) for s in signers
+            "<li>%s, %s%s</li>" % (
+                s.get("fullname", ""),
+                s.get("position"),
+                " (%s)" % s.get("status") if s.get("status") else "")
+            for s in signers
         ]
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 

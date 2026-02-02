@@ -1,0 +1,60 @@
+<tr metal:define-macro="session_id">
+    <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
+    <td class="table_widget_value">
+        <a href="#" target="_blank"
+           tal:content="python: session['id']"
+           tal:attributes="href python:'{}#{}'.format(view.session_listing_url, session['id'])">25452 - College</a>
+    </td>
+</tr>
+<tr metal:define-macro="state">
+    <td class="table_widget_label"><label i18n:translate="">State</label></td>
+    <td class="table_widget_value">
+        <span tal:content="python:session['state']" i18n:translate="">draft</span>
+    </td>
+</tr>
+<tr metal:define-macro="update_date">
+    <td class="table_widget_label"><label i18n:translate="">Last update</label></td>
+    <td class="table_widget_value"
+             tal:content="python:context.unrestrictedTraverse('@@plone').toLocalizedTime(session['last_update'], long_format=True)">
+        2025-08-13 10:44
+    </td>
+</tr>
+<tr metal:define-macro="sealed">
+    <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
+    <td class="table_widget_value"
+             tal:content="python:'Yes' if session['seal'] else 'No'"
+             i18n:translate="">No
+    </td>
+</tr>
+<tr metal:define-macro="external_link">
+    <td class="table_widget_label"><label i18n:translate="">Title</label></td>
+    <td class="table_widget_value"
+             tal:content="structure python: view.ext_session_link(session)"
+             i18n:translate="">url
+    </td>
+</tr>
+<tr metal:define-macro="signers">
+    <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
+    <td class="table_widget_value">
+        <table id="context_viewlet_signers_table" class="no-border no-style-table listing"
+                 tal:define="signers python:session.get('signers', [])">
+            <thead>
+            <tr>
+                <th i18n:translate="">Full name</th>
+                <th i18n:translate="">Position</th>
+                <th i18n:translate="">Email</th>
+                <th i18n:translate="">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr tal:repeat="s signers">
+                <td tal:content="python:s['fullname']">Jean Dupont</td>
+                <td tal:content="python:s['position']">Directeur Général</td>
+                <td tal:content="python:s['email']">user1@sign.com</td>
+                <td tal:content="python:s['status'] or '-'" i18n:translate="" >pending</td>
+            </tr>
+            </tbody>
+        </table>
+    </td>
+</tr>
+

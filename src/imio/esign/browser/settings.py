@@ -88,19 +88,3 @@ class ImioEsignSettings(RegistryEditForm):
 ImioEsignSettingsView = layout.wrap_form(
     ImioEsignSettings, ControlPanelFormWrapper
 )
-
-
-def detect_settings_changed(event):
-    """
-        Manage our record changes
-    """
-    if (IRecordModifiedEvent.providedBy(event) and event.record.interfaceName
-            and event.record.interface == IImioEsignSettings):
-        new_value = event.newValue
-        if event.record.fieldName == 'enabled':
-            portal = api.portal.get()
-            # hide "sessions" link from navigation depending on eSign enable or not
-            if new_value is True:
-                portal.get('sessions').setExcludeFromNav(False)
-            else:
-                portal.get('sessions').setExcludeFromNav(True)

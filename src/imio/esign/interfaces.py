@@ -9,10 +9,6 @@ class IImioEsignLayer(IDefaultBrowserLayer):
     """Marker interface that defines a browser layer."""
 
 
-class IImioSessionsManagementContext(Interface):
-    """Marker interface used to restrict session listing and actions."""
-
-
 class IContextUidProvider(Interface):
     """Adapter to provide context UID for a file."""
 

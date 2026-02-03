@@ -6,7 +6,6 @@ from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
-from imio.esign.interfaces import IImioSessionsManagementContext
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_session
@@ -43,13 +42,8 @@ class SessionsListingView(BrowserView):
     def __init__(self, context, request):
         super(SessionsListingView, self).__init__(context, request)
 
-    def __call__(self):
-        # Verify that the context provides the correct interface
-        if not IImioSessionsManagementContext.providedBy(self.context):
-            raise Unauthorized(
-                "This view can only be called on a context providing IImioSessionsManagementContext"
-            )
-        return self.index()
+    def available(self):
+        return api.portal.get_registry_record("imio.esign.enabled", default=False)
 
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())
@@ -68,7 +62,7 @@ class SessionsListingView(BrowserView):
         raise NotImplementedError
 
     def get_sessions_url(self):
-        raise NotImplementedError
+        return api.portal.get().absolute_url()
 
 
 class SessionFilesView(BrowserView):
@@ -117,7 +111,7 @@ class SessionDeleteView(BrowserView):
         else:
             api.portal.show_message(_("Session not found!"), request=self.request, type="error")
 
-        return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@esign-sessions-listing")
+        return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@parapheo")
 
 
 class ExternalSessionCreateView(BrowserView):
@@ -128,7 +122,7 @@ class ExternalSessionCreateView(BrowserView):
             session_id = self.request.get("session_id", None)
         if session_id is None:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
-            return self.context.absolute_url() + "/@@esign-sessions-listing"
+            return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(
             int(session_id),
             b64_cred=ESIGN_CREDENTIALS,
@@ -155,7 +149,7 @@ class ExternalSessionCreateView(BrowserView):
                 request=self.request,
                 type="error",
             )
-        return self.context.absolute_url() + "/@@esign-sessions-listing"
+        return self.context.absolute_url() + "/@@parapheo"
 
 
 class FacetedSessionInfoViewlet(ViewletBase):
@@ -204,7 +198,7 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
     @property
     def session_listing_url(self):
-        return api.portal.get().absolute_url() + "/sessions/@@esign-sessions-listing"
+        return api.portal.get().absolute_url() + "/@@parapheo"
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

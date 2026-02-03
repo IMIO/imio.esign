@@ -6,6 +6,7 @@ from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
+from imio.esign.config import get_registry_enabled
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_session
@@ -22,7 +23,6 @@ from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 from zope.i18n import translate
 from zope.interface import implementer
 from zope.publisher.interfaces import IPublishTraverse
-from zope.security.interfaces import Unauthorized
 
 import csv
 import os
@@ -43,7 +43,7 @@ class SessionsListingView(BrowserView):
         super(SessionsListingView, self).__init__(context, request)
 
     def available(self):
-        return api.portal.get_registry_record("imio.esign.enabled", default=False)
+        return get_registry_enabled()
 
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())

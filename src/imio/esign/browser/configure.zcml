@@ -124,7 +124,6 @@
         for="*"
         class=".views.EsignMacros"
         template="templates/macros.pt"
-        permission="zope2.View"
-        allowed_attributes="callMacro"/>
+        permission="zope2.View" />
 
 </configure>

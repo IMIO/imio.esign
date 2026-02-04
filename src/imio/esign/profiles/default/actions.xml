@@ -29,7 +29,7 @@
   <object name="parapheo" meta_type="CMF Action">
    <property name="title">Paraphéo</property>
    <property name="url_expr">string:${portal_url}/@@parapheo</property>
-   <property name="available_expr">object/@@parapheo/available</property>
+   <property name="available_expr">portal/@@parapheo/available</property>
    <property name="permissions">
     <element value="View" />
    </property>

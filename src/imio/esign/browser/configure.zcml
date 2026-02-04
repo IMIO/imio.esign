@@ -23,18 +23,19 @@
         />
 
     <browser:page
-            name="esign-sessions-listing"
-            for="imio.esign.interfaces.IImioSessionsManagementContext"
+            name="parapheo"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionsListingView"
             permission="zope2.View"
             template="templates/sessions.pt"
             i18n:domain="imio.esign"
+            allowed_attributes="available"
     />
 
     <!-- @@esign-session-files on sessions folder -->
     <browser:page
             name="esign-session-files"
-            for="imio.esign.interfaces.IImioSessionsManagementContext"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionFilesView"
             permission="zope2.View"
             template="templates/session_files.pt"
@@ -53,7 +54,7 @@
 
     <browser:page
             name="esign-session-delete"
-            for="imio.esign.interfaces.IImioSessionsManagementContext"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionDeleteView"
             permission="imio.esign.ManageSessions"
             i18n:domain="imio.esign"
@@ -61,7 +62,7 @@
 
     <browser:page
             name="external-esign-session-create"
-            for="imio.esign.interfaces.IImioSessionsManagementContext"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.ExternalSessionCreateView"
             permission="imio.esign.ManageSessions"
             i18n:domain="imio.esign"

@@ -4,6 +4,7 @@ from datetime import timedelta
 from imio.esign import _
 from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
+from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_registry_enabled
@@ -113,6 +114,10 @@ class SessionDeleteView(BrowserView):
 
         return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@parapheo")
 
+    def may_delete_session(self):
+        """Check if the user may delete sessions"""
+        return api.user.has_permission(manage_session_perm, obj=self.context)
+
 
 class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
@@ -150,6 +155,10 @@ class ExternalSessionCreateView(BrowserView):
                 type="error",
             )
         return self.context.absolute_url() + "/@@parapheo"
+
+    def may_create_external_sessions(self):
+        """Check if the user may create external sessions"""
+        return api.user.has_permission(manage_session_perm, obj=self.context)
 
 
 class FacetedSessionInfoViewlet(ViewletBase):

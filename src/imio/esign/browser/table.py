@@ -7,6 +7,7 @@ from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
 from z3c.table.table import Table
+from zope.component import getMultiAdapter
 from zope.i18n import translate
 
 
@@ -139,15 +140,17 @@ class ActionsColumn(Column):
         sessions_url = self.table.view.get_sessions_url()
         #if not sessions_url.endswith("/"):
         #    sessions_url += "/"
-        admin_buttons = u"""
-        <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
-        msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);" style="cursor:pointer" src="delete_icon.png">
-        """.format(
-            delete=translate(_("Delete session"), context=self.request),
-            sessions_url=sessions_url,
-            session_id=session_id,
-        )
-        if item.get("state") == "draft":
+        admin_buttons = u""
+        if getMultiAdapter((self.context, self.request), name="esign-session-delete").may_delete_session():
+            admin_buttons = u"""
+            <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
+            msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);" style="cursor:pointer" src="delete_icon.png">
+            """.format(
+                delete=translate(_("Delete session"), context=self.request),
+                sessions_url=sessions_url,
+                session_id=session_id,
+            )
+        if item.get("state") == "draft" and getMultiAdapter((self.context, self.request), name="external-esign-session-create").may_create_external_sessions():
             admin_buttons += u"""
             <img title="{send}" onclick="javascript:callViewAndReload('{sessions_url}',
             '@@external-esign-session-create', {{'session_id': '{session_id}'}});"

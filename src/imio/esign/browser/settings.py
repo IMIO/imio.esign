@@ -85,7 +85,6 @@ class IImioEsignSettings(Interface):
             "Use {fullname}, {firstname}, {lastname}, {email}, {userid} as placeholders."
         ),
         required=False,
-        # TODO Replace Luxtrust URL with production URL
         default=u"""Hello {fullname},
 
 You have been invited to Parapheo, the signing platform of iMio.
@@ -93,7 +92,7 @@ You have been invited to Parapheo, the signing platform of iMio.
 Before you can sign documents, you need to activate your account.
 
 Please follow these steps:
-1. Go to https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO
+1. Go to https://simplycosi-1.trustsigneurope.com/login?tenantName=IMIO
 2. Use your email address ({email}) as username
 3. Click on 'Forgot password' to set your password
 4. Make sure you can log in successfully

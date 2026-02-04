@@ -310,3 +310,7 @@ msgstr ""
 #: ../browser/table.py:25
 msgid "to_sign"
 msgstr ""
+
+#: ../browser/templates/session_files.pt:52
+msgid "No files"
+msgstr ""

@@ -143,7 +143,7 @@ class ActionsColumn(Column):
         admin_buttons = u""
         if getMultiAdapter((self.context, self.request), name="esign-session-delete").may_delete_session():
             admin_buttons = u"""
-            <img title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
+            <img width="16" height="16" title="{delete}" onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
             msgName=null, view_name='@@esign-session-delete?esign_session_id={session_id}', redirect=null);" style="cursor:pointer" src="delete_icon.png">
             """.format(
                 delete=translate(_("Delete session"), context=self.request),
@@ -152,9 +152,9 @@ class ActionsColumn(Column):
             )
         if item.get("state") == "draft" and getMultiAdapter((self.context, self.request), name="external-esign-session-create").may_create_external_sessions():
             admin_buttons += u"""
-            <img title="{send}" onclick="javascript:callViewAndReload('{sessions_url}',
+            <img width="16" height="16" title="{send}" onclick="javascript:callViewAndReload('{sessions_url}',
             '@@external-esign-session-create', {{'session_id': '{session_id}'}});"
-            style="cursor:pointer" src="++resource++imio.esign/box-arrow-up-right.png">
+            style="cursor:pointer" src="++resource++imio.esign/parapheo.svg">
             """.format(
                 sessions_url=sessions_url,
                 session_id=session_id,

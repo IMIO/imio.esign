@@ -38,10 +38,10 @@ except ImportError:
 class SessionsListingView(BrowserView):
     """View to list sessions."""
 
-    index = ViewPageTemplateFile("templates/sessions.pt")
-
     def __init__(self, context, request):
         super(SessionsListingView, self).__init__(context, request)
+        self.portal = api.portal.get()
+        self.portal_url = self.portal.absolute_url()
 
     def available(self):
         return get_registry_enabled()
@@ -63,7 +63,7 @@ class SessionsListingView(BrowserView):
         raise NotImplementedError
 
     def get_sessions_url(self):
-        return api.portal.get().absolute_url()
+        return self.portal_url
 
 
 class SessionFilesView(BrowserView):

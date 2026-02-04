@@ -8,10 +8,14 @@ from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_registry_enabled
+from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
+from imio.helpers.emailer import create_html_email
+from imio.helpers.emailer import get_mail_host
+from imio.helpers.emailer import send_email
 from imio.helpers.security import separate_fullname
 from imio.prettylink.interfaces import IPrettyLink
 from imio.pyutils.utils import safe_encode
@@ -27,6 +31,7 @@ from zope.interface import implementer
 from zope.publisher.interfaces import IPublishTraverse
 
 import csv
+import json
 import os
 
 
@@ -364,53 +369,61 @@ class DownloadFileView(BrowserView):
         </body>
         </html>
         """.format(
-            title=page_title,
-            heading=heading,
-            message=message
+            title=page_title, heading=heading, message=message
         )
 
         return html
 
 
 class SigningUsersCsv(BrowserView):
-    """Get users, checking for duplicate emails, and output a CSV.
+    """Get users, checking for duplicate emails, output a CSV, and send emails.
     This view can be subclassed to redefine custom filtering logic.
     """
 
+    index = ViewPageTemplateFile("templates/signing_users.pt")
+
     def __call__(self):
-        fn_first = True
-        if self.request.get("fn_first", "1") == "0":
-            fn_first = False
-        apply_filter = self.request.get("apply_filter", "1") == "1"
-        if self.request.get("download", "") == "1":
-            return self._generate_csv(fn_first, apply_filter)
-        return self._generate_html(fn_first, apply_filter=apply_filter)
+        # Handle CSV download
+        if self.request.get("action") == "download_csv":
+            return self._download_csv()
+
+        # Handle email sending
+        if self.request.get("action") == "send_emails":
+            return self._send_emails()
+
+        # Default: display the table
+        return self.index()
 
     def filter_user(self, user_data):
-        """Filter method to determine if a user should be included in CSV output.
+        """Filter method to determine if a user should be included by default.
 
         :param user_data: dict containing user data (userid, email, lastname, firstname, fullname)
-        :return: True to include the user in CSV, False to exclude
+        :return: True to include the user by default, False to exclude
         """
         return True
 
-    def _collect_users_data(self, fn_first):
-        """Get users and duplicates.
+    def get_users_data(self):
+        """Get all users data sorted by filter status then userid.
 
-        :param fn_first: Boolean indicating if firstname comes first
-        :return: (all_users_data, filtered_users_data, duplicates)
+        :return: list of user data dictionaries with 'checked' status
         """
+        fn_first = True
         portal = api.portal.get()
         catalog = getToolByName(portal, "portal_catalog")
         acl_users = getToolByName(portal, "acl_users")
 
-        all_users_data = {}
+        all_users_data = []
         email_registry = {}
 
         for user_info in acl_users.searchUsers():
             userid = user_info.get("userid")
-            if not userid or userid in all_users_data:
+            if not userid:
                 continue
+
+            # Skip duplicates
+            if any(u["userid"] == userid for u in all_users_data):
+                continue
+
             user_obj = api.user.get(userid=userid)
             if not user_obj:
                 continue
@@ -419,11 +432,8 @@ class SigningUsersCsv(BrowserView):
             fullname = user_obj.getProperty("fullname", "")
             lastname = firstname = ""
 
-            # Do we have a person with this userid ?
-            brains = catalog.searchResults(
-                portal_type="person",
-                userid=userid
-            )
+            # Do we have a person with this userid?
+            brains = catalog.searchResults(portal_type="person", userid=userid)
             if brains:
                 person = brains[0].getObject()
                 lastname = getattr(person, "lastname", "") or ""
@@ -444,125 +454,160 @@ class SigningUsersCsv(BrowserView):
                 "firstname": firstname,
                 "fullname": fullname,
             }
-            all_users_data[userid] = user_data
+
+            # Determine if user should be checked by default
+            user_data["checked"] = self.filter_user(user_data)
+
+            all_users_data.append(user_data)
 
             if email:
                 email_registry.setdefault(email, []).append(userid)
 
+        # Calculate duplicates
         duplicates = {email: userids for email, userids in email_registry.items() if len(userids) > 1}
 
-        # Apply custom filter
-        filtered_users_data = {}
+        # Mark users with duplicate emails
+        for user_data in all_users_data:
+            user_data["has_duplicate_email"] = user_data["email"] in duplicates
 
-        for userid, user_data in all_users_data.items():
-            if self.filter_user(user_data):
-                filtered_users_data[userid] = user_data
+        # Sort: filtered users first (checked=True), then by userid
+        all_users_data.sort(key=lambda x: (not x["checked"], x["userid"]))
 
-        return all_users_data, filtered_users_data, duplicates
+        return all_users_data, duplicates
 
-    def _create_csv(self, users_data):
+    def _get_selected_userids(self):
+        """Get list of selected user IDs from request."""
+        selected = self.request.get("selected_users", "")
+        if not selected:
+            return []
+
+        # Handle both JSON array and form data
+        if selected.startswith("["):
+            return json.loads(selected)
+        return [uid.strip() for uid in selected.split(",") if uid.strip()]
+
+    def _download_csv(self):
+        """Generate and download CSV file with selected users."""
+        selected_userids = self._get_selected_userids()
+
+        if not selected_userids:
+            api.portal.show_message(_("No users selected for CSV download."), request=self.request, type="warning")
+            return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
+
+        all_users_data, _ = self.get_users_data()
+
+        # Filter to only selected users
+        selected_users = [u for u in all_users_data if u["userid"] in selected_userids]
+
+        # Generate CSV
         csv_output = StringIO()
         writer = csv.DictWriter(
             csv_output,
             fieldnames=["userid", "email", "lastname", "firstname", "fullname"],
             delimiter=",",
-            quoting=csv.QUOTE_MINIMAL
+            quoting=csv.QUOTE_MINIMAL,
         )
         writer.writeheader()
-        for userid in users_data:
-            user_data = users_data[userid]
-            writer.writerow({
-                "userid": safe_encode(userid),
-                "email": safe_encode(user_data["email"]),
-                "lastname": safe_encode(user_data["lastname"]),
-                "firstname": safe_encode(user_data["firstname"]),
-                "fullname": safe_encode(user_data["fullname"]),
-            })
-        return csv_output.getvalue()
+        for user_data in selected_users:
+            writer.writerow(
+                {
+                    "userid": safe_encode(user_data["userid"]),
+                    "email": safe_encode(user_data["email"]),
+                    "lastname": safe_encode(user_data["lastname"]),
+                    "firstname": safe_encode(user_data["firstname"]),
+                    "fullname": safe_encode(user_data["fullname"]),
+                }
+            )
 
-    def _generate_csv(self, fn_first, apply_filter=True):
-        """Generate csv file
-
-        :param fn_first: Boolean indicating if firstname comes first
-        :param apply_filter: Boolean to apply or not the filter_user method
-        """
-        all_users_data, filtered_users_data, duplicates = self._collect_users_data(fn_first)
-        users_data = filtered_users_data if apply_filter else all_users_data
-        output = self._create_csv(users_data)
+        output = csv_output.getvalue()
         response = self.request.RESPONSE
         response.setHeader("Content-Type", "text/csv; charset=utf-8")
-        filename = "plone_users_list_filtered.csv" if apply_filter else "plone_users_list_all.csv"
-        response.setHeader("Content-Disposition", "attachment; filename={}".format(filename))
+        response.setHeader("Content-Disposition", "attachment; filename=signing_users_selected.csv")
         return output
 
-    def _generate_html(self, fn_first, apply_filter=True):
-        """Generate html output with duplicates."""
-        # Get all users and filtered users in one call
-        all_users_data, filtered_users_data, duplicates = self._collect_users_data(fn_first)
-        users_data = filtered_users_data if apply_filter else all_users_data
-        csv_text = self._create_csv(users_data)
+    def _send_emails(self):
+        """Send emails to selected users."""
+        selected_userids = self._get_selected_userids()
 
-        base_url = self.context.absolute_url() + "/@@signing-users-csv"
+        if not selected_userids:
+            api.portal.show_message(_("No users selected for email sending."), request=self.request, type="warning")
+            return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        html = [
-            "<!DOCTYPE html>",
-            "<html><head>",
-            "<meta charset='utf-8'>",
-            "<title>Liste des utilisateurs Plone</title>",
-            "<style>",
-            "body { font-family: Arial, sans-serif; margin: 20px; }",
-            "h1 { color: #333; }",
-            "h2 { color: #666; margin-top: 10px; }",
-            ".error-section { background-color: #fff3cd; border: 1px solid #ffc107; padding: 5px; margin: 20px 0; "
-            "border-radius: 5px; }",
-            ".success-section { background-color: #d4edda; border: 1px solid #28a745; padding: 5px; margin: 20px 0; "
-            "border-radius: 5px; }",
-            ".duplicate { margin: 10px 0; padding: 10px; background-color: #f8d7da; border-left: 4px solid #dc3545; }",
-            ".duplicate strong { color: #721c24; }",
-            ".csv-content { background-color: #f5f5f5; border: 1px solid #ddd; padding: 15px; margin: 20px 0; "
-            "font-family: monospace; white-space: pre-wrap; overflow-x: auto; max-height: 400px; overflow-y: auto; }",
-            ".download-btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; "
-            "text-decoration: none; border-radius: 5px; margin: 0 0 10px; }",
-            ".download-btn:hover { background-color: #0056b3; }",
-            ".download-btn.secondary { background-color: #6c757d; }",
-            ".download-btn.secondary:hover { background-color: #5a6268; }",
-            ".stats { margin: 20px 0; }",
-            "</style>",
-            "</head><body>",
-            "<h1>Plone list users</h1>",
-            "<div class='stats'>",
-            "<p><strong>Total users (all) :</strong> {}</p>".format(len(all_users_data)),
-            "<p><strong>Total users (filtered) :</strong> {}</p>".format(len(filtered_users_data)),
-            "<p><strong>Total duplicated emails :</strong> {}</p>".format(len(duplicates)),
-            "</div>",
-        ]
-        if duplicates:
-            html.append("<div class='error-section'>")
-            html.append("<h2>⚠️ email duplicate</h2>")
-            for email, userids in sorted(duplicates.items()):
-                html.append("<div class='duplicate'>")
-                html.append("<strong>Email :</strong> {}<br>".format(safe_encode(email)))
-                html.append("<strong>Users :</strong> {}".format(", ".join([safe_encode(uid) for uid in userids])))
-                html.append("</div>")
-            html.append("</div>")
-        else:
-            html.append("<div class='success-section'>")
-            html.append("<h2>✓ No email duplicate</h2>")
-            html.append("</div>")
+        email_content = get_registry_signing_users_email_content()
+        if not email_content:
+            api.portal.show_message(
+                _("Email content is not configured in the settings."), request=self.request, type="error"
+            )
+            return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        html.append("<h2>Download CSV file</h2>")
-        html.append("<a href='{}?download=1&apply_filter=1' class='download-btn'>📥 Download CSV "
-                    "(filtered)</a>".format(base_url))
-        html.append("<a href='{}?download=1&apply_filter=0' class='download-btn secondary'>📥 Download CSV "
-                    "(all users)</a>".format(base_url))
-        html.append("<h2>Overview of CSV file{}</h2>".format(" (filtered)" if apply_filter else ""))
-        html.append("<div class='csv-content'>{}</div>".format(csv_text.replace("<", "&lt;").replace(">", "&gt;")))
-        html.append("</body></html>")
+        all_users_data, duplicates = self.get_users_data()
+        selected_users = [u for u in all_users_data if u["userid"] in selected_userids]
 
-        response = self.request.RESPONSE
-        response.setHeader("Content-Type", "text/html; charset=utf-8")
+        portal_email = api.portal.get().getProperty("email_from_address")
+        if not portal_email:
+            api.portal.show_message(_("Portal from email is not configured."), request=self.request, type="error")
+            return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@mail-controlpanel")
 
-        return "\n".join(html)
+        success_count = 0
+        failed_count = 0
+        for user_data in selected_users:
+            if not user_data["email"]:
+                failed_count += 1
+                api.portal.show_message(
+                    _(
+                        "User ${userid} has no email address configured. Skipping.",
+                        mapping={"userid": user_data["userid"]},
+                    ),
+                    request=self.request,
+                    type="warning",
+                )
+                continue
+
+            personalized_content = str(email_content).format(**user_data).replace("\n", "<br>\n")
+
+            # Create and send email
+            try:
+                eml = create_html_email(personalized_content, with_plain=True)
+                subject = translate(_(u"You have been invited to Paraphéo"), context=self.request)
+
+                status, error = send_email(
+                    eml, subject=subject, mfrom=portal_email, mto=user_data["email"], immediate=False
+                )
+
+                if status:
+                    success_count += 1
+                else:
+                    raise Exception(error)
+            except Exception as e:
+                failed_count += 1
+                error = str(e)
+                api.portal.show_message(
+                    _(
+                        "Failed to send email to ${userid}.",
+                        mapping={"userid": user_data["userid"]},
+                    )
+                    + " "
+                    + error,
+                    request=self.request,
+                    type="error",
+                )
+                continue
+
+        if success_count > 0:
+            api.portal.show_message(
+                _("Emails sent successfully to ${count} users.", mapping={"count": success_count}),
+                request=self.request,
+                type="info",
+            )
+
+        if failed_count > 0:
+            api.portal.show_message(
+                _("Failed to send emails to ${count} users.", mapping={"count": failed_count}),
+                request=self.request,
+                type="warning",
+            )
+
+        return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
 
 class EsignMacros(BrowserView):

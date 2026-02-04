@@ -23,6 +23,10 @@ def get_registry_seal_email(default=""):
     return api.portal.get_registry_record("imio.esign.seal_email", default=default)
 
 
+def get_registry_signing_users_email_content(default=""):
+    return api.portal.get_registry_record("imio.esign.signing_users_email_content", default=default)
+
+
 def get_registry_sign_code(default=""):
     return api.portal.get_registry_record("imio.esign.sign_code", default=default)
 
@@ -49,3 +53,7 @@ def set_registry_seal_email(value):
 
 def set_registry_sign_code(value):
     api.portal.set_registry_record("imio.esign.sign_code", value)
+
+
+def set_registry_signing_users_email_content(value):
+    api.portal.set_registry_record("imio.esign.signing_users_email_content", value)

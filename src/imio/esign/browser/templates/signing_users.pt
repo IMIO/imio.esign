@@ -1,0 +1,399 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:metal="http://xml.zope.org/namespaces/metal"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    metal:use-macro="context/main_template/macros/master"
+    i18n:domain="imio.esign">
+
+    <metal:block fill-slot="content-core">
+        <style>
+            #content-core {
+            max-width: 100%;
+            }
+            .signing-users-container h1 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            }
+            .action-bar {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            }
+            .action-bar > div {
+            margin-bottom: 15px;
+            }
+            .action-bar > div:last-child {
+            margin-bottom: 0;
+            }
+            .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 0 5px 5px 0;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.2s;
+            }
+            .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            .btn-primary {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+            }
+            .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            border-color: #6c757d;
+            }
+            .btn-success {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+            }
+            .btn-info {
+            background-color: #17a2b8;
+            color: white;
+            border-color: #17a2b8;
+            }
+            .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+            }
+            .stats {
+            display: inline-block;
+            margin-left: 20px;
+            padding: 8px 15px;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            }
+            table.listing {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            }
+            table.listing th,
+            table.listing td {
+            padding: 12px 8px;
+            border: 1px solid #dee2e6;
+            text-align: left;
+            }
+            table.listing th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            }
+            table.listing tbody tr:hover {
+            background-color: #f8f9fa;
+            }
+            table.listing tbody tr.checked-by-default {
+            font-weight: normal;
+            }
+            #email-confirmation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 10000;
+            }
+            .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            }
+            .modal-content h2 {
+            margin-top: 0;
+            color: #333;
+            }
+            .modal-content .portalMessage {
+            margin: 15px 0;
+            }
+            .modal-actions {
+            margin-top: 25px;
+            text-align: right;
+            }
+        </style>
+
+        <div class="signing-users-container">
+            <tal:block
+                define="users_data python:view.get_users_data();
+                       all_users python:users_data[0];
+                       duplicates python:users_data[1];">
+
+                <h1 i18n:translate="">Signing Users: Export CSV</h1>
+
+                <!-- Duplicate email warnings -->
+                <tal:duplicates condition="duplicates">
+                    <div class="portalMessage error">
+                        <strong i18n:translate="">Warning: Duplicate email addresses detected</strong>
+                        <ul>
+                            <tal:block repeat="item python:sorted(duplicates.items())">
+                                <li>
+                                    <strong i18n:translate="">Email:</strong> <span
+                                        tal:content="python:item[0]">email@example.com</span> - <strong
+                                        i18n:translate="">Users:</strong> <span
+                                        tal:content="python:', '.join(item[1])">user1, user2</span>
+                                </li>
+                            </tal:block>
+                        </ul>
+                    </div>
+                </tal:duplicates>
+
+                <div class="action-bar">
+                    <div>
+                        <button type="button" id="select-all-btn" class="btn btn-secondary"
+                            i18n:translate="">
+                            Select All
+                        </button>
+                        <button type="button" id="select-signing-users-btn" class="btn btn-info"
+                            i18n:translate="">
+                            Select Only Signers
+                        </button>
+                        <button type="button" id="deselect-all-btn" class="btn btn-secondary"
+                            i18n:translate="">
+                            Deselect All
+                        </button>
+                        <span class="stats">
+                            <strong i18n:translate="">Selected:</strong> 
+                <span id="selected-count">0</span>
+                            / <span tal:content="python:len(all_users)">0</span>
+                        </span>
+                    </div>
+
+                    <div>
+                        <button type="button" id="download-csv-btn" class="btn btn-primary"
+                            i18n:translate="">
+                            📥 Download CSV
+                        </button>
+                        <button type="button" id="send-email-btn" class="btn btn-success"
+                            i18n:translate="">
+                            ✉️ Send Emails
+                        </button>
+                    </div>
+                </div>
+
+                <form id="users-form" method="post">
+                    <table class="listing" id="users-table" style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;">
+                                    <input type="checkbox" id="select-all-checkbox" />
+                                </th>
+                                <th i18n:translate="">User ID</th>
+                                <th i18n:translate="">Email</th>
+                                <th i18n:translate="">Last Name</th>
+                                <th i18n:translate="">First Name</th>
+                                <th i18n:translate="">Full Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tal:block repeat="user all_users">
+                                <tr
+                                    tal:attributes="class python:'checked-by-default' if user['checked'] else '';
+                                        data-userid user/userid;
+                                        style python:'background-color: #ffe6e6' if user.get('has_duplicate_email') else ''">
+                                    <td>
+                                        <input type="checkbox"
+                                            name="selected_users"
+                                            class="user-checkbox"
+                                            tal:attributes="value user/userid;
+                                                   checked python:'checked' if user['checked'] else None" />
+                                    </td>
+                                    <td tal:content="user/userid">userid</td>
+                                    <td tal:content="user/email">email@example.com</td>
+                                    <td tal:content="user/lastname">Lastname</td>
+                                    <td tal:content="user/firstname">Firstname</td>
+                                    <td tal:content="user/fullname">Full Name</td>
+                                </tr>
+                            </tal:block>
+                        </tbody>
+                    </table>
+                </form>
+
+                <!-- Email confirmation modal -->
+                <div id="email-confirmation-modal">
+                    <div class="modal-content">
+                        <h2 i18n:translate="">Confirm Email Sending</h2>
+                        <div class="portalMessage error">
+                            <strong i18n:translate="">Important:</strong>
+                            <p i18n:translate="">
+                                Before sending emails, please ensure that all selected users have
+                                their accounts
+                                created in "Wallonie Connect" (WaCo). If not, send the CSV to the
+                                DevOps team
+                                and wait for account creation.
+                            </p>
+                        </div>
+                        <p>
+                            <span i18n:translate="">You are about to send emails to</span>
+                            <strong>
+                                <span id="email-count">0</span>
+                            </strong>
+                            <span i18n:translate="">users.</span>
+                        </p>
+                        <div class="modal-actions">
+                            <button type="button" id="cancel-email-btn" class="btn btn-secondary"
+                                i18n:translate="">
+                                Cancel
+                            </button>
+                            <button type="button" id="confirm-email-btn" class="btn btn-danger"
+                                i18n:translate="">
+                                Send Emails
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <script type="text/javascript">
+                    //<![CDATA[
+    (function() {
+        var form = document.getElementById('users-form');
+        var checkboxes = document.querySelectorAll('.user-checkbox');
+        var selectAllCheckbox = document.getElementById('select-all-checkbox');
+        var selectAllBtn = document.getElementById('select-all-btn');
+        var selectSigningUsersBtn = document.getElementById('select-signing-users-btn');
+        var deselectAllBtn = document.getElementById('deselect-all-btn');
+        var downloadBtn = document.getElementById('download-csv-btn');
+        var sendEmailBtn = document.getElementById('send-email-btn');
+        var modal = document.getElementById('email-confirmation-modal');
+        var cancelEmailBtn = document.getElementById('cancel-email-btn');
+        var confirmEmailBtn = document.getElementById('confirm-email-btn');
+        var selectedCount = document.getElementById('selected-count');
+
+        function updateSelectedCount() {
+            var count = document.querySelectorAll('.user-checkbox:checked').length;
+            selectedCount.textContent = count;
+            
+            // Update select all checkbox state
+            var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
+            var someChecked = Array.from(checkboxes).some(function(cb) { return cb.checked; });
+            selectAllCheckbox.checked = allChecked;
+            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+        }
+
+        function getSelectedUserIds() {
+            var selected = [];
+            checkboxes.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    selected.push(checkbox.value);
+                }
+            });
+            return selected;
+        }
+
+        function performAction(action) {
+            var selected = getSelectedUserIds();
+            if (selected.length === 0) {
+                alert('Please select at least one user.');
+                return;
+            }
+
+            var url = window.location.href.split('?')[0];
+            var params = 'action=' + action + '&selected_users=' + encodeURIComponent(JSON.stringify(selected));
+            
+            if (action === 'download_csv') {
+                window.location.href = url + '?' + params;
+            } else if (action === 'send_emails') {
+                // Show confirmation modal
+                document.getElementById('email-count').textContent = selected.length;
+                modal.style.display = 'block';
+            }
+        }
+
+        // Event listeners
+        checkboxes.forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+
+        selectAllCheckbox.addEventListener('change', function() {
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            updateSelectedCount();
+        });
+
+        selectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = true;
+            });
+            updateSelectedCount();
+        });
+
+        selectSigningUsersBtn.addEventListener('click', function() {
+            checkboxes.forEach(function(checkbox) {
+                var row = checkbox.closest('tr');
+                // Check if this row has the 'checked-by-default' class
+                if (row && row.classList.contains('checked-by-default')) {
+                    checkbox.checked = true;
+                } else {
+                    checkbox.checked = false;
+                }
+            });
+            updateSelectedCount();
+        });
+
+        deselectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(function(checkbox) {
+                checkbox.checked = false;
+            });
+            updateSelectedCount();
+        });
+
+        downloadBtn.addEventListener('click', function() {
+            performAction('download_csv');
+        });
+
+        sendEmailBtn.addEventListener('click', function() {
+            performAction('send_emails');
+        });
+
+        cancelEmailBtn.addEventListener('click', function() {
+            modal.style.display = 'none';
+        });
+
+        confirmEmailBtn.addEventListener('click', function() {
+            var selected = getSelectedUserIds();
+            var url = window.location.href.split('?')[0];
+            var params = 'action=send_emails&selected_users=' + encodeURIComponent(JSON.stringify(selected));
+            window.location.href = url + '?' + params;
+        });
+
+        // Close modal on outside click
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Initial count update
+        updateSelectedCount();
+    })();
+    //]]>
+                </script>
+            </tal:block>
+        </div>
+    </metal:block>
+</html>

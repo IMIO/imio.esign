@@ -30,7 +30,7 @@ msgstr "Ajouter à la session"
 
 #: ../browser/table.py:132
 msgid "Create external session"
-msgstr "Créer une session externe de signature"
+msgstr "Envoyer dans Paraphéo"
 
 #: ../browser/table.py:129
 msgid "Delete session"
@@ -104,11 +104,15 @@ msgstr "Dernière mise à jour"
 
 #: ../browser/templates/sessions.pt:11
 msgid "List of electronic signing sessions"
-msgstr "Liste des sessions de signatures électroniques"
+msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "No"
 msgstr "Non"
+
+#: ../browser/templates/session_files.pt:52
+msgid "No files"
+msgstr "Aucun fichier"
 
 #: ../browser/views.py:145
 msgid "No seal code defined in configuration ! Session ${id} not sent."

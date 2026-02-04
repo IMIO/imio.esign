@@ -109,6 +109,10 @@ msgstr ""
 msgid "No"
 msgstr ""
 
+#: ../browser/templates/session_files.pt:52
+msgid "No files"
+msgstr ""
+
 #: ../browser/views.py:145
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
@@ -162,7 +166,7 @@ msgid "Session deleted successfully!"
 msgstr ""
 
 #: ../browser/templates/faceted_session_info.pt:11
-msgid "Session information : ${title}"
+msgid "Session information"
 msgstr ""
 
 #: ../browser/views.py:118

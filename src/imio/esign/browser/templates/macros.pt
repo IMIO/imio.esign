@@ -1,4 +1,4 @@
-<tr metal:define-macro="session_id">
+<tr metal:define-macro="session_id" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
     <td class="table_widget_value" tal:define="can_link python:view.can_display_sessions_listing_link()">
         <span tal:condition="not: can_link" tal:content="python: session['id']">25452</span>
@@ -7,34 +7,34 @@
            tal:attributes="href python:'{}#{}'.format(view.session_listing_url, session['id'])">25452 - College</a>
     </td>
 </tr>
-<tr metal:define-macro="state">
+<tr metal:define-macro="state" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">State</label></td>
     <td class="table_widget_value">
         <span tal:content="python:session['state']" i18n:translate="">draft</span>
     </td>
 </tr>
-<tr metal:define-macro="update_date">
+<tr metal:define-macro="update_date" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Last update</label></td>
     <td class="table_widget_value"
              tal:content="python:context.unrestrictedTraverse('@@plone').toLocalizedTime(session['last_update'], long_format=True)">
         2025-08-13 10:44
     </td>
 </tr>
-<tr metal:define-macro="sealed">
+<tr metal:define-macro="sealed" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Sealed</label></td>
     <td class="table_widget_value"
              tal:content="python:'Yes' if session['seal'] else 'No'"
              i18n:translate="">No
     </td>
 </tr>
-<tr metal:define-macro="external_link">
+<tr metal:define-macro="external_link" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Title</label></td>
     <td class="table_widget_value"
              tal:content="structure python: view.ext_session_link(session)"
              i18n:translate="">url
     </td>
 </tr>
-<tr metal:define-macro="signers">
+<tr metal:define-macro="signers" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
     <td class="table_widget_value">
         <table id="context_viewlet_signers_table" class="no-border no-style-table listing"
@@ -58,4 +58,3 @@
         </table>
     </td>
 </tr>
-

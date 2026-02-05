@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-02-05 14:26+0000\n"
+"POT-Creation-Date: 2026-02-05 15:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
-#: ../browser/views.py:278
+#: ../browser/views.py:282
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:131
+#: ../browser/table.py:132
 msgid "Actions"
 msgstr ""
 
@@ -27,16 +27,20 @@ msgstr ""
 msgid "Add to esign session"
 msgstr ""
 
-#: ../browser/table.py:164
+#: ../browser/table.py:165
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:150
+#: ../browser/table.py:151
 msgid "Delete session"
 msgstr ""
 
 #: ../browser/actions.py:90
 msgid "Element removed from session!"
+msgstr ""
+
+#: ../browser/templates/macros.pt:46
+msgid "Email"
 msgstr ""
 
 #: ../browser/settings.py:71
@@ -59,8 +63,12 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:96
+#: ../browser/table.py:97
 msgid "Files"
+msgstr ""
+
+#: ../browser/templates/macros.pt:44
+msgid "Full name"
 msgstr ""
 
 #: ../browser/table.py:14
@@ -85,6 +93,7 @@ msgid "Is the eSign service enabled?"
 msgstr ""
 
 #: ../browser/table.py:68
+#: ../browser/templates/macros.pt:17
 msgid "Last update"
 msgstr ""
 
@@ -108,11 +117,15 @@ msgstr ""
 msgid "No session ID provided!"
 msgstr ""
 
+#: ../browser/templates/macros.pt:45
+msgid "Position"
+msgstr ""
+
 #: ../browser/actions.py:54
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:105
+#: ../browser/table.py:106
 msgid "Quick look"
 msgstr ""
 
@@ -132,15 +145,23 @@ msgstr ""
 msgid "Seal email"
 msgstr ""
 
+#: ../browser/templates/macros.pt:24
+msgid "Sealed"
+msgstr ""
+
 #: ../utils.py:114
 msgid "Session ${id}"
+msgstr ""
+
+#: ../browser/templates/macros.pt:2
+msgid "Session ID"
 msgstr ""
 
 #: ../browser/views.py:116
 msgid "Session deleted successfully!"
 msgstr ""
 
-#: ../browser/templates/session_info.pt:9
+#: ../browser/templates/session_info.pt:11
 msgid "Session information"
 msgstr ""
 
@@ -168,31 +189,37 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:330
+#: ../browser/views.py:334
 msgid "Signed file download"
 msgstr ""
 
 #: ../browser/table.py:79
+#: ../browser/templates/macros.pt:38
 msgid "Signers"
 msgstr ""
 
 #: ../browser/table.py:44
+#: ../browser/templates/macros.pt:11
 msgid "State"
 msgstr ""
 
-#: ../browser/views.py:306
+#: ../browser/templates/macros.pt:47
+msgid "Status"
+msgstr ""
+
+#: ../browser/views.py:310
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:286
+#: ../browser/views.py:290
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:298
+#: ../browser/views.py:302
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
-#: ../browser/views.py:282
+#: ../browser/views.py:286
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -205,6 +232,7 @@ msgid "This will remove this element or configured sub elements from the relevan
 msgstr ""
 
 #: ../browser/table.py:55
+#: ../browser/templates/macros.pt:31
 msgid "Title"
 msgstr ""
 
@@ -236,7 +264,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:171
+#: ../browser/table.py:172
 msgid "View session in dashboard"
 msgstr ""
 

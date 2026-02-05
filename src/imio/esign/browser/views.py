@@ -21,6 +21,7 @@ from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.Five import BrowserView
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
 from zope.publisher.interfaces import IPublishTraverse
@@ -208,6 +209,9 @@ class FacetedSessionInfoViewlet(ViewletBase):
     @property
     def session_listing_url(self):
         return api.portal.get().absolute_url() + "/@@parapheo"
+
+    def can_display_sessions_listing_link(self):
+        return getMultiAdapter((api.portal.get(), self.request), name="parapheo").available()
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

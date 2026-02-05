@@ -1,7 +1,8 @@
 <tr metal:define-macro="session_id">
     <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
-    <td class="table_widget_value">
-        <a href="#" target="_blank"
+    <td class="table_widget_value" tal:define="can_link python:view.can_display_sessions_listing_link()">
+        <span tal:condition="not: can_link" tal:content="python: session['id']">25452</span>
+        <a tal:condition="can_link" href="#" target="_blank"
            tal:content="python: session['id']"
            tal:attributes="href python:'{}#{}'.format(view.session_listing_url, session['id'])">25452 - College</a>
     </td>

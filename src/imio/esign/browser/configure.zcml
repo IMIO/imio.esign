@@ -56,7 +56,7 @@
             name="esign-session-delete"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SessionDeleteView"
-            permission="imio.esign.ManageSessions"
+            permission="zope2.View"
             i18n:domain="imio.esign"
     />
 
@@ -64,7 +64,7 @@
             name="external-esign-session-create"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.ExternalSessionCreateView"
-            permission="imio.esign.ManageSessions"
+            permission="zope2.View"
             i18n:domain="imio.esign"
     />
 

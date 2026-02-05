@@ -100,6 +100,10 @@ class SessionDeleteView(BrowserView):
     """View to delete a session."""
 
     def __call__(self):
+        if not self.may_delete_session():
+            api.portal.show_message(_("You don't have permission to delete sessions!"), request=self.request,
+                                    type="error")
+            return self.request.RESPONSE.redirect(self.context.absolute_url())
         session_id = self.request.get("esign_session_id")
         if not session_id:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
@@ -124,6 +128,10 @@ class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
 
     def __call__(self, session_id=None):
+        if not self.may_create_external_sessions():
+            api.portal.show_message(_("You don't have permission to create external sessions!"), request=self.request,
+                                    type="error")
+            return self.context.absolute_url() + "/@@parapheo"
         if session_id is None:
             session_id = self.request.get("session_id", None)
         if session_id is None:

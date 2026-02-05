@@ -137,10 +137,11 @@ class ActionsColumn(Column):
         session_id = item.get("id")
         dashboard_link = self.table.view.get_dashboard_link({"id": session_id})
         sessions_url = self.table.view.get_sessions_url()
+        portal = api.portal.get()
         # if not sessions_url.endswith("/"):
         #    sessions_url += "/"
         admin_buttons = u""
-        if getMultiAdapter((self.context, self.request), name="esign-session-delete").may_delete_session():
+        if getMultiAdapter((portal, self.request), name="esign-session-delete").may_delete_session():
             admin_buttons = u"""
             <img width="16" height="16" title="{delete}" style="cursor:pointer" src="delete_icon.png"
             onclick="javascript:confirmDeleteObject(base_url='{sessions_url}', object_uid=null, this,
@@ -151,7 +152,7 @@ class ActionsColumn(Column):
                 session_id=session_id,
             )
         if (item.get("state") == "draft"
-                and getMultiAdapter((self.context, self.request),
+                and getMultiAdapter((portal, self.request),
                                     name="external-esign-session-create").may_create_external_sessions()):
             admin_buttons += u"""
             <img width="16" height="16" title="{send}" style="cursor:pointer" src="++resource++imio.esign/parapheo.svg"

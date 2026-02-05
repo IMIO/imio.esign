@@ -83,10 +83,11 @@ class SignersColumn(Column):
     def renderCell(self, item):
         signers = item.get("signers") or []
         parts = [
-            "<li>%s, %s%s</li>" % (
+            "<li>%s, %s%s (%s)</li>" % (
                 s.get("fullname", ""),
                 s.get("position"),
-                " (%s)" % s.get("status") if s.get("status") else "")
+                " (%s)" % s.get("status") if s.get("status") else "",
+                s.get("email"), )
             for s in signers
         ]
         return safe_unicode("<ol>%s</ol>" % "".join(parts))

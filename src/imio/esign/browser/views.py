@@ -225,6 +225,10 @@ class FacetedSessionInfoViewlet(ViewletBase):
         """Default CSS class to apply on the collapsible."""
         return "collapsible active"
 
+    def collapsible_content_css_default(self):
+        """Default CSS class to apply on the collapsible."""
+        return "collapsible-content"
+
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
     """Show selected session info for an item."""

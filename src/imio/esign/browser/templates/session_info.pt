@@ -10,7 +10,8 @@
         tal:attributes="class python: view.collapsible_css_default()">
       <span i18n:translate="">Session information</span>
     </div>
-    <div id="collapsible-session-info" class="collapsible-content discreet">
+    <div id="collapsible-session-info"
+         tal:attributes="class python: view.collapsible_content_css_default()">
       <div class="collapsible-inner-content session-info-container"
            tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index;
                        session python: view.session">

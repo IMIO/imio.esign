@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-01-16 12:42+0000\n"
+"POT-Creation-Date: 2026-02-05 14:26+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,11 +16,11 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/views.py:259
+#: ../browser/views.py:278
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../browser/table.py:112
+#: ../browser/table.py:131
 msgid "Actions"
 msgstr "Actions"
 
@@ -28,21 +28,17 @@ msgstr "Actions"
 msgid "Add to esign session"
 msgstr "Ajouter à la session"
 
-#: ../browser/table.py:132
+#: ../browser/table.py:164
 msgid "Create external session"
 msgstr "Envoyer dans Paraphéo"
 
-#: ../browser/table.py:129
+#: ../browser/table.py:150
 msgid "Delete session"
 msgstr "Effacer la session"
 
-#: ../browser/actions.py:106
+#: ../browser/actions.py:90
 msgid "Element removed from session!"
 msgstr "Élément retiré de la session !"
-
-#: ../browser/templates/faceted_session_info.pt:67
-msgid "Email"
-msgstr "Email"
 
 #: ../browser/settings.py:71
 msgid "Email of the eidas provider account containing the seal image."
@@ -52,15 +48,11 @@ msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 msgid "Enabled?"
 msgstr "Activé?"
 
-#: ../browser/views.py:153
+#: ../browser/views.py:161
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
-#: ../browser/templates/faceted_session_info.pt:52
-msgid "External session"
-msgstr "Session de signature"
-
-#: ../browser/views.py:150
+#: ../browser/views.py:158
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
@@ -68,15 +60,11 @@ msgstr "Session externe envoyée avec succès !"
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
-#: ../browser/table.py:78
+#: ../browser/table.py:96
 msgid "Files"
 msgstr "Fichiers"
 
-#: ../browser/templates/faceted_session_info.pt:65
-msgid "Full name"
-msgstr "Nom"
-
-#: ../browser/table.py:13
+#: ../browser/table.py:14
 msgid "ID"
 msgstr "Identifiant"
 
@@ -97,12 +85,11 @@ msgstr "Numéro de TVA invalide : échec de la vérification de la somme de cont
 msgid "Is the eSign service enabled?"
 msgstr "Active/désactive la fonctionnalité globalement sur le site."
 
-#: ../browser/table.py:57
-#: ../browser/templates/faceted_session_info.pt:30
+#: ../browser/table.py:68
 msgid "Last update"
 msgstr "Dernière mise à jour"
 
-#: ../browser/templates/sessions.pt:11
+#: ../browser/templates/sessions.pt:13
 msgid "List of electronic signing sessions"
 msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
@@ -110,11 +97,11 @@ msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/templates/session_files.pt:52
+#: ../browser/templates/session_files.pt:3
 msgid "No files"
 msgstr "Aucun fichier"
 
-#: ../browser/views.py:145
+#: ../browser/views.py:153
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
@@ -122,15 +109,11 @@ msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
-#: ../browser/templates/faceted_session_info.pt:66
-msgid "Position"
-msgstr "Fonction occupée"
+#: ../browser/actions.py:54
+msgid "Problem getting signers: \"${error}\")!"
+msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/actions.py:51
-msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
-msgstr "Problème avec les signataires certifiées, assurez-vous qu'une fonction occupée est sélectionnée pour chaque signataire (vérifiez \"${name}/${function}\") !"
-
-#: ../browser/table.py:86
+#: ../browser/table.py:105
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
@@ -150,23 +133,15 @@ msgstr "Code fourni par le fournisseur eidas."
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
-#: ../browser/templates/faceted_session_info.pt:38
-msgid "Sealed"
-msgstr "Sceau"
-
-#: ../utils.py:106
+#: ../utils.py:114
 msgid "Session ${id}"
 msgstr "Session ${id}"
-
-#: ../browser/templates/faceted_session_info.pt:18
-msgid "Session ID"
-msgstr "Identifiant"
 
 #: ../browser/views.py:116
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
-#: ../browser/templates/faceted_session_info.pt:11
+#: ../browser/templates/session_info.pt:9
 msgid "Session information"
 msgstr "Session de signature"
 
@@ -178,7 +153,7 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:139
+#: ../browser/views.py:147
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
@@ -194,37 +169,31 @@ msgstr "Méthode de signature utilisée pour spécifier la méthode de signature
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/views.py:311
+#: ../browser/views.py:330
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
-#: ../browser/table.py:66
-#: ../browser/templates/faceted_session_info.pt:59
+#: ../browser/table.py:79
 msgid "Signers"
 msgstr "Signataires"
 
-#: ../browser/table.py:35
-#: ../browser/templates/faceted_session_info.pt:23
+#: ../browser/table.py:44
 msgid "State"
 msgstr "État"
 
-#: ../browser/templates/faceted_session_info.pt:68
-msgid "Status"
-msgstr "Statut"
-
-#: ../browser/views.py:287
+#: ../browser/views.py:306
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr "Le contenu du fichier correspondant ne peut pas être récupéré (${uid}) !"
 
-#: ../browser/views.py:267
+#: ../browser/views.py:286
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 
-#: ../browser/views.py:279
+#: ../browser/views.py:298
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
 
-#: ../browser/views.py:263
+#: ../browser/views.py:282
 msgid "This file identifier is not correct !"
 msgstr "Le format de cet identifiant de fichier n'est pas correct !"
 
@@ -236,7 +205,7 @@ msgstr "Cela ajoutera cet élément ou les sous-éléments configurés à une se
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
 
-#: ../browser/table.py:45
+#: ../browser/table.py:55
 msgid "Title"
 msgstr "Titre"
 
@@ -268,13 +237,21 @@ msgstr "Le numéro de TVA doit commencer par 'BE'"
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 
-#: ../browser/table.py:139
+#: ../browser/table.py:171
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
 msgstr "Oui"
+
+#: ../browser/views.py:132
+msgid "You don't have permission to create external sessions!"
+msgstr "Vous n'avez pas la permission de créer une session externe !"
+
+#: ../browser/views.py:104
+msgid "You don't have permission to delete sessions!"
+msgstr "Vous n'avez pas la permission de supprimer une session !"
 
 #: ../browser/table.py:25
 msgid "draft"

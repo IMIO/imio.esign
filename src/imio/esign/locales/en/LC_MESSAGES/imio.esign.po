@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-01-16 12:42+0000\n"
+"POT-Creation-Date: 2026-02-05 14:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../browser/views.py:259
+#: ../browser/views.py:278
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:112
+#: ../browser/table.py:131
 msgid "Actions"
 msgstr ""
 
@@ -27,20 +27,16 @@ msgstr ""
 msgid "Add to esign session"
 msgstr ""
 
-#: ../browser/table.py:132
+#: ../browser/table.py:164
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:129
+#: ../browser/table.py:150
 msgid "Delete session"
 msgstr ""
 
-#: ../browser/actions.py:106
+#: ../browser/actions.py:90
 msgid "Element removed from session!"
-msgstr ""
-
-#: ../browser/templates/faceted_session_info.pt:67
-msgid "Email"
 msgstr ""
 
 #: ../browser/settings.py:71
@@ -51,15 +47,11 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:153
+#: ../browser/views.py:161
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:52
-msgid "External session"
-msgstr ""
-
-#: ../browser/views.py:150
+#: ../browser/views.py:158
 msgid "External session sent successfully!"
 msgstr ""
 
@@ -67,15 +59,11 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:78
+#: ../browser/table.py:96
 msgid "Files"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:65
-msgid "Full name"
-msgstr ""
-
-#: ../browser/table.py:13
+#: ../browser/table.py:14
 msgid "ID"
 msgstr ""
 
@@ -96,12 +84,11 @@ msgstr ""
 msgid "Is the eSign service enabled?"
 msgstr ""
 
-#: ../browser/table.py:57
-#: ../browser/templates/faceted_session_info.pt:30
+#: ../browser/table.py:68
 msgid "Last update"
 msgstr ""
 
-#: ../browser/templates/sessions.pt:11
+#: ../browser/templates/sessions.pt:13
 msgid "List of electronic signing sessions"
 msgstr ""
 
@@ -109,11 +96,11 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/templates/session_files.pt:52
+#: ../browser/templates/session_files.pt:3
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:145
+#: ../browser/views.py:153
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
@@ -121,15 +108,11 @@ msgstr ""
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:66
-msgid "Position"
+#: ../browser/actions.py:54
+msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/actions.py:51
-msgid "Problem with certified signatories, make sure a held position is selected for each signatory (check \"${name}/${function}\")!"
-msgstr ""
-
-#: ../browser/table.py:86
+#: ../browser/table.py:105
 msgid "Quick look"
 msgstr ""
 
@@ -149,23 +132,15 @@ msgstr ""
 msgid "Seal email"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:38
-msgid "Sealed"
-msgstr ""
-
-#: ../utils.py:106
+#: ../utils.py:114
 msgid "Session ${id}"
-msgstr ""
-
-#: ../browser/templates/faceted_session_info.pt:18
-msgid "Session ID"
 msgstr ""
 
 #: ../browser/views.py:116
 msgid "Session deleted successfully!"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:11
+#: ../browser/templates/session_info.pt:9
 msgid "Session information"
 msgstr ""
 
@@ -177,7 +152,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:139
+#: ../browser/views.py:147
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -193,37 +168,31 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:311
+#: ../browser/views.py:330
 msgid "Signed file download"
 msgstr ""
 
-#: ../browser/table.py:66
-#: ../browser/templates/faceted_session_info.pt:59
+#: ../browser/table.py:79
 msgid "Signers"
 msgstr ""
 
-#: ../browser/table.py:35
-#: ../browser/templates/faceted_session_info.pt:23
+#: ../browser/table.py:44
 msgid "State"
 msgstr ""
 
-#: ../browser/templates/faceted_session_info.pt:68
-msgid "Status"
-msgstr ""
-
-#: ../browser/views.py:287
+#: ../browser/views.py:306
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:267
+#: ../browser/views.py:286
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:279
+#: ../browser/views.py:298
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
-#: ../browser/views.py:263
+#: ../browser/views.py:282
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -235,7 +204,7 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:45
+#: ../browser/table.py:55
 msgid "Title"
 msgstr ""
 
@@ -267,12 +236,20 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:139
+#: ../browser/table.py:171
 msgid "View session in dashboard"
 msgstr ""
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
+msgstr ""
+
+#: ../browser/views.py:132
+msgid "You don't have permission to create external sessions!"
+msgstr ""
+
+#: ../browser/views.py:104
+msgid "You don't have permission to delete sessions!"
 msgstr ""
 
 #: ../browser/table.py:25

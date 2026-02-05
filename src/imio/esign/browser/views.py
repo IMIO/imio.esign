@@ -221,6 +221,10 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def can_display_sessions_listing_link(self):
         return getMultiAdapter((api.portal.get(), self.request), name="parapheo").available()
 
+    def collapsible_css_default(self):
+        """Default CSS class to apply on the collapsible."""
+        return "collapsible active"
+
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
     """Show selected session info for an item."""

@@ -4,37 +4,39 @@
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
       i18n:domain="imio.esign">
-<div class="faceted-session-info" tal:condition="python: view.available()">
-    <fieldset>
-        <legend i18n:translate="">
-            Session information
-        </legend>
-        <div class="session-info-container"
-             tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index;
-                         session python: view.session">
-            <div class="session-info-column">
-                <table id="context_viewlet_session_table" class="no-style-table table-view-widgets">
-                    <tbody>
-                    <tal:block tal:repeat="macro_name python:view.get_table_rows(1)">
-                        <metal:render_cell use-macro="python: template.macros[macro_name]" />
-                    </tal:block>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="session-info-column">
-                <table id="context_viewlet_session_signers" class="no-style-table table-view-widgets">
-                    <tbody>
-                    <tal:block tal:repeat="macro_name python:view.get_table_rows(2)">
-                        <metal:render_cell use-macro="python: template.macros[macro_name]" />
-                    </tal:block>
-                    </tbody>
-                </table>
-            </div>
-            <script>$('table#context_viewlet_signers_table').each(setoddeven);</script>
+  <div class="faceted-session-info" tal:condition="python: view.available()">
+    <div id="session-info"
+        onclick="toggleDetails('collapsible-session-info', toggle_parent_active=true);"
+        tal:attributes="class python: view.collapsible_css_default()">
+      <span i18n:translate="">Session information</span>
+    </div>
+    <div id="collapsible-session-info" class="collapsible-content discreet">
+      <div class="collapsible-inner-content session-info-container"
+           tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index;
+                       session python: view.session">
+        <div class="session-info-column">
+            <table id="context_viewlet_session_table" class="no-style-table table-view-widgets">
+                <tbody>
+                <tal:block tal:repeat="macro_name python:view.get_table_rows(1)">
+                    <metal:render_cell use-macro="python: template.macros[macro_name]" />
+                </tal:block>
+                </tbody>
+            </table>
         </div>
-    </fieldset>
-</div>
+
+        <div class="session-info-column">
+            <table id="context_viewlet_session_signers" class="no-style-table table-view-widgets">
+                <tbody>
+                <tal:block tal:repeat="macro_name python:view.get_table_rows(2)">
+                    <metal:render_cell use-macro="python: template.macros[macro_name]" />
+                </tal:block>
+                </tbody>
+            </table>
+        </div>
+        <script>$('table#context_viewlet_signers_table').each(setoddeven);</script>
+      </div>
+    </div>
+  </div>
 
 <style>
     table.no-border td {

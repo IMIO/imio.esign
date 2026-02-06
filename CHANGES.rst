@@ -5,8 +5,8 @@ Changelog
 1.0a2 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Removed `python_requires=">=3.7"` from `setup.py`.
+  [gbastien]
 
 1.0a1 (2026-02-06)
 ------------------

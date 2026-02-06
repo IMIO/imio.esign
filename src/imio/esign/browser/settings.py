@@ -86,14 +86,6 @@ class IImioEsignSettings(Interface):
         required=True,
     )
 
-    max_file_size = schema.Int(
-        title=_("Max file size (MB)"),
-        description=_("Maximum size of a single file in megabytes. If a file exceeds this limit, it will be isolated in a single session."),
-        default=100,
-        min=1,
-        required=True,
-    )
-
 
 class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings

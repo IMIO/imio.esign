@@ -6,7 +6,6 @@ from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import logger
 from imio.esign.config import get_registry_file_url
-from imio.esign.config import get_registry_max_file_size
 from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import get_registry_seal_code
 from imio.esign.config import get_registry_seal_email
@@ -56,7 +55,7 @@ def add_files_to_session(
     :return: session_id, session
     """
     annot = get_session_annotation()
-    session_ids = []
+    size = sum(get_filesize(uid) for uid in files_uids)
     if session_id is not None:
         if session_id not in annot["sessions"]:
             logger.error("Session with id %s not found in esign annotations.", session_id)
@@ -64,36 +63,14 @@ def add_files_to_session(
         else:
             session = annot["sessions"][session_id]
     else:
-        size = 0
-        exceeding_session_size_files_uids = []
-        for uid in files_uids.copy():
-            file_size = get_filesize(uid)
-            if file_size > get_registry_max_file_size() * 1024**2:
-                logger.warning("File UID %s with size %s exceeds the maximum file size limit, it will be isolated in a single session.", uid, file_size)
-                files_uids.remove(uid)
-                session_ids.extend(add_files_to_session(
-                    signers, [uid], seal=seal, acroform=acroform, title=title, discriminators=discriminators, watchers=watchers,
-                    create_session_custom_data=create_session_custom_data,
-                ))
-            elif size + file_size > get_registry_max_session_size() * 1024**2:
-                logger.warning("Adding file UID %s with size %s exceeds the maximum session size limit, a new session will be created for this file.", uid, file_size)
-                exceeding_session_size_files_uids.append(uid)
-                files_uids.remove(uid)
-            else:
-                size += file_size
-        if exceeding_session_size_files_uids:
-            session_ids.extend(add_files_to_session(
-                signers, exceeding_session_size_files_uids, seal=seal, acroform=acroform, title=title, discriminators=discriminators, watchers=watchers,
-                create_session_custom_data=create_session_custom_data,
-            ))
         session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators, size=size)
     if not session:
         session_id, session = create_session(
-            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators, size=size,
+            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators,
             watchers=watchers,
             create_session_custom_data=create_session_custom_data,
         )
-    session_ids.append(session_id)
+    session["size"] = session.get("size", 0) + size
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
@@ -101,7 +78,6 @@ def add_files_to_session(
         context_uid = context_uid_provider.get_context_uid()
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
-        session["size"] = session.get("size", 0) + get_filesize(uid)
         session["files"].append(
             {
                 "scan_id": annex.scan_id,
@@ -125,7 +101,7 @@ def add_files_to_session(
             session["title"] = session["title"].replace(u"{session_id}", str(session_id))
     session["last_update"] = datetime.now()
     annot._p_changed = True
-    return session_ids
+    return session_id, session
 
 
 def create_external_session(session_id, b64_cred=None, esign_root_url=None):
@@ -206,7 +182,7 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), size=0, watchers=(),
+def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=(),
                    create_session_custom_data=None):
     """Create a session with the given signers and seal.
 
@@ -216,7 +192,6 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
     :param discriminators: optional list of string discriminators
-    :param size: size in bytes of the files to be added to the session
     :param watchers: optional list of external esign session watchers emails
     :param create_session_custom_data: optional custom dict of custom session data
     :return: session id and session information
@@ -232,7 +207,6 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
         "client_id": None,
         "discriminators": discriminators,
         "files": PersistentList(),
-        "size": size,
         "last_update": datetime.now(),
         "seal": seal,
         "sign_id": None,

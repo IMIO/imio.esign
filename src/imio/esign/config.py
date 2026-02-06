@@ -31,10 +31,6 @@ def get_registry_max_session_size(default=100):
     return api.portal.get_registry_record("imio.esign.max_session_size", default=default)
 
 
-def get_registry_max_file_size(default=100):
-    return api.portal.get_registry_record("imio.esign.max_file_size", default=default)
-
-
 def set_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -61,7 +57,3 @@ def set_registry_sign_code(value):
 
 def set_registry_max_session_size(value):
     api.portal.set_registry_record("imio.esign.max_session_size", value)
-
-
-def set_registry_max_file_size(value):
-    api.portal.set_registry_record("imio.esign.max_file_size", value)

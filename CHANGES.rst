@@ -6,4 +6,4 @@ Changelog
 ------------------
 
 - Initial release.
-  [sgeulette, gbastien, aduchene]
+  [sgeulette, gbastien, aduchene, cadam]

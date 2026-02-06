@@ -4,8 +4,8 @@ from imio.esign import _
 from plone import api
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
-from plone.registry.interfaces import IRecordModifiedEvent
 from plone.z3cform import layout
+from string import Formatter
 from zope import schema
 from zope.interface import Interface
 from zope.interface import Invalid
@@ -38,6 +38,15 @@ def validate_vat_number(va_nb):
 
     return True
 
+def validate_signing_users_email_content(value):
+    """Allow only known placeholders in the email template."""
+    allowed = {"fullname", "firstname", "lastname", "email", "userid"}
+    for _ignored1, field, _ignored2, _ignored3 in Formatter().parse(value or ""):
+        if field and field not in allowed:
+            raise Invalid(
+                _("Unknown placeholder: ${field}", mapping={"field": field})
+            )
+    return True
 
 class IImioEsignSettings(Interface):
 
@@ -85,6 +94,7 @@ class IImioEsignSettings(Interface):
             "Use {fullname}, {firstname}, {lastname}, {email}, {userid} as placeholders."
         ),
         required=False,
+        constraint=validate_signing_users_email_content,
         default=u"""Hello {fullname},
 
 You have been invited to Parapheo, the signing platform of iMio.

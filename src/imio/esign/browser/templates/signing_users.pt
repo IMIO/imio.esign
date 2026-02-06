@@ -177,7 +177,7 @@
                             Deselect All
                         </button>
                         <span class="stats">
-                            <strong i18n:translate="">Selected:</strong> 
+                            <strong i18n:translate="">Selected:</strong>
                 <span id="selected-count">0</span>
                             / <span tal:content="python:len(all_users)">0</span>
                         </span>
@@ -195,7 +195,12 @@
                     </div>
                 </div>
 
-                <form id="users-form" method="post">
+                <form id="users-form" method="post" tal:attributes="action string:${context/absolute_url}/@@signing-users-csv">
+                    <!-- Hidden inputs for form submission -->
+                    <input type="hidden" name="_authenticator" tal:attributes="value context/@@authenticator/token" />
+                    <input type="hidden" name="action" id="form-action" value="" />
+                    <input type="hidden" name="selected_users" id="selected-users" value="" />
+
                     <table class="listing" id="users-table" style="width: 100%;">
                         <thead>
                             <tr>
@@ -217,7 +222,7 @@
                                         style python:'background-color: #ffe6e6' if user.get('has_duplicate_email') else ''">
                                     <td>
                                         <input type="checkbox"
-                                            name="selected_users"
+                                            name="user_checkbox"
                                             class="user-checkbox"
                                             tal:attributes="value user/userid;
                                                    checked python:'checked' if user['checked'] else None" />
@@ -286,7 +291,7 @@
         function updateSelectedCount() {
             var count = document.querySelectorAll('.user-checkbox:checked').length;
             selectedCount.textContent = count;
-            
+
             // Update select all checkbox state
             var allChecked = Array.from(checkboxes).every(function(cb) { return cb.checked; });
             var someChecked = Array.from(checkboxes).some(function(cb) { return cb.checked; });
@@ -311,11 +316,11 @@
                 return;
             }
 
-            var url = window.location.href.split('?')[0];
-            var params = 'action=' + action + '&selected_users=' + encodeURIComponent(JSON.stringify(selected));
-            
             if (action === 'download_csv') {
-                window.location.href = url + '?' + params;
+                // For CSV download, set the action and selected users, then submit
+                document.getElementById('form-action').value = action;
+                document.getElementById('selected-users').value = JSON.stringify(selected);
+                form.submit();
             } else if (action === 'send_emails') {
                 // Show confirmation modal
                 document.getElementById('email-count').textContent = selected.length;
@@ -376,9 +381,11 @@
 
         confirmEmailBtn.addEventListener('click', function() {
             var selected = getSelectedUserIds();
-            var url = window.location.href.split('?')[0];
-            var params = 'action=send_emails&selected_users=' + encodeURIComponent(JSON.stringify(selected));
-            window.location.href = url + '?' + params;
+            // Set the action and selected users in hidden inputs
+            document.getElementById('form-action').value = 'send_emails';
+            document.getElementById('selected-users').value = JSON.stringify(selected);
+            // Submit the form via POST
+            form.submit();
         });
 
         // Close modal on outside click

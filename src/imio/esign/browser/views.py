@@ -476,15 +476,21 @@ class SigningUsersCsv(BrowserView):
         return all_users_data, duplicates
 
     def _get_selected_userids(self):
-        """Get list of selected user IDs from request."""
+        """Get list of selected user IDs from request.
+
+        Expects a JSON-formatted list in 'selected_users' parameter.
+        Returns an empty list if the input is not valid JSON.
+        """
         selected = self.request.get("selected_users", "")
+
         if not selected:
             return []
 
-        # Handle both JSON array and form data
-        if selected.startswith("["):
+        # Parse JSON array
+        try:
             return json.loads(selected)
-        return [uid.strip() for uid in selected.split(",") if uid.strip()]
+        except (json.JSONDecodeError, ValueError, TypeError):
+            return []
 
     def _download_csv(self):
         """Generate and download CSV file with selected users."""
@@ -540,7 +546,7 @@ class SigningUsersCsv(BrowserView):
             )
             return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        all_users_data, duplicates = self.get_users_data()
+        all_users_data, _duplicates = self.get_users_data()
         selected_users = [u for u in all_users_data if u["userid"] in selected_userids]
 
         portal_email = api.portal.get().getProperty("email_from_address")

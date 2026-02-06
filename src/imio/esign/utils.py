@@ -30,7 +30,8 @@ SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
 def add_files_to_session(
-    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=(), create_session_custom_data={}
+    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=(),
+    create_session_custom_data=None
 ):
     """Add files to a session with the given signers.
 
@@ -115,7 +116,6 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
-            # "documentData": [{"filename": filename, "uniqueCode": unique_code}
             "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, uid),
                               "docUuid": get_suid_from_uuid(uid)}
                              for unique_code, filename, z, uid in files],
@@ -172,7 +172,8 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=(), create_session_custom_data={}):
+def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=(),
+                   create_session_custom_data=None):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -211,8 +212,9 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
         "title": title,
         "returns": PersistentList(),
     })
-    for k, v in create_session_custom_data.items():
-        sessions[session_id][k] = v
+    if create_session_custom_data:
+        for k, v in create_session_custom_data.items():
+            sessions[session_id][k] = v
     return session_id, sessions[session_id]
 
 

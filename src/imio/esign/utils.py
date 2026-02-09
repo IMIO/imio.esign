@@ -377,6 +377,7 @@ def remove_files_from_session(files_uids):
             logger.error("Session %s not found", session_id)
             continue
         session = sessions[session_id]
+        session["size"] = max(0, session.get("size", 0) - get_filesize(uid))
         i = 0
         context_uid = None
         for j, dic in enumerate(session["files"]):

@@ -31,9 +31,21 @@ SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
 def get_filesize(uid):
+    """Get the file size of an annex.
+
+    :param uid: The UID of the annex.
+    :return: The file size in bytes, or 0 if not found.
+    """
     annex = uuidToObject(uuid=uid, unrestricted=True)
-    if hasattr(annex.__parent__, "categorized_elements"):
-        return annex.__parent__.categorized_elements.get(uid, {}).get("filesize", 0)
+    if not annex:
+        logger.error("Annex with UID %s not found.", uid)
+        return 0
+    if (
+        hasattr(annex.__parent__, "categorized_elements")
+        and uid in annex.__parent__.categorized_elements
+        and "filesize" in annex.__parent__.categorized_elements[uid]
+    ):
+        return annex.__parent__.categorized_elements[uid]["filesize"]
     return annex.file.size
 
 

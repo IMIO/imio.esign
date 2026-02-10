@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from eea.facetednavigation.interfaces import IFacetedNavigable
+from html import escape
 from imio.esign import _
+from imio.esign.utils import get_state_description
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -46,9 +48,11 @@ class StateColumn(Column):
     cssClasses = {"th": "th_header_sessions_state"}
 
     def renderCell(self, item):
-        return translate(
-            (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign"
-        )
+        state = escape(translate(
+            (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign",
+        ))
+        title = escape(translate(get_state_description(item.get("state", "")), context=self.request, domain="imio.esign"))
+        return u"<span title='{title}'>{state}</span>".format(state=state, title=title)
 
 
 class TitleColumn(Column):

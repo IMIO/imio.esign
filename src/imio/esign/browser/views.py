@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from AccessControl import Unauthorized
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
@@ -43,6 +45,11 @@ class SessionsListingView(BrowserView):
         super(SessionsListingView, self).__init__(context, request)
         self.portal = api.portal.get()
         self.portal_url = self.portal.absolute_url()
+
+    def __call__(self):
+        if not self.available():
+            raise Unauthorized
+        return super(SessionsListingView, self).__call__()
 
     def available(self):
         return get_registry_enabled()

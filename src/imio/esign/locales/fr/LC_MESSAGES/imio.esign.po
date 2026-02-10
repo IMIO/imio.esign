@@ -163,8 +163,8 @@ msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
 #: ../browser/templates/session_info.pt:11
-msgid "Session information"
-msgstr "Session de signature électronique (Paraphéo)"
+msgid "Session information (${icon_url} Parapheo)"
+msgstr "Session de signature électronique (${icon_url} Paraphéo)"
 
 #: ../browser/views.py:118
 msgid "Session not found!"

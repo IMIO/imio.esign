@@ -8,7 +8,7 @@
     <div id="session-info"
         onclick="toggleDetails('collapsible-session-info', toggle_parent_active=true);"
         tal:attributes="class python: view.collapsible_css_default()">
-      <span i18n:translate="">Session information</span>
+      <span i18n:translate="">Session information (<img i18n:name="icon_url" tal:attributes="src string:${view/portal_url}/++resource++imio.esign/parapheo.svg" /> Parapheo)</span>
     </div>
     <div id="collapsible-session-info"
          tal:attributes="class python: view.collapsible_content_css_default()">

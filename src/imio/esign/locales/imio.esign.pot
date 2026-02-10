@@ -162,7 +162,7 @@ msgid "Session deleted successfully!"
 msgstr ""
 
 #: ../browser/templates/session_info.pt:11
-msgid "Session information"
+msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
 #: ../browser/views.py:118

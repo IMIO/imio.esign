@@ -33,7 +33,7 @@ def external_session_link(session, title=None):
     """Return a tag with the sign external session."""
     title = title or session.get("title", "") or session.get("sign_id", "")
     if not session["sign_id"] or not session["sign_url"]:
-        return u"<p>{0}</p>".format(title)
+        return u"<span>{0}</span>".format(title)
     return u'<a href="{url}" target="_blank">{title}</a>'.format(
         url=session["sign_url"],
         title=safe_unicode(title),

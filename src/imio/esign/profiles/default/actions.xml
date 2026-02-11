@@ -24,6 +24,17 @@
    </property>
    <property name="visible">True</property>
   </object>
+  <object name="remove_item_from_esign_session" meta_type="CMF Action" i18n:domain="imio.esign">
+   <property name="title" i18n:translate="">Remove item from esign session</property>
+   <property name="description" i18n:translate="">This will remove this element from the relevant esign session</property>
+   <property name="url_expr">string:${object/absolute_url}/@@remove-item-from-esign-session</property>
+   <property name="icon_expr"></property>
+   <property name="available_expr">object/@@remove-item-from-esign-session/available</property>
+   <property name="permissions">
+    <element value="Manage portal"/>
+   </property>
+   <property name="visible">True</property>
+  </object>
  </object>
  <object name="portal_tabs" meta_type="CMF Action Category">
   <object name="parapheo" meta_type="CMF Action">

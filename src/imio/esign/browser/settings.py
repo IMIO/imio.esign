@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from imio.esign import _
-from plone import api
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
-from plone.registry.interfaces import IRecordModifiedEvent
 from plone.z3cform import layout
 from zope import schema
 from zope.interface import Interface

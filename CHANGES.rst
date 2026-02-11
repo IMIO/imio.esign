@@ -7,6 +7,8 @@ Changelog
 
 - Replaced external_session_link p by span.
   [sgeulette]
+- Added action to remove a single item from session.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

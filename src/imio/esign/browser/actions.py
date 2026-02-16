@@ -2,6 +2,7 @@
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from plone import api
@@ -118,4 +119,5 @@ class RemoveItemFromSessionView(BrowserView):
 
     def available(self):
         """Defines if the action is available or not."""
-        return True
+        annot = get_session_annotation()
+        return self.context.UID() in annot.get("uids", {})

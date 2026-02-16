@@ -254,6 +254,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
+    max_session_size = get_registry_max_session_size() * 1024**2
 
     for session_id, session in sessions.items():
         if session["state"] != "draft":
@@ -265,7 +266,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
         session_signers = session.get("signers", [])
         if len(signers) != len(session_signers):
             continue
-        if size + session.get("size", 0) > get_registry_max_session_size() * 1024**2:
+        if size + session.get("size", 0) > max_session_size:
             continue
 
         if set(discriminators) != set(session.get("discriminators", ())):

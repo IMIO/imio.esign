@@ -2,8 +2,9 @@
 """utils tests for this package."""
 from datetime import date
 from datetime import timedelta
+from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import set_registry_max_session_size
-from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
+from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_filesize
@@ -260,6 +261,8 @@ class TestUtils(unittest.TestCase):
 
         # set session size just under the 1 MB limit so adding another file exceeds it
         session["size"] = 1 * 1024**2 - 1  # 1 MB - 1 byte
+        previous_max = get_registry_max_session_size()
+        self.addCleanup(set_registry_max_session_size, previous_max)
         set_registry_max_session_size(1)
 
         # adding a file (~7KB) would exceed 1 MB => new session created

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """actions tests for this package."""
+from collective.iconifiedcategory.utils import calculate_category_id
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
@@ -65,7 +66,7 @@ class TestRemoveItemFromSessionView(unittest.TestCase):
                     type="annex",
                     id="annex{}".format(i),
                     title="Annex {}".format(i),
-                    content_category="to_sign",
+                    content_category=calculate_category_id(self.portal["annexes_types"]["annexes"]["to_sign"]),
                     scan_id="0123456000000{:02d}".format(i),
                     file=NamedBlobFile(data=f.read(), filename=u"annex{}.pdf".format(i), contentType="application/pdf"),
                 )
@@ -76,7 +77,6 @@ class TestRemoveItemFromSessionView(unittest.TestCase):
         """Test available method returns True."""
         view = getMultiAdapter((self.annexes[0], self.request), name="remove-item-from-esign-session")
         self.assertFalse(view.available())
-
         uids = [a.UID() for a in self.annexes]
         add_files_to_session(self.signers, uids)
         self.assertTrue(view.available())

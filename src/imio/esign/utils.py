@@ -21,6 +21,7 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
+from zope.i18n import translate
 
 import json
 import requests
@@ -212,7 +213,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
             ]
         ),
         "watchers": PersistentList(watchers),
-        "state": "draft",  # draft, sent, errored, to_sign, signed, refused, returned, finalized
+        "state": "draft",
         "title": title,
         "returns": PersistentList(),
     })
@@ -446,3 +447,55 @@ def get_suid_from_uuid(uid):
     :return: short UID
     """
     return shortuid_encode_id(uid, separator="-", block_size=5)
+
+
+def get_state_description(state):
+    """
+    Get a human readable description for a given session state.
+
+                       ┌─────────┐
+                       │  draft  │
+                       └────┬────┘
+                            │
+                 (session sent to Paraphéo)
+                            │
+                            ▼
+                       ┌─────────┐
+             ┌─────────│  sent   │─────────┐
+             │         └────┬────┘         │
+             │              │              │
+    (error occurred)     (ready)   (signer refused)
+             │              │              │
+             ▼              ▼              ▼
+        ┌─────────┐    ┌─────────┐    ┌─────────┐
+        │ errored │    │ to_sign │    │ refused │
+        └─────────┘    └────┬────┘    └─────────┘
+                            │
+                   (documents signed)
+                            │
+                            ├──────────────┐
+                            │              │
+            (sent back successfully)  (send back failed)
+                            │              │
+                            ▼              │
+                      ┌──────────┐         │
+                      │ returned │         │
+                      └─────┬────┘         │
+                            │              │
+                 (documents received)      │
+                            │              │
+                            ▼              ▼
+                      ┌───────────┐   ┌─────────┐
+                      │ finalized │   │ signed  │
+                      └───────────┘   └─────────┘
+    """
+    return {
+        'draft': u'The session is getting ready to be sent to Paraphéo by a signing manager.',
+        'sent': u'The session has been sent to Paraphéo.',
+        'errored': u'The session encountered an error during its processing.',
+        'to_sign': u'The session is ready to be signed in Paraphéo.',
+        'signed': u'The session is finished but signed documents couldn\'t be sent back to the application.',
+        'refused': u'The session has been cancelled because a signer refused a document.',
+        'returned': u'The session is finished and signed documents are on the way back to the application.',
+        'finalized': u'The session is finished and signed documents have been sent back to the application.',
+    }.get(state, "")

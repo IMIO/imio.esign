@@ -11,6 +11,7 @@ from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_registry_enabled
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.security import separate_fullname
@@ -233,6 +234,9 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def collapsible_content_css_default(self):
         """Default CSS class to apply on the collapsible."""
         return "collapsible-content"
+
+    def get_state_description(self, state):
+        return translate(get_state_description(state), context=self.request, domain="imio.esign")
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

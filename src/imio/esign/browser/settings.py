@@ -76,6 +76,14 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
+    max_session_size = schema.Int(
+        title=_("Max session size (MB)"),
+        description=_("Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."),
+        default=100,
+        min=1,
+        required=True,
+    )
+
 
 class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings

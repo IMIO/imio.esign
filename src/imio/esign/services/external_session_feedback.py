@@ -2,6 +2,7 @@
 from datetime import datetime
 from imio.esign import logger
 from imio.esign.utils import get_session_annotation
+from imio.helpers.ws import verify_auth_token
 from plone.restapi.deserializer import json_body
 from plone.restapi.services import Service
 
@@ -95,4 +96,19 @@ class ExternalSessionFeedbackPost(Service):
 
     def authorized(self):
         """Check if the user is authorized to access this service."""
-        return True
+        auth_header = self.request.getHeader("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return False
+        token = auth_header[7:]  # len("Bearer ") == 7
+        if not token:
+            return False
+        return verify_auth_token(token, groups=["access_imio-apps-docs"])
+
+
+"""
+State:
+to_create_session
+to_sign
+to_upload
+refused
+"""

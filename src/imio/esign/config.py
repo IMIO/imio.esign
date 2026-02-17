@@ -27,6 +27,10 @@ def get_registry_sign_code(default=""):
     return api.portal.get_registry_record("imio.esign.sign_code", default=default)
 
 
+def get_registry_max_session_size(default=100):
+    return api.portal.get_registry_record("imio.esign.max_session_size", default=default)
+
+
 def set_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -49,3 +53,7 @@ def set_registry_seal_email(value):
 
 def set_registry_sign_code(value):
     api.portal.set_registry_record("imio.esign.sign_code", value)
+
+
+def set_registry_max_session_size(value):
+    api.portal.set_registry_record("imio.esign.max_session_size", value)

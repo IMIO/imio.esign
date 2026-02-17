@@ -1,16 +1,21 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
-from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
+from imio.esign.config import get_registry_max_session_size
+from imio.esign.config import set_registry_max_session_size
+from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_file_download_url
+from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.esign.utils import remove_session
+from imio.helpers.content import uuidToObject
 from imio.pyutils.utils import shortuid_decode_id
 from plone import api
 from plone.app.testing import setRoles
@@ -87,7 +92,7 @@ class TestUtils(unittest.TestCase):
                     type="annex",
                     id="annex{}".format(i),
                     title="Annex {}".format(i),
-                    content_category="to_sign",
+                    content_category=calculate_category_id(self.portal["annexes_types"]["annexes"]["to_sign"]),
                     scan_id="0123456000000{:02d}".format(i),
                     file=NamedBlobFile(data=f.read(), filename=u"annex{}.pdf".format(i), contentType="application/pdf"),
                 )
@@ -133,6 +138,7 @@ class TestUtils(unittest.TestCase):
             ],
         )
         self.assertEqual(len(session["signers"]), 2)
+        self.assertEqual(session["size"], 6968)  # annex1.pdf
 
         # add files, no session_id => same session reused
         signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # changed position => not discriminant
@@ -146,6 +152,7 @@ class TestUtils(unittest.TestCase):
         self.assertIn(self.folders[1].UID(), annot["c_uids"])
         self.assertEqual(len(session["files"]), 2)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 1)
+        self.assertEqual(session["size"], 6968 + 7014)  # annex1 + annex2
 
         # add files, no session_id, new discriminations => new session
         sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))
@@ -212,6 +219,7 @@ class TestUtils(unittest.TestCase):
         remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files
         self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["sessions"][0]["files"]), 1)
+        self.assertEqual(annot["sessions"][0]["size"], 7014)  # only uid[5] (annex2) remains
         self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
         remove_files_from_session((self.uids[5],))  # no more session files, session removed
@@ -232,6 +240,57 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
+
+    def test_get_filesize(self):
+        """Test get_filesize returns the correct file size."""
+        # even index => annex1.pdf (6968 bytes)
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+        # odd index => annex2.pdf (7014 bytes)
+        self.assertEqual(get_filesize(self.uids[1]), 7014)
+        # invalid UID returns 0
+        self.assertEqual(get_filesize("nonexistent_uid"), 0)
+        # check size get robustness
+        annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
+        self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")
+        folder = annex.__parent__
+        self.assertEqual(folder.categorized_elements[self.uids[0]]["filesize"], 6968)
+        folder.categorized_elements[self.uids[0]]["filesize"] = 1111
+        self.assertEqual(get_filesize(self.uids[0]), 1111)
+        del folder.categorized_elements[self.uids[0]]["filesize"]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+        del folder.categorized_elements[self.uids[0]]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+        delattr(folder, "categorized_elements")
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+
+    def test_session_size_discrimination(self):
+        """Test that sessions are split when they would exceed max_session_size."""
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+        ]
+
+        # add one file to create a session (annex1.pdf = 6968 bytes)
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(sid, 0)
+        self.assertEqual(session["size"], 6968)
+
+        # set session size just under the 1 MB limit so adding another file exceeds it
+        session["size"] = 1 * 1024**2 - 1  # 1 MB - 1 byte
+        previous_max = get_registry_max_session_size()
+        self.addCleanup(set_registry_max_session_size, previous_max)
+        set_registry_max_session_size(1)
+
+        # adding a file (~7KB) would exceed 1 MB => new session created
+        sid2, session2 = add_files_to_session(signers, (self.uids[1],))
+        self.assertEqual(sid2, 1)
+        self.assertIsNot(session2, session)
+        self.assertEqual(session2["size"], 7014)
+
+        # with enough room, files go to the same session
+        sid3, session3 = add_files_to_session(signers, (self.uids[2],))
+        self.assertEqual(sid3, 1)
+        self.assertIs(session3, session2)
+        self.assertEqual(session3["size"], 7014 + 6968)
 
     def test_add_files_with_duplicate_filenames(self):
         """Test that files with duplicate filenames are renamed with suffix."""

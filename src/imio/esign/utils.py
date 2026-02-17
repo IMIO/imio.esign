@@ -5,6 +5,7 @@ from imio.esign import _tr as _
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import logger
 from imio.esign.config import get_registry_file_url
+from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import get_registry_seal_code
 from imio.esign.config import get_registry_seal_email
 from imio.esign.config import get_registry_sign_code
@@ -30,8 +31,21 @@ import requests
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
+def get_filesize(uid):
+    """Get the file size of an annex.
+
+    :param uid: The UID of the annex.
+    :return: The file size in bytes, or 0 if not found.
+    """
+    annex = uuidToObject(uuid=uid, unrestricted=True)
+    if not annex:
+        logger.error("Annex with UID %s not found.", uid)
+        return 0
+    return getattr(annex.__parent__, "categorized_elements", {}).get(uid, {}).get("filesize", annex.file.size)
+
+
 def add_files_to_session(
-    signers, files_uids, seal=None, acroform=True, session_id=None, title=None, discriminators=(), watchers=(),
+    signers, files_uids, seal=None, acroform=True, session_id=None, title="", discriminators=(), watchers=(),
     create_session_custom_data=None
 ):
     """Add files to a session with the given signers.
@@ -48,6 +62,7 @@ def add_files_to_session(
     :return: session_id, session
     """
     annot = get_session_annotation()
+    size = sum(get_filesize(uid) for uid in files_uids)
     if session_id is not None:
         if session_id not in annot["sessions"]:
             logger.error("Session with id %s not found in esign annotations.", session_id)
@@ -55,13 +70,14 @@ def add_files_to_session(
         else:
             session = annot["sessions"][session_id]
     else:
-        session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators)
+        session_id, session = discriminate_sessions(signers, seal, acroform, discriminators=discriminators, size=size)
     if not session:
         session_id, session = create_session(
-            signers, seal, acroform=acroform, title=title or "", annot=annot, discriminators=discriminators,
+            signers, seal, acroform=acroform, title=title, annot=annot, discriminators=discriminators,
             watchers=watchers,
             create_session_custom_data=create_session_custom_data,
         )
+    session["size"] = session.get("size", 0) + size
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
@@ -223,19 +239,21 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
     return session_id, sessions[session_id]
 
 
-def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None):
+def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None, size=0):
     """Discriminate sessions based on seal value and signers in the same order.
 
     :param signers: a list of signers, each is a tuple with userid and email
     :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators
+    :param size: size in bytes of the files to be added to the session
     :param annot: esign annotation, if not provided it will be fetched
     :return: session id and session if found, or (None, None) if no session found
     """
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
+    max_session_size = get_registry_max_session_size() * 1024**2
 
     for session_id, session in sessions.items():
         if session["state"] != "draft":
@@ -246,6 +264,8 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
             continue
         session_signers = session.get("signers", [])
         if len(signers) != len(session_signers):
+            continue
+        if size + session.get("size", 0) > max_session_size:
             continue
 
         if set(discriminators) != set(session.get("discriminators", ())):
@@ -357,6 +377,7 @@ def remove_files_from_session(files_uids):
             logger.error("Session %s not found", session_id)
             continue
         session = sessions[session_id]
+        session["size"] = max(0, session.get("size", 0) - get_filesize(uid))
         i = 0
         context_uid = None
         for j, dic in enumerate(session["files"]):

@@ -5,7 +5,7 @@
     metal:use-macro="context/main_template/macros/master"
     i18n:domain="imio.esign">
 
-    <metal:block fill-slot="content-core">
+    <metal:block fill-slot="content">
         <style>
             #content-core {
             max-width: 100%;
@@ -136,6 +136,10 @@
             text-align: right;
             }
         </style>
+
+        <div metal:use-macro="context/global_statusmessage/macros/portal_message">
+            Status message
+        </div>
 
         <div class="signing-users-container">
             <tal:block

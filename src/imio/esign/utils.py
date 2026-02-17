@@ -2,7 +2,6 @@
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _tr as _
-from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import logger
 from imio.esign.config import get_registry_file_url
@@ -14,7 +13,7 @@ from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
-from imio.pyutils.system import post_request
+from imio.helpers.ws import get_auth_token
 from imio.pyutils.utils import shortuid_encode_id
 from os import path
 from persistent.list import PersistentList
@@ -24,6 +23,7 @@ from zope.annotation import IAnnotations
 from zope.component import getAdapter
 
 import json
+import requests
 
 
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
@@ -94,11 +94,10 @@ def add_files_to_session(
     return session_id, session
 
 
-def create_external_session(session_id, b64_cred=None, esign_root_url=None):
+def create_external_session(session_id, esign_root_url=None):
     """Create a session with the given signers and files.
 
     :param session_id: internal session id
-    :param b64_cred: base64 encoded credentials for authentication
     :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default ESIGN_ROOT_URL
     :return: session information
     """
@@ -153,17 +152,22 @@ def create_external_session(session_id, b64_cred=None, esign_root_url=None):
             "sealCode": seal_code,
         }
 
+    # files_payload = {filename: file_content for z, filename, file_content, uid in files}
     files_payload = [("files", (filename, file_content)) for z, filename, file_content, uid in files]
 
     # Headers avec autorisation
-    headers = {"accept": "application/json"}
-    b64_cred = b64_cred or ESIGN_CREDENTIALS
-    if b64_cred:
-        headers["Authorization"] = "Basic {}".format(b64_cred)
+    headers = {
+        "accept": "application/json",
+        "Authorization": "Bearer %s" % get_auth_token(),
+    }
 
     logger.info(data_payload)
-    ret = post_request(
-        session_url, data={"data": json.dumps(data_payload, default=vars)}, headers=headers, files=files_payload
+    ret = requests.post(
+        session_url,
+        headers=headers,
+        data={"data": json.dumps(data_payload, default=vars)},
+        files=files_payload,
+        timeout=10,
     )
     if ret.status_code == 200:
         session["state"] = "sent"

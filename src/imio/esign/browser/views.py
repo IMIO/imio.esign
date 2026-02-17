@@ -4,7 +4,6 @@ from AccessControl import Unauthorized
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
-from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
@@ -146,7 +145,6 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(
             int(session_id),
-            b64_cred=ESIGN_CREDENTIALS,
             esign_root_url=ESIGN_ROOT_URL,
         )
         if resp == "_session_not_found_":

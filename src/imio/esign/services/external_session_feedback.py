@@ -96,12 +96,11 @@ class ExternalSessionFeedbackPost(Service):
 
     def authorized(self):
         """Check if the user is authorized to access this service."""
-        auth_header = self.request._auth
+        auth_header = self.request.getHeader("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
             return False
-        try:
-            token = auth_header.split(" ")[1]
-        except IndexError:
+        token = auth_header[7:]  # len("Bearer ") == 7
+        if not token:
             return False
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
 

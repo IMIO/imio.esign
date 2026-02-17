@@ -167,6 +167,7 @@ def create_external_session(session_id, esign_root_url=None):
         headers=headers,
         data={"data": json.dumps(data_payload, default=vars)},
         files=files_payload,
+        timeout=10,
     )
     if ret.status_code == 200:
         session["state"] = "sent"

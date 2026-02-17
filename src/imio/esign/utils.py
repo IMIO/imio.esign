@@ -40,13 +40,7 @@ def get_filesize(uid):
     if not annex:
         logger.error("Annex with UID %s not found.", uid)
         return 0
-    if (
-        hasattr(annex.__parent__, "categorized_elements")
-        and uid in annex.__parent__.categorized_elements
-        and "filesize" in annex.__parent__.categorized_elements[uid]
-    ):
-        return annex.__parent__.categorized_elements[uid]["filesize"]
-    return annex.file.size
+    return getattr(annex.__parent__, "categorized_elements", {}).get(uid, {}).get("filesize", annex.file.size)
 
 
 def add_files_to_session(

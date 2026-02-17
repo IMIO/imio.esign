@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
 from imio.esign.config import get_registry_max_session_size
@@ -14,6 +15,7 @@ from imio.esign.utils import get_session_info
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.esign.utils import remove_session
+from imio.helpers.content import uuidToObject
 from imio.pyutils.utils import shortuid_decode_id
 from plone import api
 from plone.app.testing import setRoles
@@ -90,7 +92,7 @@ class TestUtils(unittest.TestCase):
                     type="annex",
                     id="annex{}".format(i),
                     title="Annex {}".format(i),
-                    content_category="to_sign",
+                    content_category=calculate_category_id(self.portal["annexes_types"]["annexes"]["to_sign"]),
                     scan_id="0123456000000{:02d}".format(i),
                     file=NamedBlobFile(data=f.read(), filename=u"annex{}.pdf".format(i), contentType="application/pdf"),
                 )
@@ -247,6 +249,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_filesize(self.uids[1]), 7014)
         # invalid UID returns 0
         self.assertEqual(get_filesize("nonexistent_uid"), 0)
+        # check size get robustness
+        annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
+        self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")
+        folder = annex.__parent__
+        self.assertEqual(folder.categorized_elements[self.uids[0]]["filesize"], 6968)
+        folder.categorized_elements[self.uids[0]]["filesize"] = 1111
+        self.assertEqual(get_filesize(self.uids[0]), 1111)
+        del folder.categorized_elements[self.uids[0]]["filesize"]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+        del folder.categorized_elements[self.uids[0]]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+        delattr(folder, "categorized_elements")
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
 
     def test_session_size_discrimination(self):
         """Test that sessions are split when they would exceed max_session_size."""

@@ -9,6 +9,12 @@ Changelog
   [sgeulette]
 - Switched basic auth to jwt.
   [chris-adam]
+- Added files size session discriminator
+  [chris-adam, sgeulette]
+- Added title attribute on session state for better description
+  [chris-adam]
+- Raise Unauthorized if accessing @@parapheo and not available
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

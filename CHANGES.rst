@@ -15,6 +15,8 @@ Changelog
   [chris-adam]
 - Raise Unauthorized if accessing @@parapheo and not available
   [gbastien]
+- Added action to remove a single item from session.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

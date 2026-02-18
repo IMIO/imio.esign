@@ -8,6 +8,7 @@ from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_registry_enabled
+from imio.esign.config import get_registry_parapheo_url
 from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
@@ -634,7 +635,7 @@ class SigningUsersCsv(BrowserView):
                 "view": self,
                 "context": self.context,
                 "user_data": user_data,
-                "parapheo_url": ESIGN_ROOT_URL,
+                "parapheo_url": get_registry_parapheo_url(),
                 "modules": SecureModuleImporter,
             }
         )

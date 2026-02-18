@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-02-10 14:40+0000\n"
+"POT-Creation-Date: 2026-02-18 17:17+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,11 +16,11 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../browser/views.py:282
+#: ../browser/views.py:302
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../browser/table.py:132
+#: ../browser/table.py:141
 msgid "Actions"
 msgstr "Actions"
 
@@ -28,58 +28,115 @@ msgstr "Actions"
 msgid "Add to esign session"
 msgstr "Ajouter à la session"
 
-#: ../browser/table.py:165
+#: ../browser/templates/signing_users.pt:251
+msgid "Before sending emails, please ensure that all selected users have their accounts created in \"Wallonie Connect\" (WaCo). If not, send the CSV to the DevOps team and wait for account creation."
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:267
+msgid "Cancel"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:248
+msgid "Confirm Email Sending"
+msgstr ""
+
+#: ../browser/table.py:174
 msgid "Create external session"
 msgstr "Envoyer dans Paraphéo"
 
-#: ../browser/table.py:151
+#: ../browser/table.py:160
 msgid "Delete session"
 msgstr "Effacer la session"
 
-#: ../browser/actions.py:90
+#: ../browser/templates/signing_users.pt:179
+msgid "Deselect All"
+msgstr ""
+
+#: ../browser/actions.py:92
 msgid "Element removed from session!"
 msgstr "Élément retiré de la session !"
 
 #: ../browser/templates/macros.pt:46
+#: ../browser/templates/signing_users.pt:215
 msgid "Email"
 msgstr "E-mail"
+
+#: ../browser/views.py:556
+msgid "Email content is not configured in the settings."
+msgstr ""
+
+#: ../browser/settings.py:89
+msgid "Email content model for signing users"
+msgstr ""
+
+#: ../browser/settings.py:90
+msgid "Email content sent to users when inviting them to Parapheo. TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
+msgstr ""
 
 #: ../browser/settings.py:71
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
+#: ../browser/templates/signing_users.pt:159
+msgid "Email:"
+msgstr ""
+
+#: ../browser/views.py:616
+msgid "Emails sent successfully to ${count} users."
+msgstr ""
+
 #: ../browser/settings.py:45
 msgid "Enabled?"
 msgstr "Activé?"
 
-#: ../browser/views.py:161
+#: ../browser/views.py:174
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
-#: ../browser/views.py:158
+#: ../browser/views.py:171
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
+
+#: ../browser/views.py:603
+msgid "Failed to send email to ${userid}."
+msgstr ""
+
+#: ../browser/views.py:623
+msgid "Failed to send emails to ${count} users."
+msgstr ""
 
 #: ../browser/settings.py:58
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
-#: ../browser/table.py:97
+#: ../browser/table.py:106
 msgid "Files"
 msgstr "Fichiers"
+
+#: ../browser/templates/signing_users.pt:217
+msgid "First Name"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:218
+msgid "Full Name"
+msgstr ""
 
 #: ../browser/templates/macros.pt:44
 msgid "Full name"
 msgstr "Nom"
 
-#: ../browser/table.py:14
+#: ../browser/table.py:16
 msgid "ID"
 msgstr "Identifiant"
 
-#: ../browser/settings.py:85
+#: ../browser/settings.py:110
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
+
+#: ../browser/templates/signing_users.pt:250
+msgid "Important:"
+msgstr ""
 
 #: ../configure.zcml:23
 msgid "Installs the imio.esign add-on."
@@ -93,7 +150,11 @@ msgstr "Numéro de TVA invalide : échec de la vérification de la somme de cont
 msgid "Is the eSign service enabled?"
 msgstr "Active/désactive la fonctionnalité globalement sur le site."
 
-#: ../browser/table.py:68
+#: ../browser/templates/signing_users.pt:216
+msgid "Last Name"
+msgstr ""
+
+#: ../browser/table.py:75
 #: ../browser/templates/macros.pt:17
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -101,6 +162,14 @@ msgstr "Dernière mise à jour"
 #: ../browser/templates/sessions.pt:13
 msgid "List of electronic signing sessions"
 msgstr "Paraphéo: Liste des sessions de signatures électroniques"
+
+#: ../browser/settings.py:98
+msgid "Max session size (MB)"
+msgstr ""
+
+#: ../browser/settings.py:99
+msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
+msgstr ""
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "No"
@@ -110,29 +179,49 @@ msgstr "Non"
 msgid "No files"
 msgstr "Aucun fichier"
 
-#: ../browser/views.py:153
+#: ../browser/views.py:166
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:109
+#: ../browser/views.py:123
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
+
+#: ../browser/views.py:511
+msgid "No users selected for CSV download."
+msgstr ""
+
+#: ../browser/views.py:550
+msgid "No users selected for email sending."
+msgstr ""
+
+#: ../browser/settings.py:82
+msgid "Parapheo url"
+msgstr ""
+
+#: ../browser/views.py:565
+msgid "Portal from email is not configured."
+msgstr ""
 
 #: ../browser/templates/macros.pt:45
 msgid "Position"
 msgstr "Fonction"
 
-#: ../browser/actions.py:54
+#: ../browser/actions.py:56
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/table.py:106
+#: ../browser/table.py:115
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
 #: ../profiles/default/actions.xml
 msgid "Remove from esign session"
 msgstr "Retirer de la session"
+
+#: ../profiles/default/actions.xml
+msgid "Remove item from esign session"
+msgstr ""
 
 #: ../browser/settings.py:64
 msgid "Seal code"
@@ -150,7 +239,23 @@ msgstr "Email du compte avec l'image du sceau"
 msgid "Sealed"
 msgstr "Sceau"
 
-#: ../utils.py:114
+#: ../browser/templates/signing_users.pt:171
+msgid "Select All"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:175
+msgid "Select Only Signers"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:184
+msgid "Selected:"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:271
+msgid "Send Emails"
+msgstr ""
+
+#: ../utils.py:131
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -158,7 +263,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/views.py:116
+#: ../browser/views.py:130
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -166,7 +271,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information (${icon_url} Parapheo)"
 msgstr "Session de signature électronique (${icon_url} Paraphéo)"
 
-#: ../browser/views.py:118
+#: ../browser/views.py:132
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -174,7 +279,7 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:147
+#: ../browser/views.py:160
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
@@ -190,16 +295,20 @@ msgstr "Méthode de signature utilisée pour spécifier la méthode de signature
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/views.py:334
+#: ../browser/views.py:354
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
-#: ../browser/table.py:79
+#: ../browser/table.py:87
 #: ../browser/templates/macros.pt:38
 msgid "Signers"
 msgstr "Signataires"
 
-#: ../browser/table.py:44
+#: ../browser/templates/signing_users.pt:150
+msgid "Signing Users: Export CSV"
+msgstr ""
+
+#: ../browser/table.py:47
 #: ../browser/templates/macros.pt:11
 msgid "State"
 msgstr "État"
@@ -208,15 +317,15 @@ msgstr "État"
 msgid "Status"
 msgstr "Statut"
 
-#: ../browser/views.py:318
+#: ../browser/views.py:330
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr "Le contenu du fichier correspondant ne peut pas être récupéré (${uid}) !"
 
-#: ../browser/views.py:298
+#: ../browser/views.py:310
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 
-#: ../browser/views.py:310
+#: ../browser/views.py:322
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
 
@@ -252,7 +361,7 @@ msgstr "La session est en préparation pour être envoyée dans Paraphéo par un
 msgid "The session is ready to be signed in Paraphéo."
 msgstr "La session est prête pour signature dans Paraphéo."
 
-#: ../browser/views.py:294
+#: ../browser/views.py:306
 msgid "This file identifier is not correct !"
 msgstr "Le format de cet identifiant de fichier n'est pas correct !"
 
@@ -261,10 +370,14 @@ msgid "This will add this element or configured sub elements to the relevant esi
 msgstr "Cela ajoutera cet élément ou les sous-éléments configurés à une session de signature"
 
 #: ../profiles/default/actions.xml
+msgid "This will remove this element from the relevant esign session"
+msgstr ""
+
+#: ../profiles/default/actions.xml
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
 
-#: ../browser/table.py:55
+#: ../browser/table.py:61
 #: ../browser/templates/macros.pt:31
 msgid "Title"
 msgstr "Titre"
@@ -276,6 +389,22 @@ msgstr "URL du domaine où un fichier signé peut être téléchargé (https://x
 #: ../configure.zcml:32
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
+
+#: ../browser/settings.py:83
+msgid "Used in signers email template."
+msgstr ""
+
+#: ../browser/views.py:574
+msgid "User ${userid} has no email address configured. Skipping."
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:214
+msgid "User ID"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:160
+msgid "Users:"
+msgstr ""
 
 #: ../browser/settings.py:51
 msgid "VAT number"
@@ -297,21 +426,33 @@ msgstr "Le numéro de TVA doit commencer par 'BE'"
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 
-#: ../browser/table.py:172
+#: ../browser/table.py:181
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
+
+#: ../browser/templates/signing_users.pt:155
+msgid "Warning: Duplicate email addresses detected"
+msgstr ""
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
 msgstr "Oui"
 
-#: ../browser/views.py:132
+#: ../browser/templates/signing_users.pt:260
+msgid "You are about to send emails to"
+msgstr ""
+
+#: ../browser/views.py:146
 msgid "You don't have permission to create external sessions!"
 msgstr "Vous n'avez pas la permission de créer une session externe !"
 
-#: ../browser/views.py:104
+#: ../browser/views.py:118
 msgid "You don't have permission to delete sessions!"
 msgstr "Vous n'avez pas la permission de supprimer une session !"
+
+#: ../browser/views.py:589
+msgid "You have been invited to Paraphéo"
+msgstr ""
 
 #: ../browser/table.py:25
 msgid "draft"
@@ -352,3 +493,15 @@ msgstr "Signée"
 #: ../browser/table.py:25
 msgid "to_sign"
 msgstr "À signer"
+
+#: ../browser/templates/signing_users.pt:264
+msgid "users."
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:195
+msgid "✉️ Send Emails"
+msgstr ""
+
+#: ../browser/templates/signing_users.pt:191
+msgid "📥 Download CSV"
+msgstr ""

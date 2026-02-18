@@ -14,6 +14,38 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
+#: ../utils.py:490
+msgid "The session encountered an error during its processing."
+msgstr ""
+
+#: ../utils.py:493
+msgid "The session has been cancelled because a signer refused a document."
+msgstr ""
+
+#: ../utils.py:489
+msgid "The session has been sent to Paraphéo."
+msgstr ""
+
+#: ../utils.py:494
+msgid "The session is finished and signed documents are on the way back to the application."
+msgstr ""
+
+#: ../utils.py:495
+msgid "The session is finished and signed documents have been sent back to the application."
+msgstr ""
+
+#: ../utils.py:492
+msgid "The session is finished but signed documents couldn't be sent back to the application."
+msgstr ""
+
+#: ../utils.py:488
+msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
+msgstr ""
+
+#: ../utils.py:491
+msgid "The session is ready to be signed in Paraphéo."
+msgstr ""
+
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
 msgstr ""

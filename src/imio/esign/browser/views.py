@@ -14,7 +14,6 @@ from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.emailer import create_html_email
-from imio.helpers.emailer import get_mail_host
 from imio.helpers.emailer import send_email
 from imio.helpers.security import separate_fullname
 from imio.prettylink.interfaces import IPrettyLink
@@ -24,10 +23,12 @@ from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.Five import BrowserView
+from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
+from zope.pagetemplate.pagetemplate import PageTemplate
 from zope.publisher.interfaces import IPublishTraverse
 
 import csv
@@ -500,7 +501,7 @@ class SigningUsersCsv(BrowserView):
             api.portal.show_message(_("No users selected for CSV download."), request=self.request, type="warning")
             return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        all_users_data, _ = self.get_users_data()
+        all_users_data, __ = self.get_users_data()
 
         # Filter to only selected users
         selected_users = [u for u in all_users_data if u["userid"] in selected_userids]
@@ -569,7 +570,8 @@ class SigningUsersCsv(BrowserView):
                 )
                 continue
 
-            personalized_content = str(email_content).format(**user_data).replace("\n", "<br>\n")
+            personalized_content = self._render_email_content(email_content, user_data)
+            # personalized_content = str(email_content).format(**user_data).replace("\n", "<br>\n")
 
             # Create and send email
             try:
@@ -614,6 +616,29 @@ class SigningUsersCsv(BrowserView):
             )
 
         return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
+
+    def _render_email_content(self, template, user_data):
+        """Render the email content template with user data.
+
+        :param template: The email content template (TAL compliant)
+        :param user_data: dict containing user data (userid, email, lastname, firstname, fullname)
+        :return: Rendered email content as a string
+        """
+        pt = PageTemplate()
+        pt.pt_source_file = lambda: "none"
+        pt.write(template)
+        namespace = pt.pt_getContext()
+        namespace.update(
+            {
+                "request": self.request,
+                "view": self,
+                "context": self.context,
+                "user_data": user_data,
+                "parapheo_url": ESIGN_ROOT_URL,
+                "modules": SecureModuleImporter,
+            }
+        )
+        return pt.pt_render(namespace)
 
 
 class EsignMacros(BrowserView):

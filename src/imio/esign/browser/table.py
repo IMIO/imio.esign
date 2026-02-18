@@ -15,7 +15,8 @@ from zope.i18n import translate
 class IdColumn(Column):
     header = _("ID")
     weight = 10
-    cssClasses = {"th": "th_header_sessions_id"}
+    cssClasses = {"th": "th_header_sessions_id",
+                  "td": "id-column"}
 
     def renderHeadCell(self):
         """
@@ -45,7 +46,8 @@ def external_session_link(session, title=None):
 class StateColumn(Column):
     header = _("State")
     weight = 20
-    cssClasses = {"th": "th_header_sessions_state"}
+    cssClasses = {"th": "th_header_sessions_state",
+                  "td": "state-column"}
 
     def renderCell(self, item):
         state = escape(translate(
@@ -58,7 +60,8 @@ class StateColumn(Column):
 class TitleColumn(Column):
     header = _("Title")
     weight = 30
-    cssClasses = {"th": "th_header_sessions_title"}
+    cssClasses = {"th": "th_header_sessions_title",
+                  "td": "title-column"}
 
     def renderCell(self, item):
         title = safe_unicode(item.get("title", ""))
@@ -71,7 +74,8 @@ class TitleColumn(Column):
 class LastUpdateColumn(Column):
     header = _("Last update")
     weight = 40
-    cssClasses = {"th": "th_header_sessions_last_update"}
+    cssClasses = {"th": "th_header_sessions_last_update",
+                  "td": "last-update-column"}
 
     def renderCell(self, item):
         last_update = item.get("last_update")
@@ -82,7 +86,8 @@ class LastUpdateColumn(Column):
 class SignersColumn(Column):
     header = _("Signers")
     weight = 50
-    cssClasses = {"th": "th_header_sessions_signers"}
+    cssClasses = {"th": "th_header_sessions_signers",
+                  "td": "signers-column"}
 
     def renderCell(self, item):
         signers = item.get("signers") or []

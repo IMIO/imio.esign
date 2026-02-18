@@ -17,6 +17,8 @@ Changelog
   [gbastien]
 - Added action to remove a single item from session.
   [chris-adam]
+- Improved signing-users-csv template to include emails sending information.
+  [chris-adam, sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

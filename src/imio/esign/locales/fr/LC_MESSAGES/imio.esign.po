@@ -30,15 +30,15 @@ msgstr "Ajouter à la session"
 
 #: ../browser/templates/signing_users.pt:251
 msgid "Before sending emails, please ensure that all selected users have their accounts created in \"Wallonie Connect\" (WaCo). If not, send the CSV to the DevOps team and wait for account creation."
-msgstr ""
+msgstr "Avant d'envoyer les emails, assurez-vous que tous les utilisateurs sélectionnés ont bien leur compte créé dans \"Wallonie Connect\" (WaCo). Si ce n'est pas le cas, envoyez le CSV à l'équipe DevOps et attendez la création des comptes."
 
 #: ../browser/templates/signing_users.pt:267
 msgid "Cancel"
-msgstr ""
+msgstr "Annuler"
 
 #: ../browser/templates/signing_users.pt:248
 msgid "Confirm Email Sending"
-msgstr ""
+msgstr "Confirmer l'envoi des emails"
 
 #: ../browser/table.py:174
 msgid "Create external session"
@@ -50,7 +50,7 @@ msgstr "Effacer la session"
 
 #: ../browser/templates/signing_users.pt:179
 msgid "Deselect All"
-msgstr ""
+msgstr "Désélectionner tout"
 
 #: ../browser/actions.py:92
 msgid "Element removed from session!"
@@ -63,15 +63,15 @@ msgstr "E-mail"
 
 #: ../browser/views.py:556
 msgid "Email content is not configured in the settings."
-msgstr ""
+msgstr "Le modèle d'email n'est pas configuré dans les paramètres."
 
 #: ../browser/settings.py:89
 msgid "Email content model for signing users"
-msgstr ""
+msgstr "Modèle d'email envoyé aux signataires pour se connecter à Paraphéo"
 
 #: ../browser/settings.py:90
 msgid "Email content sent to users when inviting them to Parapheo. TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
-msgstr ""
+msgstr "<span class='beware'>À modifier en toute connaissance de cause !</span><br />Contient du <a href='https://pagetemplates.readthedocs.io/en/latest/tal.html' target='_blank'>TAL</a> avec les variables: view, context, user_data, parapheo_url, request et modules."
 
 #: ../browser/settings.py:71
 msgid "Email of the eidas provider account containing the seal image."
@@ -79,11 +79,11 @@ msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
 #: ../browser/templates/signing_users.pt:159
 msgid "Email:"
-msgstr ""
+msgstr "Email:"
 
 #: ../browser/views.py:616
 msgid "Emails sent successfully to ${count} users."
-msgstr ""
+msgstr "Emails envoyés avec succès à ${count} utilisateurs."
 
 #: ../browser/settings.py:45
 msgid "Enabled?"
@@ -99,11 +99,11 @@ msgstr "Session externe envoyée avec succès !"
 
 #: ../browser/views.py:603
 msgid "Failed to send email to ${userid}."
-msgstr ""
+msgstr "Échec de l'envoi de l'email pour ${userid}."
 
 #: ../browser/views.py:623
 msgid "Failed to send emails to ${count} users."
-msgstr ""
+msgstr "Échec de l'envoi des emails pour ${count} utilisateurs."
 
 #: ../browser/settings.py:58
 msgid "File URL download domain"
@@ -115,11 +115,11 @@ msgstr "Fichiers"
 
 #: ../browser/templates/signing_users.pt:217
 msgid "First Name"
-msgstr ""
+msgstr "Prénom"
 
 #: ../browser/templates/signing_users.pt:218
 msgid "Full Name"
-msgstr ""
+msgstr "Nom complet"
 
 #: ../browser/templates/macros.pt:44
 msgid "Full name"
@@ -136,7 +136,7 @@ msgstr "Configuration du module de signature externe"
 
 #: ../browser/templates/signing_users.pt:250
 msgid "Important:"
-msgstr ""
+msgstr "Important:"
 
 #: ../configure.zcml:23
 msgid "Installs the imio.esign add-on."
@@ -152,7 +152,7 @@ msgstr "Active/désactive la fonctionnalité globalement sur le site."
 
 #: ../browser/templates/signing_users.pt:216
 msgid "Last Name"
-msgstr ""
+msgstr "Nom"
 
 #: ../browser/table.py:75
 #: ../browser/templates/macros.pt:17
@@ -165,11 +165,11 @@ msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
 #: ../browser/settings.py:98
 msgid "Max session size (MB)"
-msgstr ""
+msgstr "Taille maximum de la session en MB"
 
 #: ../browser/settings.py:99
 msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
-msgstr ""
+msgstr "Si la taille totale des fichiers à signer dépasse cette limite, une nouvelle session sera créée."
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "No"
@@ -189,19 +189,19 @@ msgstr "Aucun identifiant de session fourni !"
 
 #: ../browser/views.py:511
 msgid "No users selected for CSV download."
-msgstr ""
+msgstr "Aucun utilisateur sélectionné pour le téléchargement du CSV."
 
 #: ../browser/views.py:550
 msgid "No users selected for email sending."
-msgstr ""
+msgstr "Aucun utilisateur sélectionné pour l'envoi d'emails."
 
 #: ../browser/settings.py:82
 msgid "Parapheo url"
-msgstr ""
+msgstr "Url de Paraphéo"
 
 #: ../browser/views.py:565
 msgid "Portal from email is not configured."
-msgstr ""
+msgstr "L'adresse d'expéditeur du site n'est pas configurée"
 
 #: ../browser/templates/macros.pt:45
 msgid "Position"
@@ -221,7 +221,7 @@ msgstr "Retirer de la session"
 
 #: ../profiles/default/actions.xml
 msgid "Remove item from esign session"
-msgstr ""
+msgstr "Retirer l'élément de la session de signature"
 
 #: ../browser/settings.py:64
 msgid "Seal code"
@@ -241,19 +241,19 @@ msgstr "Sceau"
 
 #: ../browser/templates/signing_users.pt:171
 msgid "Select All"
-msgstr ""
+msgstr "Sélectionner tout"
 
 #: ../browser/templates/signing_users.pt:175
 msgid "Select Only Signers"
-msgstr ""
+msgstr "Sélectionner seulement les signataires"
 
 #: ../browser/templates/signing_users.pt:184
 msgid "Selected:"
-msgstr ""
+msgstr "Sélectionnés:"
 
 #: ../browser/templates/signing_users.pt:271
 msgid "Send Emails"
-msgstr ""
+msgstr "Envoyer des emails"
 
 #: ../utils.py:131
 msgid "Session ${id}"
@@ -306,7 +306,7 @@ msgstr "Signataires"
 
 #: ../browser/templates/signing_users.pt:150
 msgid "Signing Users: Export CSV"
-msgstr ""
+msgstr "Signataires: csv pour WaCo et invitation Paraphéo"
 
 #: ../browser/table.py:47
 #: ../browser/templates/macros.pt:11
@@ -371,7 +371,7 @@ msgstr "Cela ajoutera cet élément ou les sous-éléments configurés à une se
 
 #: ../profiles/default/actions.xml
 msgid "This will remove this element from the relevant esign session"
-msgstr ""
+msgstr "Ceci va supprimer l'élement courant de la session de signature"
 
 #: ../profiles/default/actions.xml
 msgid "This will remove this element or configured sub elements from the relevant esign session"
@@ -392,19 +392,19 @@ msgstr "Uninstalls the imio.esign add-on."
 
 #: ../browser/settings.py:83
 msgid "Used in signers email template."
-msgstr ""
+msgstr "Utilisée dans le template d'email pour les signataires."
 
 #: ../browser/views.py:574
 msgid "User ${userid} has no email address configured. Skipping."
-msgstr ""
+msgstr "L'utilisateur ${userid} n'a pas d'adresse e-mail configurée. Ignoré."
 
 #: ../browser/templates/signing_users.pt:214
 msgid "User ID"
-msgstr ""
+msgstr "Identifiant utilisateur"
 
 #: ../browser/templates/signing_users.pt:160
 msgid "Users:"
-msgstr ""
+msgstr "Utilisateurs:"
 
 #: ../browser/settings.py:51
 msgid "VAT number"
@@ -432,7 +432,7 @@ msgstr "Voir la session dans un tableau de bord"
 
 #: ../browser/templates/signing_users.pt:155
 msgid "Warning: Duplicate email addresses detected"
-msgstr ""
+msgstr "Attention: des adresses e-mail en doublon ont été détectées"
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
@@ -440,7 +440,7 @@ msgstr "Oui"
 
 #: ../browser/templates/signing_users.pt:260
 msgid "You are about to send emails to"
-msgstr ""
+msgstr "Vous êtes sur le point d'envoyer des emails à"
 
 #: ../browser/views.py:146
 msgid "You don't have permission to create external sessions!"
@@ -452,7 +452,7 @@ msgstr "Vous n'avez pas la permission de supprimer une session !"
 
 #: ../browser/views.py:589
 msgid "You have been invited to Paraphéo"
-msgstr ""
+msgstr "Vous êtes invité à vous connecter sur Paraphéo"
 
 #: ../browser/table.py:25
 msgid "draft"
@@ -496,12 +496,12 @@ msgstr "À signer"
 
 #: ../browser/templates/signing_users.pt:264
 msgid "users."
-msgstr ""
+msgstr "utilisateurs."
 
 #: ../browser/templates/signing_users.pt:195
 msgid "✉️ Send Emails"
-msgstr ""
+msgstr "✉️ Envoyer des emails"
 
 #: ../browser/templates/signing_users.pt:191
 msgid "📥 Download CSV"
-msgstr ""
+msgstr "📥 Télécharger le CSV"

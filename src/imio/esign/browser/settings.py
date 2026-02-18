@@ -3,6 +3,8 @@
 from imio.esign import _
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
+from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
+from plone.autoform.directives import widget
 from plone.z3cform import layout
 from zope import schema
 from zope.interface import Interface
@@ -76,9 +78,26 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
+    parapheo_url = schema.TextLine(
+        title=_("Parapheo url"),
+        description=_("Used in signers email template."),
+        required=False,
+    )
+
+    widget("signing_users_email_content", WysiwygFieldWidget)
+    signing_users_email_content = schema.Text(
+        title=_("Email content model for signing users"),
+        description=_(
+            "Email content sent to users when inviting them to Parapheo. "
+            "TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
+        ),
+        required=False,
+    )
+
     max_session_size = schema.Int(
         title=_("Max session size (MB)"),
-        description=_("Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."),
+        description=_("Maximum size of the session in megabytes. If the total size of files to be signed exceeds this "
+                      "limit, a new session will be created."),
         default=100,
         min=1,
         required=True,

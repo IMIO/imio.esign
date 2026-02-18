@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-
+from imio.esign.config import get_registry_parapheo_url
+from imio.esign.config import get_registry_signing_users_email_content
+from imio.esign.config import set_registry_parapheo_url
+from imio.esign.config import set_registry_signing_users_email_content
+from imio.esign.config import SIGNERS_EMAIL_CONTENT
 from Products.CMFPlone.interfaces import INonInstallable
 from zope.interface import implementer
 
@@ -19,6 +23,10 @@ class HiddenProfiles(object):
 
 def post_install(context):
     """Post install script"""
+    if not get_registry_parapheo_url():
+        set_registry_parapheo_url(u"https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO")
+    if not get_registry_signing_users_email_content():
+        set_registry_signing_users_email_content(SIGNERS_EMAIL_CONTENT)
 
 
 def uninstall(context):

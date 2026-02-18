@@ -24,7 +24,7 @@ class HiddenProfiles(object):
 def post_install(context):
     """Post install script"""
     if not get_registry_parapheo_url():
-        set_registry_parapheo_url("https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO")
+        set_registry_parapheo_url(u"https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO")
     if not get_registry_signing_users_email_content():
         set_registry_signing_users_email_content(SIGNERS_EMAIL_CONTENT)
 

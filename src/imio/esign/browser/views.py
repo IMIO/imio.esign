@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
+
+from AccessControl import Unauthorized
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
-from imio.esign import ESIGN_CREDENTIALS
 from imio.esign import ESIGN_ROOT_URL
 from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
@@ -12,6 +13,7 @@ from imio.esign.config import get_registry_parapheo_url
 from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.emailer import create_html_email
@@ -50,6 +52,11 @@ class SessionsListingView(BrowserView):
         super(SessionsListingView, self).__init__(context, request)
         self.portal = api.portal.get()
         self.portal_url = self.portal.absolute_url()
+
+    def __call__(self):
+        if not self.available():
+            raise Unauthorized
+        return super(SessionsListingView, self).__call__()
 
     def available(self):
         return get_registry_enabled()
@@ -146,7 +153,6 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(
             int(session_id),
-            b64_cred=ESIGN_CREDENTIALS,
             esign_root_url=ESIGN_ROOT_URL,
         )
         if resp == "_session_not_found_":
@@ -235,6 +241,9 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def collapsible_content_css_default(self):
         """Default CSS class to apply on the collapsible."""
         return "collapsible-content"
+
+    def get_state_description(self, state):
+        return translate(get_state_description(state), context=self.request, domain="imio.esign")
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

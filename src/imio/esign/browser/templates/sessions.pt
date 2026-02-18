@@ -3,8 +3,8 @@
       xmlns:metal="http://xml.zope.org/namespaces/metal"
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
-         metal:use-macro="context/main_template/macros/master"
-         i18n:domain="imio.esign">
+      metal:use-macro="context/main_template/macros/master"
+      i18n:domain="imio.esign">
 <body>
 
 <metal:custom_title fill-slot="content-title">

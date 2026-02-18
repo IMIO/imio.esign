@@ -157,3 +157,4 @@ class TestDownloadFileView(unittest.TestCase):
         self.assertIn("The corresponding file identifier cannot be retrieved (aabbccddee)", browser.contents)
         browser.open("{}/download-file/{}".format(portal_url, "aabbccddee?param=value"))
         self.assertIn("The corresponding file identifier cannot be retrieved (aabbccddee)", browser.contents)
+

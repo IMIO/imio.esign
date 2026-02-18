@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-02-05 15:13+0000\n"
+"POT-Creation-Date: 2026-02-10 14:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -162,7 +162,7 @@ msgid "Session deleted successfully!"
 msgstr ""
 
 #: ../browser/templates/session_info.pt:11
-msgid "Session information"
+msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
 #: ../browser/views.py:118
@@ -207,19 +207,51 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:310
+#: ../browser/views.py:318
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:290
+#: ../browser/views.py:298
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:302
+#: ../browser/views.py:310
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
-#: ../browser/views.py:286
+#: ../utils.py:490
+msgid "The session encountered an error during its processing."
+msgstr ""
+
+#: ../utils.py:493
+msgid "The session has been cancelled because a signer refused a document."
+msgstr ""
+
+#: ../utils.py:489
+msgid "The session has been sent to Paraphéo."
+msgstr ""
+
+#: ../utils.py:494
+msgid "The session is finished and signed documents are on the way back to the application."
+msgstr ""
+
+#: ../utils.py:495
+msgid "The session is finished and signed documents have been sent back to the application."
+msgstr ""
+
+#: ../utils.py:492
+msgid "The session is finished but signed documents couldn't be sent back to the application."
+msgstr ""
+
+#: ../utils.py:488
+msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
+msgstr ""
+
+#: ../utils.py:491
+msgid "The session is ready to be signed in Paraphéo."
+msgstr ""
+
+#: ../browser/views.py:294
 msgid "This file identifier is not correct !"
 msgstr ""
 

@@ -2,7 +2,9 @@
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
+from imio.esign.utils import remove_files_from_session
 from plone import api
 from Products.Five import BrowserView
 
@@ -98,3 +100,24 @@ class RemoveFromSessionView(BrowserView):
     def get_uid_to_remove(self):
         """ """
         return self.context.UID()
+
+
+class RemoveItemFromSessionView(BrowserView):
+    """View to remove an item from an esign session."""
+
+    def __init__(self, context, request):
+        super(RemoveItemFromSessionView, self).__init__(context, request)
+
+    def _finished(self):
+        msg = _("Element removed from session!")
+        api.portal.show_message(msg, request=self.request)
+        self.request.RESPONSE.redirect(self.context.absolute_url())
+
+    def index(self):
+        remove_files_from_session(files_uids=[self.context.UID()])
+        self._finished()
+
+    def available(self):
+        """Defines if the action is available or not."""
+        annot = get_session_annotation()
+        return self.context.UID() in annot.get("uids", {})

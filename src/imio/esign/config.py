@@ -35,6 +35,10 @@ def get_registry_signing_users_email_content(default=""):
     return api.portal.get_registry_record("imio.esign.signing_users_email_content", default=default)
 
 
+def get_registry_max_session_size(default=100):
+    return api.portal.get_registry_record("imio.esign.max_session_size", default=default)
+
+
 def set_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -65,6 +69,10 @@ def set_registry_parapheo_url(value):
 
 def set_registry_signing_users_email_content(value):
     api.portal.set_registry_record("imio.esign.signing_users_email_content", value)
+
+
+def set_registry_max_session_size(value):
+    api.portal.set_registry_record("imio.esign.max_session_size", value)
 
 
 SIGNERS_EMAIL_CONTENT = u"""

@@ -4,7 +4,6 @@ from AccessControl import Unauthorized
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
-from imio.esign import ESIGN_ROOT_URL
 from imio.esign import manage_session_perm
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
@@ -151,10 +150,7 @@ class ExternalSessionCreateView(BrowserView):
         if session_id is None:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
             return self.context.absolute_url() + "/@@parapheo"
-        resp = create_external_session(
-            int(session_id),
-            esign_root_url=ESIGN_ROOT_URL,
-        )
+        resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
             api.portal.show_message(
                 _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),

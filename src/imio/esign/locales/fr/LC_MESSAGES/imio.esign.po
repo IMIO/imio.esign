@@ -452,7 +452,7 @@ msgstr "Vous n'avez pas la permission de supprimer une session !"
 
 #: ../browser/views.py:589
 msgid "You have been invited to Paraphéo"
-msgstr "Vous êtes invité à vous connecter sur Paraphéo"
+msgstr "Vous êtes invité à activer votre compte sur Paraphéo"
 
 #: ../browser/table.py:25
 msgid "draft"

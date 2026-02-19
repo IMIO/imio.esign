@@ -12,7 +12,7 @@ import os
 _ = MessageFactory("imio.esign")
 logger = logging.getLogger("imio.esign")
 PLONE_VERSION = int(api.env.plone_version()[0])
-ESIGN_API_URL = os.getenv("esign-api-url", "http://127.0.0.1:8000")
+ESIGN_ROOT_URL = os.getenv("ESIGN_ROOT_URL", "http://127.0.0.1:8000")
 manage_session_perm = "imio.esign: Manage Sessions"
 
 

@@ -19,8 +19,6 @@ Changelog
   [chris-adam]
 - Improved signing-users-csv template to include emails sending information.
   [chris-adam, sgeulette]
-- Get ESIGN_API_URL from esign-api-url env variable
-  [sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

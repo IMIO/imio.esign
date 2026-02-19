@@ -2,7 +2,7 @@
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _tr as _
-from imio.esign import ESIGN_API_URL
+from imio.esign import ESIGN_ROOT_URL
 from imio.esign import logger
 from imio.esign.config import get_registry_file_url
 from imio.esign.config import get_registry_max_session_size
@@ -115,7 +115,7 @@ def create_external_session(session_id, esign_root_url=None):
     """Create a session with the given signers and files.
 
     :param session_id: internal session id
-    :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default ESIGN_API_URL
+    :param esign_root_url: the root URL for the e-sign service, if not provided it will use the default ESIGN_ROOT_URL
     :return: session information
     """
     session_url = get_esign_session_url(esign_root_url)
@@ -285,7 +285,7 @@ def get_esign_session_url(esign_root_url):
     if esign_root_url:
         return "{}/{}".format(esign_root_url, SESSION_URL)
     else:
-        return "{}/{}".format(ESIGN_API_URL, SESSION_URL)
+        return "{}/{}".format(ESIGN_ROOT_URL, SESSION_URL)
 
 
 def get_files_from_uids(uids):

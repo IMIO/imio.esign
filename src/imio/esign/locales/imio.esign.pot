@@ -441,14 +441,6 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:146
-msgid "You don't have permission to create external sessions!"
-msgstr ""
-
-#: ../browser/views.py:118
-msgid "You don't have permission to delete sessions!"
-msgstr ""
-
 #: ../browser/views.py:589
 msgid "You have been invited to Paraphéo"
 msgstr ""

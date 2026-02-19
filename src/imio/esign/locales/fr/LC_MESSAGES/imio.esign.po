@@ -442,14 +442,6 @@ msgstr "Oui"
 msgid "You are about to send emails to"
 msgstr "Vous êtes sur le point d'envoyer des emails à"
 
-#: ../browser/views.py:146
-msgid "You don't have permission to create external sessions!"
-msgstr "Vous n'avez pas la permission de créer une session externe !"
-
-#: ../browser/views.py:118
-msgid "You don't have permission to delete sessions!"
-msgstr "Vous n'avez pas la permission de supprimer une session !"
-
 #: ../browser/views.py:589
 msgid "You have been invited to Paraphéo"
 msgstr "Vous êtes invité à activer votre compte sur Paraphéo"

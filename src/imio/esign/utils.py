@@ -22,7 +22,6 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
-from zope.i18n import translate
 
 import json
 import requests

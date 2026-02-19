@@ -10,7 +10,10 @@
 <tr metal:define-macro="state" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">State</label></td>
     <td class="table_widget_value">
-        <span tal:attributes="title python:view.get_state_description(session['state'])" tal:content="python:session['state']" i18n:translate="">draft</span>
+        <span class='state-title' tal:attributes="title python:view.get_state_description(session['state'])">
+          <tal:block content="python:session['state']" i18n:translate="">draft</tal:block>
+          <span class='far fa-question-circle' />
+        </span>
     </td>
 </tr>
 <tr metal:define-macro="update_date" i18n:domain="imio.esign">

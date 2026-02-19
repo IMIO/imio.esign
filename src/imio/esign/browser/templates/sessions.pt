@@ -31,12 +31,6 @@
         .documents-column {
             width: 700px !important;
         }
-        td.state-column span {
-          cursor: help;
-        }
-        td.state-column span.state-title {
-          margin-right: 1em;
-        }
     </style>
     <div tal:replace="structure view/render_table"></div>
 </metal:content-core>

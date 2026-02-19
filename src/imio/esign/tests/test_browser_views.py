@@ -40,7 +40,7 @@ class _BaseSessionViewTest(unittest.TestCase):
         setRoles(self.portal, TEST_USER_ID, ["Manager"])
 
         # Create user for signing
-        api.user.create(email="user1@sign.com", username="user1", password="password1")
+        api.user.create(email="user1@sign.com", username="user1", password="password1")  # noqa: S106
 
         # Create content category configuration
         at_folder = api.content.create(

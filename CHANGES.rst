@@ -21,6 +21,8 @@ Changelog
   [chris-adam, sgeulette]
 - Used API_ROOT_URL env variable
   [sgeulette]
+- Style sessions state-column to display a question circle.
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

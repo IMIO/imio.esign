@@ -131,6 +131,9 @@ def create_external_session(session_id, esign_root_url=None):
             logger.error("Annex with UID %s not found.", uid)
             continue
         files.append((file_dic["scan_id"], file_dic["filename"], annex.file.data, uid))
+    if not files:
+        logger.error("No files found for session %s.", session_id)
+        return "_no_files_"
     portal = api.portal.get()  # noqa F841
     if not session["title"]:
         session["title"] = _("Session ${id}", mapping={"id": session_id})
@@ -184,6 +187,7 @@ def create_external_session(session_id, esign_root_url=None):
     }
 
     logger.info(data_payload)
+    # for future use when pyutils > 1.2.1
     # ret = post_request(
     #     session_url,
     #     headers=headers,

@@ -58,12 +58,11 @@ setup(
         "imio.helpers>1.3.10",
         "imio.prettylink",
         "imio.pyutils",
-        "mock",
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "plone.restapi",
         "requests",
-        # 'z3c.jbot',
+        # "z3c.jbot",
         "z3c.table",
     ],
     extras_require={
@@ -76,6 +75,7 @@ setup(
             "plone.app.contenttypes",
             "plone.app.robotframework[debug]",
             "imio.annex",
+            "mock",
         ],
     },
     entry_points="""

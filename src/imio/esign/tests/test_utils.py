@@ -350,6 +350,22 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(files_param[1][1][0], u"annex1.pdf")
         self.assertEqual(files_param[2][1][0], u"annex1-1.pdf")
 
+        # Case 6: session without files to send => returns "_no_seal_code_", no HTTP call
+        for i in range(len(session3["files"])):
+            session3["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
+        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
+             patch('imio.esign.utils.requests') as mock_requests:
+            result = create_external_session(sid3)
+        self.assertEqual(result, "_no_files_")
+        mock_requests.post.assert_not_called()
+
+        # case 7: bad session number to send => returns "_session_not_found_", no HTTP call
+        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
+             patch('imio.esign.utils.requests') as mock_requests:
+            result = create_external_session(99)
+        self.assertEqual(result, "_session_not_found_")
+        mock_requests.post.assert_not_called()
+
     def test_get_filesize(self):
         """Test get_filesize returns the correct file size."""
         # even index => annex1.pdf (6968 bytes)

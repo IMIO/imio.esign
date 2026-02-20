@@ -11,10 +11,10 @@ from imio.esign.config import get_registry_seal_email
 from imio.esign.config import get_registry_sign_code
 from imio.esign.config import get_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
-from imio.helpers.content import uuidsToObjects
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
 from imio.helpers.ws import get_auth_token
+# from imio.pyutils.system import post_request
 from imio.pyutils.utils import shortuid_encode_id
 from os import path
 from persistent.list import PersistentList
@@ -22,7 +22,6 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
-from zope.i18n import translate
 
 import json
 import requests
@@ -124,8 +123,14 @@ def create_external_session(session_id, esign_root_url=None):
     if not session:
         logger.error("Session with id %s not found.", session_id)
         return "_session_not_found_"
-    files_uids = [fdic["uid"] for fdic in session["files"]]
-    files = get_files_from_uids(files_uids)
+    files = []
+    for file_dic in session["files"]:
+        uid = file_dic["uid"]
+        annex = uuidToObject(uuid=uid, unrestricted=True)
+        if not annex:
+            logger.error("Annex with UID %s not found.", uid)
+            continue
+        files.append((file_dic["scan_id"], file_dic["filename"], annex.file.data, uid))
     portal = api.portal.get()  # noqa F841
     if not session["title"]:
         session["title"] = _("Session ${id}", mapping={"id": session_id})
@@ -179,6 +184,13 @@ def create_external_session(session_id, esign_root_url=None):
     }
 
     logger.info(data_payload)
+    # ret = post_request(
+    #     session_url,
+    #     headers=headers,
+    #     data={"data": json.dumps(data_payload, default=vars)},
+    #     files=files_payload,
+    #     timeout=10,
+    # )
     ret = requests.post(
         session_url,
         headers=headers,
@@ -286,33 +298,6 @@ def get_esign_session_url(esign_root_url):
         return "{}/{}".format(esign_root_url, SESSION_URL)
     else:
         return "{}/{}".format(API_ROOT_URL, SESSION_URL)
-
-
-def get_files_from_uids(uids):
-    """Get files from uids.
-
-    :param uids: uids
-    :return: list of triplets (scan_id, filename, file_content) for each coresponding object
-    """
-    annexes = uuidsToObjects(uuids=uids, unrestricted=True)
-
-    files_data = []
-    for annex in annexes:
-        if not hasattr(annex, "scan_id") or not annex.scan_id:
-            logger.error("Annex %s has no scan_id", annex.absolute_url())
-            continue
-        else:
-            scan_id = annex.scan_id
-        if not hasattr(annex, "file") or not annex.file:
-            logger.error("Annex %s has no file", annex.absolute_url())
-            continue
-        else:
-            filename = annex.file.filename or "no_filename"
-            file_content = annex.file.data
-
-        files_data.append((scan_id, filename, file_content, annex.UID()))
-
-    return files_data
 
 
 def get_session_annotation(portal=None):

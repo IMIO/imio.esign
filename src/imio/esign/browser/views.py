@@ -24,6 +24,7 @@ from imio.pyutils.utils import shortuid_decode_id
 from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
+from Products.CMFPlone.utils import base_hasattr
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
@@ -407,7 +408,17 @@ class SigningUsersCsv(BrowserView):
         :param user_data: dict containing user data (userid, email, lastname, firstname, fullname)
         :return: True to include the user by default, False to exclude
         """
-        return True
+        hps = api.content.find(
+            portal_type="held_position",
+            userid=user_data["userid"],
+        )
+        if not hps:
+            return False
+        for hp in hps:
+            hp_obj = hp.getObject()
+            if base_hasattr(hp_obj, "usages") and "signer" in hp_obj.usages:
+                return True
+        return False
 
     def get_users_data(self):
         """Get all users data sorted by filter status then userid.

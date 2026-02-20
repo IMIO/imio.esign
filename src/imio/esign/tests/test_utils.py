@@ -350,7 +350,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(files_param[1][1][0], u"annex1.pdf")
         self.assertEqual(files_param[2][1][0], u"annex1-1.pdf")
 
-        # Case 6: session without files to send => returns "_no_seal_code_", no HTTP call
+        # Case 6: session without files to send => returns "_no_files_", no HTTP call
         for i in range(len(session3["files"])):
             session3["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
         with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \

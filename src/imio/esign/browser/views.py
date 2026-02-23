@@ -252,27 +252,43 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
-    """Show selected session info for an item."""
+    """Show session info for all sessions linked to a context item."""
 
     def available(self):
         """Global availability of the viewlet."""
         return True
 
-    def render(self):
-        """Render the viewlet."""
-        if self.session:
-            return self.index()
-        return ""
+    @property
+    def sessions(self):
+        """Return all sessions that contain files from this context."""
+        annot = get_session_annotation()
+        result = []
+        seen = set()
+        for f_uid in annot["c_uids"].get(self.context.UID(), []):
+            session_id = annot["uids"].get(f_uid)
+            if session_id is not None and session_id not in seen:
+                seen.add(session_id)
+                session = dict(annot["sessions"].get(session_id, {}))
+                session["id"] = session_id
+                result.append(session)
+        return result
 
     @property
     def session(self):
-        annot = get_session_annotation()
-        for f_uid in annot["c_uids"].get(self.context.UID(), []):
-            if f_uid in annot["uids"]:
-                session = annot["sessions"].get(annot["uids"][f_uid], {})
-                session["id"] = annot["uids"][f_uid]
-                return session
-        return {}
+        """Current session during render loop; also used by base template."""
+        return getattr(self, "_current_session", None) or {}
+
+    def render(self):
+        """Render viewlet once per session linked to this context."""
+        sessions = self.sessions
+        if not sessions:
+            return ""
+        parts = []
+        for s in sessions:
+            self._current_session = s
+            parts.append(self.index())
+        self._current_session = None
+        return "\n".join(parts)
 
 
 @implementer(IPublishTraverse)

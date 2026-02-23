@@ -6,6 +6,7 @@ from datetime import datetime
 from datetime import timedelta
 from imio.esign.browser.views import DownloadFileView
 from imio.esign.browser.views import ExternalSessionCreateView
+from imio.esign.browser.views import ItemSessionInfoViewlet
 from imio.esign.browser.views import SessionDeleteView
 from imio.esign.testing import IMIO_ESIGN_FUNCTIONAL_TESTING
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
@@ -393,3 +394,96 @@ class TestDownloadFileView(unittest.TestCase):
         self.assertIn("The corresponding file identifier cannot be retrieved (aabbccddee)", browser.contents)
         browser.open("{}/download-file/{}".format(portal_url, "aabbccddee?param=value"))
         self.assertIn("The corresponding file identifier cannot be retrieved (aabbccddee)", browser.contents)
+
+
+class TestItemSessionInfoViewlet(unittest.TestCase):
+    """Test ItemSessionInfoViewlet multi-session support."""
+
+    layer = IMIO_ESIGN_INTEGRATION_TESTING
+
+    def setUp(self):
+        self.portal = self.layer["portal"]
+        self.request = self.portal.REQUEST
+        setRoles(self.portal, TEST_USER_ID, ["Manager"])
+        at_folder = api.content.create(
+            container=self.portal, id="annexes_types", title="Annexes Types",
+            type="ContentCategoryConfiguration", exclude_from_nav=True,
+        )
+        category_group = api.content.create(
+            type="ContentCategoryGroup", title="Annexes",
+            container=at_folder, id="annexes",
+        )
+        icon_path = os.path.join(
+            os.path.dirname(collective.iconifiedcategory.__file__), "tests", u"ic\xf4ne1.png"
+        )
+        with open(icon_path, "rb") as fl:
+            api.content.create(
+                type="ContentCategory", title="To sign",
+                container=category_group,
+                icon=NamedBlobImage(fl.read(), filename=u"ic\xf4ne1.png"),
+                id="to_sign", predefined_title="To be signed",
+                to_sign=True, show_preview=False,
+            )
+        api.user.create(email="user1@sign.com", username="user1", password="password1")
+        self.folder = api.content.create(
+            container=self.portal, type="Folder",
+            id="test_folder", title="Test Folder",
+        )
+        tests_dir = os.path.dirname(__file__)
+        self.annexes = []
+        for i in range(2):
+            with open(os.path.join(tests_dir, "annex1.pdf"), "rb") as f:
+                annex = api.content.create(
+                    container=self.folder, type="annex",
+                    id="annex{}".format(i), title="Annex {}".format(i),
+                    content_category=calculate_category_id(
+                        self.portal["annexes_types"]["annexes"]["to_sign"]
+                    ),
+                    scan_id="0123456000000{:02d}".format(i),
+                    file=NamedBlobFile(
+                        data=f.read(), filename=u"annex{}.pdf".format(i),
+                        contentType="application/pdf",
+                    ),
+                )
+                self.annexes.append(annex)
+        self.signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        for key in list(self.request.form.keys()):
+            del self.request.form[key]
+
+    def test_sessions_empty(self):
+        """No files in esign annotation → sessions returns empty list."""
+        viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
+        self.assertEqual(viewlet.sessions, [])
+        self.assertEqual(viewlet.render(), "")
+
+    def test_sessions_single_session(self):
+        """All context files in one session → sessions returns one dict."""
+        uids = [a.UID() for a in self.annexes]
+        add_files_to_session(self.signers, uids)
+        viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
+        sessions = viewlet.sessions
+        self.assertEqual(len(sessions), 1)
+        self.assertEqual(sessions[0]["id"], 0)
+
+    def test_sessions_multiple_sessions(self):
+        """Files in two sessions (different discriminators) → sessions returns two dicts."""
+        add_files_to_session(self.signers, [self.annexes[0].UID()], discriminators=("a",))
+        add_files_to_session(self.signers, [self.annexes[1].UID()], discriminators=("b",))
+        viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
+        sessions = viewlet.sessions
+        self.assertEqual(len(sessions), 2)
+        session_ids = {s["id"] for s in sessions}
+        self.assertEqual(session_ids, {0, 1})
+
+        rendered_ids = []
+        def mock_index():
+            rendered_ids.append(viewlet._current_session["id"])
+            return u"<div>session {}</div>".format(viewlet._current_session["id"])
+        viewlet.index = mock_index
+        result = viewlet.render()
+        self.assertEqual(len(rendered_ids), 2)
+        self.assertIn(0, rendered_ids)
+        self.assertIn(1, rendered_ids)
+        self.assertIn(u"<div>session 0</div>", result)
+        self.assertIn(u"<div>session 1</div>", result)
+        self.assertIsNone(viewlet._current_session)

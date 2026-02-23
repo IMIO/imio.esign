@@ -183,6 +183,10 @@ msgstr "Aucun fichier"
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
+#: ../browser/views.py:168
+msgid "No seal email defined in configuration ! Session ${id} not sent."
+msgstr "Aucun email de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
+
 #: ../browser/views.py:123
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"

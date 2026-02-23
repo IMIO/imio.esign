@@ -159,6 +159,12 @@ class ExternalSessionCreateView(BrowserView):
                 request=self.request,
                 type="error",
             )
+        elif resp == "_no_seal_email_":
+            api.portal.show_message(
+                _("No seal email defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
         elif resp.status_code == 200:
             api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
         else:

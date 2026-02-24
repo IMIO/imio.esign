@@ -83,6 +83,20 @@ class LastUpdateColumn(Column):
             last_update, long_format=True)
 
 
+class SealColumn(Column):
+    header = _("Sealed")
+    weight = 45
+    cssClasses = {"th": "th_header_sessions_seal",
+                  "td": "seal-column"}
+
+    def renderCell(self, item):
+        if not item.get("seal"):
+            return u""
+        label = escape(translate(_("Sealed"), context=self.request))
+        # icon: https://www.flaticon.com/free-icon/verification_3556787
+        return u"<img width='24' height='24' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
+
+
 class SignersColumn(Column):
     header = _("Signers")
     weight = 50
@@ -206,6 +220,7 @@ class SessionsTable(Table):
             StateColumn(ctx, req, tbl),
             TitleColumn(ctx, req, tbl),
             LastUpdateColumn(ctx, req, tbl),
+            SealColumn(ctx, req, tbl),
             SignersColumn(ctx, req, tbl),
             FilesColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),

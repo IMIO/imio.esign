@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-02-25 11:18+0000\n"
+"POT-Creation-Date: 2026-02-25 13:16+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../browser/views.py:305
+#: ../browser/views.py:307
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
@@ -60,7 +60,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/views.py:569
+#: ../browser/views.py:571
 msgid "Email content is not configured in the settings."
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Email:"
 msgstr ""
 
-#: ../browser/views.py:629
+#: ../browser/views.py:631
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
@@ -88,19 +88,19 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:177
+#: ../browser/views.py:179
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:174
+#: ../browser/views.py:176
 msgid "External session sent successfully!"
 msgstr ""
 
-#: ../browser/views.py:616
+#: ../browser/views.py:618
 msgid "Failed to send email to ${userid}."
 msgstr ""
 
-#: ../browser/views.py:636
+#: ../browser/views.py:638
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
@@ -178,27 +178,27 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:169
+#: ../browser/views.py:171
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:163
+#: ../browser/views.py:159
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:168
+#: ../browser/views.py:165
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:123
+#: ../browser/views.py:121
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/views.py:524
+#: ../browser/views.py:526
 msgid "No users selected for CSV download."
 msgstr ""
 
-#: ../browser/views.py:563
+#: ../browser/views.py:565
 msgid "No users selected for email sending."
 msgstr ""
 
@@ -206,7 +206,7 @@ msgstr ""
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/views.py:578
+#: ../browser/views.py:580
 msgid "Portal from email is not configured."
 msgstr ""
 
@@ -270,7 +270,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/views.py:130
+#: ../browser/views.py:128
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -278,7 +278,7 @@ msgstr ""
 msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
-#: ../browser/views.py:132
+#: ../browser/views.py:130
 msgid "Session not found!"
 msgstr ""
 
@@ -286,7 +286,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:157
+#: ../browser/views.py:153
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -302,7 +302,7 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:357
+#: ../browser/views.py:359
 msgid "Signed file download"
 msgstr ""
 
@@ -324,15 +324,15 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:333
+#: ../browser/views.py:335
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:313
+#: ../browser/views.py:315
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:325
+#: ../browser/views.py:327
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
@@ -368,7 +368,7 @@ msgstr ""
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
-#: ../browser/views.py:309
+#: ../browser/views.py:311
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -401,7 +401,7 @@ msgstr ""
 msgid "Used in signers email template."
 msgstr ""
 
-#: ../browser/views.py:587
+#: ../browser/views.py:589
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr ""
 
@@ -449,15 +449,7 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:146
-msgid "You don't have permission to create external sessions!"
-msgstr ""
-
-#: ../browser/views.py:118
-msgid "You don't have permission to delete sessions!"
-msgstr ""
-
-#: ../browser/views.py:602
+#: ../browser/views.py:604
 msgid "You have been invited to Paraphéo"
 msgstr ""
 

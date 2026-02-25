@@ -317,6 +317,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(session2["state"], "draft")
 
         # Case 4: seal session without seal_code configured => returns "_no_seal_code_", no HTTP call
+        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         annex0_obj = uuidToObject(uuid=self.uids[0], unrestricted=True)
         annex0_obj.file.filename = u"annex1.pdf"
         sid3, session3 = add_files_to_session(signers, (self.uids[4], self.uids[1], self.uids[0]), seal="PADES_SEAL")

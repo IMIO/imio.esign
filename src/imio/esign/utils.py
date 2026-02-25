@@ -173,9 +173,9 @@ def create_external_session(session_id, esign_root_url=None):
             logger.error("No seal code configured in registry.")
             return "_no_seal_code_"
         data_payload["sealData"] = {
-            "users": seal_email and [seal_email] or [],
+            "users": [seal_email],
             # "placeholderName": "SCEAU",  # default
-            "acroform": bool(seal_email),  # default False
+            "acroform": True,
             "watchers": list(session.get("watchers", [])),
             "sealCode": seal_code,
         }

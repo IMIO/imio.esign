@@ -54,7 +54,7 @@ class StateColumn(Column):
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign",
         ))
         title = escape(translate(get_state_description(item.get("state", "")), context=self.request, domain="imio.esign"))
-        return u"<span title='{title}'>{state}</span>".format(state=state, title=title)
+        return u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' /></span>".format(state=state, title=title)
 
 
 class TitleColumn(Column):

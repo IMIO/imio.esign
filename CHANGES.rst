@@ -21,6 +21,10 @@ Changelog
   [chris-adam, sgeulette]
 - Used API_ROOT_URL env variable
   [sgeulette]
+- Style sessions state-column to display a question circle.
+  [gbastien]
+- Avoided duplicated filenames and kept files ordering in session.
+  [sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

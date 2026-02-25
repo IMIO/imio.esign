@@ -96,7 +96,7 @@ class ExternalSessionFeedbackPost(Service):
 
     def authorized(self):
         """Check if the user is authorized to access this service."""
-        auth_header = self.request.getHeader("Authorization")
+        auth_header = getattr(self.request, "_auth", None)
         if not auth_header or not auth_header.startswith("Bearer "):
             return False
         token = auth_header[7:]  # len("Bearer ") == 7

@@ -164,6 +164,12 @@ class ExternalSessionCreateView(BrowserView):
                 request=self.request,
                 type="error",
             )
+        elif resp == "_no_files_":
+            api.portal.show_message(
+                _("No files found to be sent ! Session ${id} not sent.", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
         elif resp.status_code == 200:
             api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
         else:

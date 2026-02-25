@@ -208,6 +208,19 @@ class TestExternalSessionCreateView(_BaseSessionViewTest):
         self.assertEqual(messages[0].type, "error")
         self.assertIn("@@parapheo", result)
 
+    def test_call_no_seal_email(self):
+        """create_external_session returning _no_seal_email_ shows an error."""
+        self.request.form["session_id"] = str(self.session_id)
+        view = ExternalSessionCreateView(self.folder, self.request)
+        with patch("imio.esign.browser.views.create_external_session") as mock_create:
+            mock_create.return_value = "_no_seal_email_"
+            result = view()
+        messages = IStatusMessage(self.request).show()
+        self.assertEqual(len(messages), 1)
+        self.assertIn("No seal email", messages[0].message)
+        self.assertEqual(messages[0].type, "error")
+        self.assertIn("@@parapheo", result)
+
     def test_call_success(self):
         """create_external_session returning a 200 response shows a success message."""
         self.request.form["session_id"] = str(self.session_id)

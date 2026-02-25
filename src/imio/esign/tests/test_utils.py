@@ -7,16 +7,20 @@ from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import set_registry_max_session_size
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import create_external_session
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
+from imio.esign.utils import get_suid_from_uuid
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.pyutils.utils import shortuid_decode_id
+from mock import Mock
+from mock import patch
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
@@ -25,6 +29,7 @@ from plone.namedfile.file import NamedBlobImage
 from zope.annotation import IAnnotations
 
 import collective.iconifiedcategory
+import json
 import os
 import unittest
 
@@ -407,6 +412,153 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_max_download_date(annex, timedelta(days=0)), mod_date)
         today = date.today()
         self.assertEqual(get_max_download_date(None, timedelta(days=0), today), today)
+
+    def test_create_external_session_not_found(self):
+        """Returns _session_not_found_ for a non-existent session id."""
+        result = create_external_session(9999)
+        self.assertEqual(result, "_session_not_found_")
+
+    def test_create_external_session_no_seal_email(self):
+        """Returns _no_seal_email_ when session requires a seal but no email configured."""
+        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
+        # seal_email defaults to "" (falsy) — no registry setup needed
+        result = create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertEqual(result, "_no_seal_email_")
+
+    def test_create_external_session_no_seal_code(self):
+        """Returns _no_seal_code_ when seal email is set but seal code is missing."""
+        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
+        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
+        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
+        # seal_code defaults to "" (falsy)
+        result = create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertEqual(result, "_no_seal_code_")
+
+    def test_create_external_session_error_response(self):
+        """Returns response object and leaves session state unchanged on non-200."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.text = "Internal Server Error"
+        with patch("imio.esign.utils.requests.post", return_value=mock_response):
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
+                result = create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertIs(result, mock_response)
+        self.assertEqual(session["state"], "draft")
+
+    def test_create_external_session_sign_payload(self):
+        """Returns response object, sets session state to 'sent', and signData contains signer email."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = '{"message": "OK"}'
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
+                result = create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertIs(result, mock_response)
+        self.assertEqual(session["state"], "sent")
+        payload = json.loads(mock_post.call_args[1]["data"]["data"])
+        self.assertEqual(
+            payload,
+            {
+                u"commonData": {
+                    u"imioAppSessionId": u"012345600000",
+                    u"vatNumber": None,
+                    u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
+                    u"sessionName": u"Session 0",
+                    u"documentData": [
+                        {
+                            u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
+                            u"docUuid": get_suid_from_uuid(self.uids[0]),
+                            u"filename": u"annex0.pdf",
+                        }
+                    ],
+                },
+                u"signData": {u"acroform": True, u"users": [u"user1@sign.com"]},
+            },
+        )
+
+    def test_create_external_session_seal_payload(self):
+        """Seal-only session: sealData contains seal email and code; no signData."""
+        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
+        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
+        api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
+        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
+        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = '{"message": "OK"}'
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
+                create_external_session(sid, esign_root_url="http://test.example.com")
+        payload = json.loads(mock_post.call_args[1]["data"]["data"])
+        self.assertEqual(
+            payload,
+            {
+                u"commonData": {
+                    u"imioAppSessionId": u"012345600000",
+                    u"vatNumber": None,
+                    u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
+                    u"sessionName": u"Session 0",
+                    u"documentData": [
+                        {
+                            u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
+                            u"docUuid": get_suid_from_uuid(self.uids[0]),
+                            u"filename": u"annex0.pdf",
+                        }
+                    ],
+                },
+                u"sealData": {
+                    u"sealCode": u"PADES_SEAL",
+                    u"acroform": True,
+                    u"users": [u"seal@example.com"],
+                    u"watchers": [],
+                },
+            },
+        )
+
+    def test_create_external_session_both_payload(self):
+        """Session with signers and seal: both signData and sealData are present."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
+        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
+        api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
+        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
+        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = '{"message": "OK"}'
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
+                create_external_session(sid, esign_root_url="http://test.example.com")
+        payload = json.loads(mock_post.call_args[1]["data"]["data"])
+        self.assertEqual(
+            payload,
+            {
+                u"signData": {u"acroform": True, u"users": [u"user1@sign.com"]},
+                u"commonData": {
+                    u"imioAppSessionId": u"012345600000",
+                    u"vatNumber": None,
+                    u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
+                    u"sessionName": u"Session 0",
+                    u"documentData": [
+                        {
+                            u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
+                            u"docUuid": get_suid_from_uuid(self.uids[0]),
+                            u"filename": u"annex0.pdf",
+                        }
+                    ],
+                },
+                u"sealData": {
+                    u"sealCode": u"PADES_SEAL",
+                    u"acroform": True,
+                    u"users": [u"seal@example.com"],
+                    u"watchers": [],
+                },
+            },
+        )
 
 
 # example of annotation content

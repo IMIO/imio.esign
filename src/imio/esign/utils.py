@@ -156,6 +156,9 @@ def create_external_session(session_id, esign_root_url=None):
 
     if session["seal"]:
         seal_email = get_registry_seal_email()
+        if not seal_email:
+            logger.error("No seal email configured in registry.")
+            return "_no_seal_email_"
         seal_code = get_registry_seal_code()  # PADES_SEAL
         if not seal_code:
             logger.error("No seal code configured in registry.")

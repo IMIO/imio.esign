@@ -37,6 +37,7 @@ class _BaseSessionViewTest(unittest.TestCase):
     def setUp(self):
         self.portal = self.layer["portal"]
         self.request = self.layer["request"]
+        self.request.form.clear()
         setRoles(self.portal, TEST_USER_ID, ["Manager"])
 
         # Create user for signing

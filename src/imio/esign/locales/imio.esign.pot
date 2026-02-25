@@ -186,6 +186,10 @@ msgstr ""
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
+#: ../browser/views.py:168
+msgid "No seal email defined in configuration ! Session ${id} not sent."
+msgstr ""
+
 #: ../browser/views.py:123
 msgid "No session ID provided!"
 msgstr ""

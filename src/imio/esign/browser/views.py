@@ -115,9 +115,7 @@ class SessionDeleteView(BrowserView):
 
     def __call__(self):
         if not self.may_delete_session():
-            api.portal.show_message(_("You don't have permission to delete sessions!"), request=self.request,
-                                    type="error")
-            return self.request.RESPONSE.redirect(self.context.absolute_url())
+            raise Unauthorized
         session_id = self.request.get("esign_session_id")
         if not session_id:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
@@ -143,9 +141,7 @@ class ExternalSessionCreateView(BrowserView):
 
     def __call__(self, session_id=None):
         if not self.may_create_external_sessions():
-            api.portal.show_message(_("You don't have permission to create external sessions!"), request=self.request,
-                                    type="error")
-            return self.context.absolute_url() + "/@@parapheo"
+            raise Unauthorized
         if session_id is None:
             session_id = self.request.get("session_id", None)
         if session_id is None:
@@ -161,6 +157,12 @@ class ExternalSessionCreateView(BrowserView):
         elif resp == "_no_seal_code_":
             api.portal.show_message(
                 _("No seal code defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
+        elif resp == "_no_seal_email_":
+            api.portal.show_message(
+                _("No seal email defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )

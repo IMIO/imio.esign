@@ -420,12 +420,17 @@ class SigningUsersCsv(BrowserView):
             portal_type="held_position",
             userid=user_data["userid"],
         )
-        if not hps:
-            return False
         for hp in hps:
             hp_obj = hp.getObject()
             if base_hasattr(hp_obj, "usages") and "signer" in hp_obj.usages:
                 return True
+
+        user_obj = api.user.get(userid=user_data["userid"])
+        if user_obj:
+            for group in api.group.get_groups(user=user_obj):
+                if group.getId().endswith("watchers"):
+                    return True
+
         return False
 
     def get_users_data(self):
@@ -515,7 +520,7 @@ class SigningUsersCsv(BrowserView):
         # Parse JSON array
         try:
             return json.loads(selected)
-        except (json.JSONDecodeError, ValueError, TypeError):
+        except (ValueError, TypeError):
             return []
 
     def _download_csv(self):

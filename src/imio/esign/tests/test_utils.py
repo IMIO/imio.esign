@@ -251,125 +251,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
 
-    def test_create_external_session(self):
-        """Test create_external_session with mocked requests.post and get_auth_token."""
-        from mock import MagicMock
-        from mock import patch
-
-        # Case 1: session not found => returns sentinel string, no HTTP call made
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(999)
-        self.assertEqual(result, "_session_not_found_")
-        mock_requests.post.assert_not_called()
-
-        # Setup: create a session with two signers and a watcher
-        signers = [
-            ("user1", "user1@sign.com", "User 1", "Position 1"),
-            ("user2", "user2@sign.com", "User 2", "Position 2"),
-        ]
-        sid, session = add_files_to_session(
-            signers, (self.uids[0], self.uids[2],), title=u"Test session", watchers=("watcher@sign.com",)
-        )
-        self.assertEqual(sid, 0)
-        self.assertEqual(session["state"], "draft")
-
-        # Case 2: HTTP 200 => state becomes "sent", request payload is verified
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.text = '{"message": "Request received"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response
-            result = create_external_session(sid)
-        self.assertIs(result, mock_response)
-        self.assertEqual(session["state"], "sent")
-        mock_requests.post.assert_called_once()
-        call_args = mock_requests.post.call_args
-        posted_url = call_args[0][0]
-        self.assertIn("imio/esign/v1/luxtrust/sessions", posted_url)
-        self.assertEqual(call_args[1]["headers"]["Authorization"], "Bearer test_token")
-        data = json.loads(call_args[1]["data"]["data"])
-        self.assertIn("commonData", data)
-        self.assertIn("signData", data)
-        self.assertNotIn("sealData", data)
-        self.assertEqual(data["commonData"]["sessionName"], u"Test session")
-        self.assertEqual(data["commonData"]["imioAppSessionId"], session["sign_id"])
-        self.assertEqual(data["signData"]["users"], ["user1@sign.com", "user2@sign.com"])
-        self.assertEqual(data["signData"]["watchers"], ["watcher@sign.com"])
-        files_param = call_args[1]["files"]
-        self.assertEqual(len(files_param), 2)
-        self.assertEqual(files_param[0][0], "files")
-        self.assertEqual(files_param[0][1][0], u"annex0.pdf")
-        self.assertEqual(files_param[1][0], "files")
-        self.assertEqual(files_param[1][1][0], u"annex2.pdf")
-
-        # Case 3: HTTP non-200 => state unchanged (stays "draft")
-        sid2, session2 = add_files_to_session(signers, (self.uids[2],), title=u"Test session 2")
-        mock_response_fail = MagicMock()
-        mock_response_fail.status_code = 400
-        mock_response_fail.text = '{"error": "Bad request"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response_fail
-            result = create_external_session(sid2)
-        self.assertIs(result, mock_response_fail)
-        self.assertEqual(session2["state"], "draft")
-
-        # Case 4: seal session without seal_code configured => returns "_no_seal_code_", no HTTP call
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
-        annex0_obj = uuidToObject(uuid=self.uids[0], unrestricted=True)
-        annex0_obj.file.filename = u"annex1.pdf"
-        sid3, session3 = add_files_to_session(signers, (self.uids[4], self.uids[1], self.uids[0]), seal="PADES_SEAL")
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(sid3)
-        self.assertEqual(result, "_no_seal_code_")
-        mock_requests.post.assert_not_called()
-
-        # Case 5: seal session with seal_code, custom URL => sealData in payload, correct URL used
-        api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
-        mock_response_seal = MagicMock()
-        mock_response_seal.status_code = 200
-        mock_response_seal.text = '{"message": "OK"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response_seal
-            result = create_external_session(sid3, esign_root_url="https://custom.example.com")
-        self.assertIs(result, mock_response_seal)
-        self.assertEqual(session3["state"], "sent")
-        call_args = mock_requests.post.call_args
-        self.assertEqual(call_args[0][0], "https://custom.example.com/imio/esign/v1/luxtrust/sessions")
-        data = json.loads(call_args[1]["data"]["data"])
-        self.assertIn("sealData", data)
-        self.assertEqual(data["sealData"]["sealCode"], "PADES_SEAL")
-        self.assertEqual(data["sealData"]["users"], ["seal@example.com"])
-        self.assertTrue(data["sealData"]["acroform"])
-        files_param = call_args[1]["files"]
-        self.assertEqual(len(files_param), 3)
-        self.assertEqual(files_param[0][0], "files")
-        self.assertEqual(files_param[0][1][0], u"annex4.pdf")
-        self.assertEqual(files_param[1][0], "files")
-        self.assertEqual(files_param[1][1][0], u"annex1.pdf")
-        self.assertEqual(files_param[2][1][0], u"annex1-1.pdf")
-
-        # Case 6: session without files to send => returns "_no_files_", no HTTP call
-        for i in range(len(session3["files"])):
-            session3["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(sid3)
-        self.assertEqual(result, "_no_files_")
-        mock_requests.post.assert_not_called()
-
-        # case 7: bad session number to send => returns "_session_not_found_", no HTTP call
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(99)
-        self.assertEqual(result, "_session_not_found_")
-        mock_requests.post.assert_not_called()
-
     def test_get_filesize(self):
         """Test get_filesize returns the correct file size."""
         # even index => annex1.pdf (6968 bytes)
@@ -617,6 +498,7 @@ class TestUtils(unittest.TestCase):
         with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
             with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
                 create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertEqual(mock_post.call_args[0][0], "http://test.example.com/imio/esign/v1/luxtrust/sessions")
         payload = json.loads(mock_post.call_args[1]["data"]["data"])
         self.assertEqual(
             payload,
@@ -683,6 +565,19 @@ class TestUtils(unittest.TestCase):
                 },
             },
         )
+
+    def test_create_external_session_no_files(self):
+        """Returns _no_files_ when all file UIDs in the session resolve to nothing."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        for i in range(len(session["files"])):
+            session["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
+        with patch("imio.esign.utils.get_auth_token", return_value="test_token"), patch(
+            "imio.esign.utils.requests"
+        ) as mock_requests:
+            result = create_external_session(sid, esign_root_url="http://test.example.com")
+        self.assertEqual(result, "_no_files_")
+        mock_requests.post.assert_not_called()
 
 
 # example of annotation content

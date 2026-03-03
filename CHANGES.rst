@@ -25,6 +25,8 @@ Changelog
   [gbastien]
 - Avoided duplicated filenames and kept files ordering in session.
   [sgeulette]
+- Added external watchers for esign sessions.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

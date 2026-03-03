@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collective.behavior.talcondition.utils import _evaluateExpression
 from plone import api
 
 
@@ -39,6 +40,14 @@ def get_registry_max_session_size(default=100):
     return api.portal.get_registry_record("imio.esign.max_session_size", default=default)
 
 
+def get_registry_external_watchers():
+    value = api.portal.get_registry_record("imio.esign.external_watchers", default="")
+    value = _evaluateExpression(api.portal.get(), value)
+    if not value:
+        return []
+    return [ew.strip() for ew in value.split(",") if ew.strip()]
+
+
 def set_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -73,6 +82,10 @@ def set_registry_signing_users_email_content(value):
 
 def set_registry_max_session_size(value):
     api.portal.set_registry_record("imio.esign.max_session_size", value)
+
+
+def set_registry_external_watchers(value):
+    api.portal.set_registry_record("imio.esign.external_watchers", value)
 
 
 SIGNERS_EMAIL_CONTENT = u"""

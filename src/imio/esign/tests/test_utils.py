@@ -4,6 +4,7 @@ from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
 from imio.esign.config import get_registry_max_session_size
+from imio.esign.config import set_registry_external_watchers
 from imio.esign.config import set_registry_max_session_size
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
@@ -649,6 +650,7 @@ class TestUtils(unittest.TestCase):
         sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
         api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
+        set_registry_external_watchers(u"string:example@imlo.be")  # Also test with one external watcher
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
         mock_response = Mock()
@@ -661,7 +663,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(
             payload,
             {
-                u"signData": {u"acroform": True, u"users": [u"user1@sign.com"]},
+                u"signData": {
+                    u"acroform": True,
+                    u"users": [u"user1@sign.com"],
+                    u"watchers": [u'example@imlo.be'],
+                },
                 u"commonData": {
                     u"imioAppSessionId": u"012345600000",
                     u"vatNumber": None,
@@ -679,7 +685,7 @@ class TestUtils(unittest.TestCase):
                     u"sealCode": u"PADES_SEAL",
                     u"acroform": True,
                     u"users": [u"seal@example.com"],
-                    u"watchers": [],
+                    u"watchers": [u'example@imlo.be'],
                 },
             },
         )

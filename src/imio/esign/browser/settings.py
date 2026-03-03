@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from collective.behavior.talcondition.utils import _evaluateExpression
 from imio.esign import _
+from plone import api
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
@@ -9,6 +11,8 @@ from plone.z3cform import layout
 from zope import schema
 from zope.interface import Interface
 from zope.interface import Invalid
+
+import re
 
 
 def validate_vat_number(va_nb):
@@ -35,6 +39,37 @@ def validate_vat_number(va_nb):
 
     if control != expected_control:
         raise Invalid(_("Invalid VAT number: checksum verification failed"))
+
+    return True
+
+
+def validate_external_watchers(tal_expression):
+    """Validate external watchers is a valid TAL expression with valid email addresses."""
+
+    if not tal_expression or not tal_expression.strip():
+        return True
+
+    try:
+        portal = api.portal.get()
+    except Exception:
+        return True
+
+    if portal is None:
+        return True
+
+    try:
+        result = _evaluateExpression(portal, expression=tal_expression, raise_on_error=True)
+    except Exception as e:
+        raise Invalid(_("Invalid TAL expression: %s") % str(e))
+
+    if not result:
+        return True
+
+    email_re = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+    for email in result.split(","):
+        email = email.strip()
+        if email and not email_re.match(email):
+            raise Invalid(_("Invalid email address: %s") % email)
 
     return True
 
@@ -101,6 +136,14 @@ class IImioEsignSettings(Interface):
         default=100,
         min=1,
         required=True,
+    )
+
+    external_watchers = schema.TextLine(
+        title=_("External watchers"),
+        description=_("TAL expression returning a list of comma-separated email addresses."),
+        constraint=validate_external_watchers,
+        required=False,
+        default=u"string:",
     )
 
 

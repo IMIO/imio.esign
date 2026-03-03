@@ -3,6 +3,8 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_registry_seal_code
+from imio.esign.config import get_registry_seal_email
 from imio.esign.utils import get_state_description
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
@@ -215,13 +217,16 @@ class SessionsTable(Table):
 
     def setUpColumns(self):
         ctx, req, tbl = self.context, self.request, self
-        return [
+        columns = [
             IdColumn(ctx, req, tbl),
             StateColumn(ctx, req, tbl),
             TitleColumn(ctx, req, tbl),
             LastUpdateColumn(ctx, req, tbl),
-            SealColumn(ctx, req, tbl),
             SignersColumn(ctx, req, tbl),
             FilesColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),
         ]
+        if get_registry_seal_code() and get_registry_seal_email():
+            seal_col = SealColumn(ctx, req, tbl)
+            columns.insert(4, seal_col)
+        return columns

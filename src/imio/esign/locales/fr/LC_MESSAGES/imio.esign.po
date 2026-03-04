@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-02-25 13:16+0000\n"
+"POT-Creation-Date: 2026-03-04 11:53+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../browser/table.py:141
+#: ../browser/table.py:157
 msgid "Actions"
 msgstr "Actions"
 
@@ -40,11 +40,11 @@ msgstr "Annuler"
 msgid "Confirm Email Sending"
 msgstr "Confirmer l'envoi des emails"
 
-#: ../browser/table.py:174
+#: ../browser/table.py:190
 msgid "Create external session"
 msgstr "Envoyer dans Paraphéo"
 
-#: ../browser/table.py:160
+#: ../browser/table.py:176
 msgid "Delete session"
 msgstr "Effacer la session"
 
@@ -65,15 +65,15 @@ msgstr "E-mail"
 msgid "Email content is not configured in the settings."
 msgstr "Le modèle d'email n'est pas configuré dans les paramètres."
 
-#: ../browser/settings.py:89
+#: ../browser/settings.py:90
 msgid "Email content model for signing users"
 msgstr "Modèle d'email envoyé aux signataires pour se connecter à Paraphéo"
 
-#: ../browser/settings.py:90
+#: ../browser/settings.py:91
 msgid "Email content sent to users when inviting them to Parapheo. TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
 msgstr "<span class='beware'>À modifier en toute connaissance de cause !</span><br />Contient du <a href='https://pagetemplates.readthedocs.io/en/latest/tal.html' target='_blank'>TAL</a> avec les variables: view, context, user_data, parapheo_url, request et modules."
 
-#: ../browser/settings.py:71
+#: ../browser/settings.py:72
 msgid "Email of the eidas provider account containing the seal image."
 msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 
@@ -85,7 +85,7 @@ msgstr "Email:"
 msgid "Emails sent successfully to ${count} users."
 msgstr "Emails envoyés avec succès à ${count} utilisateurs."
 
-#: ../browser/settings.py:45
+#: ../browser/settings.py:46
 msgid "Enabled?"
 msgstr "Activé?"
 
@@ -97,6 +97,10 @@ msgstr "Erreur lors de l'envoi de la session : ${error}"
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
+#: ../browser/settings.py:108
+msgid "External watchers emails"
+msgstr "Liste d'emails d'observateurs externes"
+
 #: ../browser/views.py:618
 msgid "Failed to send email to ${userid}."
 msgstr "Échec de l'envoi de l'email pour ${userid}."
@@ -105,11 +109,11 @@ msgstr "Échec de l'envoi de l'email pour ${userid}."
 msgid "Failed to send emails to ${count} users."
 msgstr "Échec de l'envoi des emails pour ${count} utilisateurs."
 
-#: ../browser/settings.py:58
+#: ../browser/settings.py:59
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
-#: ../browser/table.py:106
+#: ../browser/table.py:110
 msgid "Files"
 msgstr "Fichiers"
 
@@ -125,11 +129,11 @@ msgstr "Nom complet"
 msgid "Full name"
 msgstr "Nom"
 
-#: ../browser/table.py:16
+#: ../browser/table.py:18
 msgid "ID"
 msgstr "Identifiant"
 
-#: ../browser/settings.py:110
+#: ../browser/settings.py:118
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
@@ -142,11 +146,11 @@ msgstr "Important:"
 msgid "Installs the imio.esign add-on."
 msgstr "Installs the imio.esign add-on."
 
-#: ../browser/settings.py:37
+#: ../browser/settings.py:38
 msgid "Invalid VAT number: checksum verification failed"
 msgstr "Numéro de TVA invalide : échec de la vérification de la somme de contrôle"
 
-#: ../browser/settings.py:46
+#: ../browser/settings.py:47
 msgid "Is the eSign service enabled?"
 msgstr "Active/désactive la fonctionnalité globalement sur le site."
 
@@ -154,7 +158,7 @@ msgstr "Active/désactive la fonctionnalité globalement sur le site."
 msgid "Last Name"
 msgstr "Nom"
 
-#: ../browser/table.py:75
+#: ../browser/table.py:143
 #: ../browser/templates/macros.pt:20
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -163,13 +167,17 @@ msgstr "Dernière mise à jour"
 msgid "List of electronic signing sessions"
 msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
-#: ../browser/settings.py:98
+#: ../browser/settings.py:99
 msgid "Max session size (MB)"
 msgstr "Taille maximum de la session en MB"
 
-#: ../browser/settings.py:99
+#: ../browser/settings.py:100
 msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
 msgstr "Si la taille totale des fichiers à signer dépasse cette limite, une nouvelle session sera créée."
+
+#: ../browser/settings.py:109
+msgid "Multiple values must be separated by a comma."
+msgstr "Les valeurs multiples doivent être séparées par une virgule."
 
 #: ../browser/templates/faceted_session_info.pt
 msgid "No"
@@ -203,7 +211,7 @@ msgstr "Aucun utilisateur sélectionné pour le téléchargement du CSV."
 msgid "No users selected for email sending."
 msgstr "Aucun utilisateur sélectionné pour l'envoi d'emails."
 
-#: ../browser/settings.py:82
+#: ../browser/settings.py:83
 msgid "Parapheo url"
 msgstr "Url de Paraphéo"
 
@@ -219,7 +227,7 @@ msgstr "Fonction"
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/table.py:115
+#: ../browser/table.py:119
 msgid "Quick look"
 msgstr "Aperçu rapide"
 
@@ -231,18 +239,19 @@ msgstr "Retirer de la session"
 msgid "Remove item from esign session"
 msgstr "Retirer l'élément de la session de signature"
 
-#: ../browser/settings.py:64
+#: ../browser/settings.py:65
 msgid "Seal code"
 msgstr "Code du sceau"
 
-#: ../browser/settings.py:65
+#: ../browser/settings.py:66
 msgid "Seal code given by eidas provider."
 msgstr "Code fourni par le fournisseur eidas."
 
-#: ../browser/settings.py:70
+#: ../browser/settings.py:71
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
+#: ../browser/table.py:77
 #: ../browser/templates/macros.pt:27
 msgid "Sealed"
 msgstr "Sceau"
@@ -263,7 +272,7 @@ msgstr "Sélectionnés:"
 msgid "Send Emails"
 msgstr "Envoyer des emails"
 
-#: ../utils.py:139
+#: ../utils.py:140
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -291,11 +300,11 @@ msgstr "La session n'a pas encore été envoyée."
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
-#: ../browser/settings.py:76
+#: ../browser/settings.py:77
 msgid "Sign code"
 msgstr "Méthode de signature"
 
-#: ../browser/settings.py:77
+#: ../browser/settings.py:78
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr "Méthode de signature utilisée pour spécifier la méthode de signature. Laisser vide pour utiliser la méthode par défaut."
 
@@ -307,7 +316,7 @@ msgstr "Le lien de la session de signature n'a pas encore été reçu."
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
-#: ../browser/table.py:87
+#: ../browser/table.py:91
 #: ../browser/templates/macros.pt:41
 msgid "Signers"
 msgstr "Signataires"
@@ -316,7 +325,7 @@ msgstr "Signataires"
 msgid "Signing Users: Export CSV"
 msgstr "Signataires: csv pour WaCo et invitation Paraphéo"
 
-#: ../browser/table.py:47
+#: ../browser/table.py:49
 #: ../browser/templates/macros.pt:11
 msgid "State"
 msgstr "État"
@@ -385,12 +394,12 @@ msgstr "Ceci va supprimer l'élement courant de la session de signature"
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
 
-#: ../browser/table.py:61
+#: ../browser/table.py:63
 #: ../browser/templates/macros.pt:34
 msgid "Title"
 msgstr "Titre"
 
-#: ../browser/settings.py:59
+#: ../browser/settings.py:60
 msgid "URL domain where the file can be donwloaded."
 msgstr "URL du domaine où un fichier signé peut être téléchargé (https://xxx)."
 
@@ -398,7 +407,7 @@ msgstr "URL du domaine où un fichier signé peut être téléchargé (https://x
 msgid "Uninstalls the imio.esign add-on."
 msgstr "Uninstalls the imio.esign add-on."
 
-#: ../browser/settings.py:83
+#: ../browser/settings.py:84
 msgid "Used in signers email template."
 msgstr "Utilisée dans le template d'email pour les signataires."
 
@@ -414,27 +423,27 @@ msgstr "Identifiant utilisateur"
 msgid "Users:"
 msgstr "Utilisateurs:"
 
-#: ../browser/settings.py:51
+#: ../browser/settings.py:52
 msgid "VAT number"
 msgstr "Numéro de TVA"
 
-#: ../browser/settings.py:25
+#: ../browser/settings.py:26
 msgid "VAT number must be 12 characters (BE + 10 digits)"
 msgstr "Le numéro de TVA doit contenir 12 caractères (BE + 10 chiffres, sans autres caractères)"
 
-#: ../browser/settings.py:29
+#: ../browser/settings.py:30
 msgid "VAT number must contain 10 digits after 'BE'"
 msgstr "Le numéro de TVA doit contenir uniquement 10 chiffres après 'BE'"
 
-#: ../browser/settings.py:22
+#: ../browser/settings.py:23
 msgid "VAT number must start with 'BE'"
 msgstr "Le numéro de TVA doit commencer par 'BE'"
 
-#: ../browser/settings.py:52
+#: ../browser/settings.py:53
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 
-#: ../browser/table.py:181
+#: ../browser/table.py:197
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 

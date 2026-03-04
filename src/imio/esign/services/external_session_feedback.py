@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from imio.esign import logger
+from imio.esign.audit import audit
 from imio.esign.utils import get_session_annotation
 from imio.helpers.ws import verify_auth_token
 from plone.restapi.deserializer import json_body
@@ -83,6 +84,7 @@ class ExternalSessionFeedbackPost(Service):
             self.request.response.setStatus(500)
             logger.error(str(e))
             return {"message": str(e)}
+        audit("session_feedback", "session={} code={} db_state={}".format(session_id, code, db_state))
         return {"message": "Information correctly handled"}
     """ microservice session state
     to_create_session = "to_create_session"
@@ -103,12 +105,3 @@ class ExternalSessionFeedbackPost(Service):
         if not token:
             return False
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
-
-
-"""
-State:
-to_create_session
-to_sign
-to_upload
-refused
-"""

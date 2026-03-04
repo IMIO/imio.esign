@@ -5,6 +5,7 @@ from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_registry_enabled
@@ -125,6 +126,7 @@ class SessionDeleteView(BrowserView):
         sessions = get_session_annotation()["sessions"]
         if session_id in sessions:
             remove_session(session_id)
+            audit("delete_session", "session={}".format(session_id))
             api.portal.show_message(_("Session deleted successfully!"), request=self.request, type="info")
         else:
             api.portal.show_message(_("Session not found!"), request=self.request, type="error")
@@ -149,32 +151,39 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
+            audit("send_to_external_service", "session={} error=session_not_found".format(session_id))
             api.portal.show_message(
                 _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_code_":
+            audit("send_to_external_service", "session={} error=no_seal_code".format(session_id))
             api.portal.show_message(
                 _("No seal code defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_email_":
+            audit("send_to_external_service", "session={} error=no_seal_email".format(session_id))
             api.portal.show_message(
                 _("No seal email defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_files_":
+            audit("send_to_external_service", "session={} error=no_files".format(session_id))
             api.portal.show_message(
                 _("No files found to be sent ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp.status_code == 200:
+            audit("send_to_external_service", "session={} status=200".format(session_id))
             api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
         else:
+            audit("send_to_external_service", "session={} status={} reason={}".format(
+                session_id, resp.status_code, resp.reason))
             api.portal.show_message(
                 _("Error while sending session: ${error}", mapping={"error": "{} {} {}".format(
                     resp.status_code, resp.reason, resp.text)}),

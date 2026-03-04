@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from collective.behavior.talcondition.utils import _evaluateExpression
 from plone import api
 
 
@@ -42,7 +41,6 @@ def get_registry_max_session_size(default=100):
 
 def get_registry_external_watchers():
     value = api.portal.get_registry_record("imio.esign.external_watchers", default="")
-    value = _evaluateExpression(api.portal.get(), value)
     if not value:
         return []
     return [ew.strip() for ew in value.split(",") if ew.strip()]

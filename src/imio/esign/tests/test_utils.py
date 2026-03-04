@@ -650,7 +650,7 @@ class TestUtils(unittest.TestCase):
         sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
         api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        set_registry_external_watchers(u"string:example@imlo.be")  # Also test with one external watcher
+        set_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
         mock_response = Mock()

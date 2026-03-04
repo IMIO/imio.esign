@@ -73,21 +73,9 @@ class TitleColumn(Column):
             return title
 
 
-class LastUpdateColumn(Column):
-    header = _("Last update")
-    weight = 40
-    cssClasses = {"th": "th_header_sessions_last_update",
-                  "td": "last-update-column"}
-
-    def renderCell(self, item):
-        last_update = item.get("last_update")
-        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
-            last_update, long_format=True)
-
-
 class SealColumn(Column):
     header = _("Sealed")
-    weight = 45
+    weight = 40
     cssClasses = {"th": "th_header_sessions_seal",
                   "td": "seal-column"}
 
@@ -96,7 +84,7 @@ class SealColumn(Column):
             return u""
         label = escape(translate(_("Sealed"), context=self.request))
         # icon: https://www.flaticon.com/free-icon/verification_3556787
-        return u"<img width='24' height='24' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
+        return u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
 
 
 class SignersColumn(Column):
@@ -151,11 +139,23 @@ class FilesColumn(Column):
         return html
 
 
+class LastUpdateColumn(Column):
+    header = _("Last update")
+    weight = 70
+    cssClasses = {"th": "th_header_sessions_last_update",
+                  "td": "last-update-column"}
+
+    def renderCell(self, item):
+        last_update = item.get("last_update")
+        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
+            last_update, long_format=True)
+
+
 class ActionsColumn(Column):
     """ """
 
     header = _("Actions")
-    weight = 70
+    weight = 80
     cssClasses = {"th": "th_header_sessions_actions",
                   "td": "actions-column"}
 
@@ -221,9 +221,9 @@ class SessionsTable(Table):
             IdColumn(ctx, req, tbl),
             StateColumn(ctx, req, tbl),
             TitleColumn(ctx, req, tbl),
-            LastUpdateColumn(ctx, req, tbl),
             SignersColumn(ctx, req, tbl),
             FilesColumn(ctx, req, tbl),
+            LastUpdateColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),
         ]
         if get_registry_seal_code() and get_registry_seal_email():

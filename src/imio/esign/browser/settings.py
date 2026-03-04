@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from imio.esign import _
+from imio.helpers.emailer import validate_email_addresses
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
@@ -101,6 +102,13 @@ class IImioEsignSettings(Interface):
         default=100,
         min=1,
         required=True,
+    )
+
+    external_watchers = schema.TextLine(
+        title=_("External watchers emails"),
+        description=_("Multiple values must be separated by a comma."),
+        constraint=validate_email_addresses,
+        required=False,
     )
 
 

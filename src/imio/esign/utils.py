@@ -4,6 +4,7 @@ from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
+from imio.esign.config import get_registry_external_watchers
 from imio.esign.config import get_registry_file_url
 from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import get_registry_seal_code
@@ -151,6 +152,9 @@ def create_external_session(session_id, esign_root_url=None):
     vat_number = get_registry_vat_number(default="BE0000000097")
     data_payload["commonData"]["vatNumber"] = vat_number
 
+    watchers = list(session.get("watchers", []))
+    external_watchers = get_registry_external_watchers()
+    watchers.extend([ew for ew in external_watchers if ew not in watchers])
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:
         data_payload["signData"] = {
@@ -160,8 +164,8 @@ def create_external_session(session_id, esign_root_url=None):
         sign_code = get_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code
-        if session.get("watchers", ()):
-            data_payload["signData"]["watchers"] = list(session["watchers"])
+        if watchers:
+            data_payload["signData"]["watchers"] = watchers
 
     if session["seal"]:
         seal_email = get_registry_seal_email()
@@ -176,7 +180,7 @@ def create_external_session(session_id, esign_root_url=None):
             "users": [seal_email],
             # "placeholderName": "SCEAU",  # default
             "acroform": True,
-            "watchers": list(session.get("watchers", [])),
+            "watchers": watchers,
             "sealCode": seal_code,
         }
 

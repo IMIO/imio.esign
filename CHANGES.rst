@@ -25,6 +25,8 @@ Changelog
   [gbastien]
 - Avoided duplicated filenames and kept files ordering in session.
   [sgeulette]
+- Added seal column on @@parapheo.
+  [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
 

@@ -3,6 +3,8 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_registry_seal_code
+from imio.esign.config import get_registry_seal_email
 from imio.esign.utils import get_state_description
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
@@ -71,16 +73,18 @@ class TitleColumn(Column):
             return title
 
 
-class LastUpdateColumn(Column):
-    header = _("Last update")
+class SealColumn(Column):
+    header = _("Sealed")
     weight = 40
-    cssClasses = {"th": "th_header_sessions_last_update",
-                  "td": "last-update-column"}
+    cssClasses = {"th": "th_header_sessions_seal",
+                  "td": "seal-column"}
 
     def renderCell(self, item):
-        last_update = item.get("last_update")
-        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
-            last_update, long_format=True)
+        if not item.get("seal"):
+            return u""
+        label = escape(translate(_("Sealed"), context=self.request))
+        # icon: https://www.flaticon.com/free-icon/verification_3556787
+        return u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
 
 
 class SignersColumn(Column):
@@ -135,11 +139,23 @@ class FilesColumn(Column):
         return html
 
 
+class LastUpdateColumn(Column):
+    header = _("Last update")
+    weight = 70
+    cssClasses = {"th": "th_header_sessions_last_update",
+                  "td": "last-update-column"}
+
+    def renderCell(self, item):
+        last_update = item.get("last_update")
+        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
+            last_update, long_format=True)
+
+
 class ActionsColumn(Column):
     """ """
 
     header = _("Actions")
-    weight = 70
+    weight = 80
     cssClasses = {"th": "th_header_sessions_actions",
                   "td": "actions-column"}
 
@@ -201,12 +217,16 @@ class SessionsTable(Table):
 
     def setUpColumns(self):
         ctx, req, tbl = self.context, self.request, self
-        return [
+        columns = [
             IdColumn(ctx, req, tbl),
             StateColumn(ctx, req, tbl),
             TitleColumn(ctx, req, tbl),
-            LastUpdateColumn(ctx, req, tbl),
             SignersColumn(ctx, req, tbl),
             FilesColumn(ctx, req, tbl),
+            LastUpdateColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),
         ]
+        if get_registry_seal_code() and get_registry_seal_email():
+            seal_col = SealColumn(ctx, req, tbl)
+            columns.insert(4, seal_col)
+        return columns

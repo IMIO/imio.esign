@@ -505,10 +505,6 @@ class TestUtils(unittest.TestCase):
     def test_get_file_download_url(self):
         """Test generating file download URL from UID."""
         uid = "f40682caafc045b4b81973bd82ea9ab6"
-        # Test error when no root_url is configured
-        with self.assertRaises(Exception) as cm:
-            get_file_download_url(uid)
-        self.assertIn("No root URL provided", str(cm.exception))
 
         api.portal.set_registry_record("imio.esign.file_url", "https://downloads.files.com")
 

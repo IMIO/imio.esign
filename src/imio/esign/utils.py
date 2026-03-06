@@ -83,6 +83,20 @@ def add_files_to_session(
         annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
+        # update data if adding same file to same session
+        if annot['uids'].get(uid, -1) == session_id:
+            logger.info('File with UID %s is already in session_id %s and data were updated!', uid, session_id)
+            # remove old data from "files", existing_files and c_uids
+            #data_index = [file_data['uid'] for file_data in session["files"]].index(uid)
+            #old_filename = path.splitext([fn for fn in session["files"] if fn['uid'] == uid][0]['filename'])[0]
+            #existing_files.remove(old_filename)
+            #annot["c_uids"][context_uid].remove(uid)
+            #del session["files"][data_index]
+            old_filename = path.splitext([fn for fn in session["files"]
+                                          if fn['uid'] == uid][0]['filename'])[0]
+            existing_files.remove(old_filename)
+            remove_files_from_session([uid], remove_empty_session=False)
+
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
@@ -353,7 +367,7 @@ def remove_context_from_session(context_uids):
         remove_files_from_session(list(c_uids[context_uid]))
 
 
-def remove_files_from_session(files_uids):
+def remove_files_from_session(files_uids, remove_empty_session=True):
     """Remove files from their corresponding sessions.
 
     :param files_uids: list of file UIDs to remove
@@ -386,7 +400,7 @@ def remove_files_from_session(files_uids):
             continue
 
         del session["files"][i]
-        if not session["files"]:
+        if not session["files"] and remove_empty_session:
             del sessions[session_id]
         else:
             session["last_update"] = datetime.now()

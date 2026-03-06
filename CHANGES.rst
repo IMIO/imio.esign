@@ -29,6 +29,8 @@ Changelog
   [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
+- Manage file added again to same session, data is updated.
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

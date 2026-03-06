@@ -450,6 +450,30 @@ class TestUtils(unittest.TestCase):
         self.assertIn("same_filename-1.pdf", filenames)
         self.assertIn("same_filename-2.pdf", filenames)
 
+    def test_add_files_already_exist_is_updated(self):
+        """When adding a file to the same session, it is updated."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+        ]
+
+        annex_uid = self.uids[0]
+        annex = api.content.get(UID=annex_uid)
+
+        sid, session = add_files_to_session(signers, (annex_uid,))
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "Annex 0")
+        # edit annex and add again, still one annex in session and data are updated
+        annex.file.filename = u"new_filename.pdf"
+        annex.setTitle('New title')
+        sid, session = add_files_to_session(signers, (annex_uid,))
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
+        self.assertEqual(session["files"][0]["title"], "New title")
+
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""
         annot = get_session_annotation()

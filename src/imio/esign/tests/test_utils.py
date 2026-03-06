@@ -495,17 +495,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(session["files"][1]["title"], "Annex 1")
         self.assertEqual(session["size"], 13982)
         # edit and add again
-        annex1.file.filename = u"new_annex1.pdf"
         annex1.setTitle('New Annex 1')
+        # edit file, filename and content so size changed
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
         sid, session = add_files_to_session(signers, (annex1_uid,))
         self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 2)
         self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
         self.assertEqual(session["files"][1]["title"], "New Annex 1")
-        self.assertEqual(session["size"], 13982)
+        self.assertEqual(session["size"], 13936)
         # just to check, remove annex1
         remove_files_from_session((annex0_uid,))
-        self.assertEqual(session["size"], 7014)
+        self.assertEqual(session["size"], 6968)
 
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""

@@ -91,8 +91,10 @@ def add_files_to_session(
                                           if fn['uid'] == uid][0]['filename'])[0]
             existing_files.remove(old_filename)
             # session size will be updated when removing file from session
-            # will remove the size of old file in case it changed it is correct
+            # so save it because it is already correct
+            saved_size = session["size"]
             remove_files_from_session([uid], remove_empty_session=False)
+            session["size"] = saved_size
 
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)

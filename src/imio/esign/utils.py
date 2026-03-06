@@ -86,12 +86,7 @@ def add_files_to_session(
         # update data if adding same file to same session
         if annot['uids'].get(uid, -1) == session_id:
             logger.info('File with UID %s is already in session_id %s and data were updated!', uid, session_id)
-            # remove old data from "files", existing_files and c_uids
-            #data_index = [file_data['uid'] for file_data in session["files"]].index(uid)
-            #old_filename = path.splitext([fn for fn in session["files"] if fn['uid'] == uid][0]['filename'])[0]
-            #existing_files.remove(old_filename)
-            #annot["c_uids"][context_uid].remove(uid)
-            #del session["files"][data_index]
+            # remove old filename to avoid filename being renamed
             old_filename = path.splitext([fn for fn in session["files"]
                                           if fn['uid'] == uid][0]['filename'])[0]
             existing_files.remove(old_filename)

@@ -473,6 +473,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
         self.assertEqual(session["files"][0]["title"], "New title")
+        # add again exact same file
+        sid, session = add_files_to_session(signers, (annex_uid,))
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
+        self.assertEqual(session["files"][0]["title"], "New title")
 
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""

@@ -463,6 +463,7 @@ class TestUtils(unittest.TestCase):
         annex = api.content.get(UID=annex_uid)
 
         sid, session = add_files_to_session(signers, (annex_uid,))
+        self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(session["files"][0]["filename"], "annex0.pdf")
         self.assertEqual(session["files"][0]["title"], "Annex 0")
@@ -470,6 +471,8 @@ class TestUtils(unittest.TestCase):
         annex.file.filename = u"new_filename.pdf"
         annex.setTitle('New title')
         sid, session = add_files_to_session(signers, (annex_uid,))
+        # same session_id
+        self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
         self.assertEqual(session["files"][0]["title"], "New title")

@@ -91,6 +91,7 @@ def add_files_to_session(
                                           if fn['uid'] == uid][0]['filename'])[0]
             existing_files.remove(old_filename)
             # session size will be updated when removing file from session
+            # will remove the size of old file in case it changed it is correct
             remove_files_from_session([uid], remove_empty_session=False)
 
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
@@ -367,6 +368,7 @@ def remove_files_from_session(files_uids, remove_empty_session=True):
     """Remove files from their corresponding sessions.
 
     :param files_uids: list of file UIDs to remove
+    :param remove_empty_session: when the last file of a session is removed the session will be removed by default, except when False, the empty session is kept
     """
     annot = get_session_annotation()
     sessions = annot["sessions"]

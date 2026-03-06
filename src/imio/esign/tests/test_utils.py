@@ -459,28 +459,53 @@ class TestUtils(unittest.TestCase):
             ("user1", "user1@sign.com", "User 1", "Position 1"),
         ]
 
-        annex_uid = self.uids[0]
-        annex = api.content.get(UID=annex_uid)
+        annex0_uid = self.uids[0]
+        annex0 = api.content.get(UID=annex0_uid)
 
-        sid, session = add_files_to_session(signers, (annex_uid,))
+        sid, session = add_files_to_session(signers, (annex0_uid,))
         self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(session["files"][0]["filename"], "annex0.pdf")
         self.assertEqual(session["files"][0]["title"], "Annex 0")
+        self.assertEqual(session["size"], 6968)
         # edit annex and add again, still one annex in session and data are updated
-        annex.file.filename = u"new_filename.pdf"
-        annex.setTitle('New title')
-        sid, session = add_files_to_session(signers, (annex_uid,))
+        annex0.file.filename = u"new_annex0.pdf"
+        annex0.setTitle('New Annex 0')
+        sid, session = add_files_to_session(signers, (annex0_uid,))
         # same session_id
         self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
-        self.assertEqual(session["files"][0]["title"], "New title")
+        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "New Annex 0")
+        self.assertEqual(session["size"], 6968)
         # add again exact same file
-        sid, session = add_files_to_session(signers, (annex_uid,))
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "new_filename.pdf")
-        self.assertEqual(session["files"][0]["title"], "New title")
+        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "New Annex 0")
+        self.assertEqual(session["size"], 6968)
+        # add second file 2 times
+        annex1_uid = self.uids[1]
+        annex1 = api.content.get(UID=annex1_uid)
+        sid, session = add_files_to_session(signers, (annex1_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["files"][1]["filename"], "annex1.pdf")
+        self.assertEqual(session["files"][1]["title"], "Annex 1")
+        self.assertEqual(session["size"], 13982)
+        # edit and add again
+        annex1.file.filename = u"new_annex1.pdf"
+        annex1.setTitle('New Annex 1')
+        sid, session = add_files_to_session(signers, (annex1_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
+        self.assertEqual(session["files"][1]["title"], "New Annex 1")
+        self.assertEqual(session["size"], 13982)
+        # just to check, remove annex1
+        remove_files_from_session((annex0_uid,))
+        self.assertEqual(session["size"], 7014)
 
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""

@@ -1,12 +1,22 @@
 # -*- coding: utf-8 -*-
+from AccessControl import Unauthorized
+from html import escape
+from imio.esign.utils import persistent_to_native
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
+from imio.helpers.content import uuidToObject
+from imio.helpers.security import check_zope_admin
 from plone import api
+from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
+import pprint
+import re
 
 
 class AddToSessionView(BrowserView):
@@ -126,3 +136,67 @@ class RemoveItemFromSessionView(BrowserView):
         """Defines if the action is available or not."""
         annot = get_session_annotation()
         return self.context.UID() in annot.get("uids", {})
+
+
+class SessionAnnotationInfoView(BrowserView):
+    """Admin-only view displaying imio.esign session annotations for a specific context item."""
+
+    index = ViewPageTemplateFile("templates/session_annotation_info.pt")
+
+    def __call__(self):
+        if not check_zope_admin():
+            raise Unauthorized
+        return self.index()
+
+    def _uid_to_link(self, uid):
+        """Return an HTML link for an object UID, or the UID if not found."""
+        obj = uuidToObject(uid, unrestricted=True)
+        if obj is None:
+            return u"<span title='not found'>{}</span>".format(safe_unicode(uid))
+        url = escape(obj.absolute_url() + "/view", quote=True)
+        path = escape(u"/".join(obj.getPhysicalPath()))
+        title = escape(safe_unicode(getattr(obj, "title", "") or path))
+        return u"<a href='{}' title='{}'>{}</a>".format(url, path, title)
+
+    def _render_value(self, value, indent=u""):
+        """Render a value, replacing UIDs with links where possible."""
+        inner = indent + u"  "
+        if isinstance(value, dict):
+            if not value:
+                return u"{}"
+            lines = [u"{"]
+            for k, v in sorted(value.items()):
+                key = escape(safe_unicode(pprint.pformat(k)))
+                lines.append(u"{}{}: {},".format(inner, key, self._render_value(v, inner)))
+            lines.append(u"{}}}".format(indent))
+            return u"\n".join(lines)
+        elif isinstance(value, (list, tuple)):
+            if not value:
+                return u"[]"
+            lines = [u"["]
+            for item in value:
+                lines.append(u"{}{},".format(inner, self._render_value(item, inner)))
+            lines.append(u"{}]".format(indent))
+            return u"\n".join(lines)
+        elif isinstance(value, basestring) and re.match(r"^[0-9a-f]{32}$", value):
+            # Looks like a UUID
+            return self._uid_to_link(value)
+        else:
+            return escape(safe_unicode(pprint.pformat(value)))
+
+    @property
+    def esign_sessions(self):
+        """Return list of (session_id, session_data) for all sessions."""
+        annot = get_session_annotation()
+        c_uid = self.context.UID()
+        result = []
+        for session_id in annot['sessions']:
+            session = annot.get("sessions", {}).get(session_id)
+            # If any file in this session is in this context
+            if any(f['context_uid'] == c_uid for f in session['files']):
+                result.append((session_id, persistent_to_native(session)))
+        return sorted(result)
+
+    def esign_session_html(self, session_data):
+        """Renders esign session annot in HTML"""
+        return self._render_value(session_data)

@@ -4,21 +4,19 @@
       xmlns:i18n="http://xml.zope.org/namespaces/i18n"
       lang="en"
       i18n:domain="imio.esign">
-  <div class="faceted-session-info"
-       tal:condition="python: view.available()"
-       tal:define="session_id python: str(view.session.get('id', ''))">
-    <div tal:attributes="id string:session-info-${session_id};
-                         onclick string:toggleDetails('collapsible-session-info-${session_id}', toggle_parent_active=true);
-                         class python: view.collapsible_css_default()">
+  <div class="faceted-session-info" tal:condition="python: view.available()">
+    <div id="session-info"
+        onclick="toggleDetails('collapsible-session-info', toggle_parent_active=true);"
+        tal:attributes="class python: view.collapsible_css_default()">
       <span i18n:translate="">Session information (<img i18n:name="icon_url" tal:attributes="src string:${view/portal_url}/++resource++imio.esign/parapheo.svg" /> Parapheo)</span>
     </div>
-    <div tal:attributes="id string:collapsible-session-info-${session_id};
-                         class python: view.collapsible_content_css_default()">
+    <div id="collapsible-session-info"
+         tal:attributes="class python: view.collapsible_content_css_default()">
       <div class="collapsible-inner-content session-info-container"
-           tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index;
-                       session python: view.session">
+           tal:repeat="session python:view.sessions"
+           tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index">
         <div class="session-info-column">
-            <table class="no-style-table table-view-widgets">
+            <table tal:attributes="id string:context_viewlet_session_table_${session/id}" class="no-style-table table-view-widgets">
                 <tbody>
                 <tal:block tal:repeat="macro_name python:view.get_table_rows(1)">
                     <metal:render_cell use-macro="python: template.macros[macro_name]" />
@@ -28,7 +26,7 @@
         </div>
 
         <div class="session-info-column">
-            <table class="no-style-table table-view-widgets">
+            <table tal:attributes="id string:context_viewlet_session_signers_${session/id}" class="no-style-table table-view-widgets">
                 <tbody>
                 <tal:block tal:repeat="macro_name python:view.get_table_rows(2)">
                     <metal:render_cell use-macro="python: template.macros[macro_name]" />
@@ -36,8 +34,8 @@
                 </tbody>
             </table>
         </div>
-        <script>$('table.context_viewlet_signers_table').each(setoddeven);</script>
-      </div>
+    </div>
+    <script>$('table.context_viewlet_signers_table').each(setoddeven);</script>
     </div>
   </div>
 

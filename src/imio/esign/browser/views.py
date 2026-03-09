@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
+from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
@@ -12,6 +13,7 @@ from imio.esign.config import get_registry_parapheo_url
 from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
@@ -206,23 +208,25 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def render(self):
         """Render the viewlet."""
         if self.request.form.get("c1[]", None) == self.sessions_collection_uid:
-            if self.session:
+            if self.sessions:
                 return self.index()
             return self.sessions_listing_view(self.context, self.request).render_table()
         return ""
 
     @property
-    def session(self):
-        session = None
+    def sessions(self):
         session_id = self.request.form.get("esign_session_id[]", None)
-        if not session_id:
-            return
+        try:
+            session_id = int(session_id)
+        except (TypeError, ValueError):
+            return []
         sessions = get_session_annotation()["sessions"]
-        session = sessions.get(int(session_id))
+        session = sessions.get(session_id)
         if not session:
-            return
+            return []
+        session = deepcopy(session)
         session["id"] = session_id
-        return session
+        return [session]
 
     def get_table_rows(self, column):
         """Get the table rows following the column"""
@@ -258,37 +262,16 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
         """Global availability of the viewlet."""
         return True
 
+    def render(self):
+        """Render the viewlet."""
+        if self.sessions:
+            return self.index()
+        return ""
+
     @property
     def sessions(self):
         """Return all sessions that contain files from this context."""
-        annot = get_session_annotation()
-        result = []
-        seen = set()
-        for f_uid in annot["c_uids"].get(self.context.UID(), []):
-            session_id = annot["uids"].get(f_uid)
-            if session_id is not None and session_id not in seen:
-                seen.add(session_id)
-                session = dict(annot["sessions"].get(session_id, {}))
-                session["id"] = session_id
-                result.append(session)
-        return result
-
-    @property
-    def session(self):
-        """Current session during render loop; also used by base template."""
-        return getattr(self, "_current_session", None) or {}
-
-    def render(self):
-        """Render viewlet once per session linked to this context."""
-        sessions = self.sessions
-        if not sessions:
-            return ""
-        parts = []
-        for s in sessions:
-            self._current_session = s
-            parts.append(self.index())
-        self._current_session = None
-        return "\n".join(parts)
+        return get_sessions_for(self.context.UID())
 
 
 @implementer(IPublishTraverse)

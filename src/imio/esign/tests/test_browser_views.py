@@ -474,16 +474,3 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
         self.assertEqual(len(sessions), 2)
         session_ids = {s["id"] for s in sessions}
         self.assertEqual(session_ids, {0, 1})
-
-        rendered_ids = []
-        def mock_index():
-            rendered_ids.append(viewlet._current_session["id"])
-            return u"<div>session {}</div>".format(viewlet._current_session["id"])
-        viewlet.index = mock_index
-        result = viewlet.render()
-        self.assertEqual(len(rendered_ids), 2)
-        self.assertIn(0, rendered_ids)
-        self.assertIn(1, rendered_ids)
-        self.assertIn(u"<div>session 0</div>", result)
-        self.assertIn(u"<div>session 1</div>", result)
-        self.assertIsNone(viewlet._current_session)

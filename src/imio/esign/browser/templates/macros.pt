@@ -40,7 +40,7 @@
 <tr metal:define-macro="signers" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
     <td class="table_widget_value">
-        <table class="no-border no-style-table listing context_viewlet_signers_table"
+        <table class="context_viewlet_signers_table no-border no-style-table listing"
                  tal:define="signers python:session.get('signers', [])">
             <thead>
             <tr>

@@ -352,6 +352,17 @@ def get_session_info(session_id, portal=None):
         return annot['sessions'][session_id]
 
 
+def get_sessions_for(context_uid):
+    """ """
+    sessions = []
+    annot = get_session_annotation()
+    for f_uid in annot["c_uids"].get(context_uid, []):
+        session_id = annot["uids"].get(f_uid)
+        if session_id is not None:
+            sessions.append(annot["sessions"].get(session_id))
+    return sessions
+
+
 def remove_context_from_session(context_uids):
     """Remove all files from a session that are linked to the given context UIDs.
 

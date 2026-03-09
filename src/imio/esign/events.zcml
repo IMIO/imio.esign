@@ -1,0 +1,8 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope">
+
+ <subscriber for="imio.annex.content.annex.IAnnex
+                  collective.iconifiedcategory.interfaces.ICategorizedElementUpdatedEvent"
+             handler=".events.on_categorized_annex_updated" />
+
+</configure>

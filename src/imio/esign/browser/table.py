@@ -3,6 +3,7 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_registry_max_session_size
 from imio.esign.config import get_registry_seal_code
 from imio.esign.config import get_registry_seal_email
 from imio.esign.utils import get_state_description
@@ -107,16 +108,27 @@ class SignersColumn(Column):
 
 
 class FilesColumn(Column):
+    SESSION_SIZE_WARNING_THRESHOLD = 0.8  # Warn when size reaches 80% of max
     header = _("Files")
     weight = 60
     cssClasses = {"th": "th_header_sessions_documents",
                   "td": "documents-column"}
 
+    def renderQuickLook(self, item):
+        """Renders quick look label including session size info"""
+        quick_look_label = translate(_("Quick look"), context=self.request)
+        max_size_mb = get_registry_max_session_size()
+        max_size_bytes = max_size_mb * 1024 * 1024
+        size_bytes = item.get("size", 0)
+        size_mb = size_bytes / (1024.0 * 1024.0)
+        size_style = u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u''
+        size_label = u"(%.2f MB / %d MB)" % (size_mb, max_size_mb)
+        return u"%s <span%s>%s</span>" % (quick_look_label, size_style, size_label)
+
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""
         # Row identifier (unique per session)
         session_id = item.get("id")
-        details_msg = translate(_("Quick look"), context=self.request)
         base_url = getattr(self.table, "portal_url", None)
         if not base_url:
             try:
@@ -134,7 +146,7 @@ class FilesColumn(Column):
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
             u"</div></div>"
-        ).format(session_id, base_url, details_msg)
+        ).format(session_id, base_url, self.renderQuickLook(item))
 
         return html
 

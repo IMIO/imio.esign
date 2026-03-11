@@ -29,6 +29,8 @@ Changelog
   [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
+- Added session info size on quick look.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

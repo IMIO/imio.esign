@@ -187,6 +187,10 @@ msgstr "Non"
 msgid "No files"
 msgstr "Aucun fichier"
 
+#: ../browser/templates/session_files.pt:5
+msgid "This session contains ${count} element(s)."
+msgstr "Cette session contient ${count} élément(s)."
+
 #: ../browser/views.py:171
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr "Aucun fichier référencé n'a été trouvé ! La session ${id} n'a pas été envoyée."

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from collections import OrderedDict
 from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
@@ -14,6 +15,7 @@ from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_suid_from_uuid
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
@@ -501,6 +503,30 @@ class TestUtils(unittest.TestCase):
         ]
         sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
         self.assertEqual(get_session_info(sid), session)
+
+    def test_get_sessions_for(self):
+        """Test getting sessions for a given context_uid."""
+        # no session
+        context_uid = self.folders[0].UID()
+        self.assertEqual(get_sessions_for(context_uid), OrderedDict())
+        # one session
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(get_sessions_for(context_uid).keys(), [0])
+        # two sessions
+        signers = [("user2", "user2@sign.com", "User 2", "Position 2")]
+        sid, session = add_files_to_session(signers, (self.uids[2],))
+        self.assertEqual(get_sessions_for(context_uid).keys(), [0, 1])
+        # readonly=True
+        sessions = get_sessions_for(context_uid)
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        sessions[0]['watchers'] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        # readonly=False
+        sessions = get_sessions_for(context_uid, readonly=False)
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        sessions[0]['watchers'] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)['watchers'], ["watcher@sign.com"])
 
     def test_get_file_download_url(self):
         """Test generating file download URL from UID."""

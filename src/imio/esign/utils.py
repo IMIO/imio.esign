@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
@@ -522,7 +524,7 @@ def get_state_description(state):
 def get_sessions_for(context_uid, readonly=True):
     """Returns a list of all sessions involving the provided context_uid"""
     annot = get_session_annotation()
-    result = []
+    sessions = OrderedDict()
     seen = set()
     for f_uid in annot["c_uids"].get(context_uid, []):
         session_id = annot["uids"].get(f_uid)
@@ -531,6 +533,5 @@ def get_sessions_for(context_uid, readonly=True):
             session = annot["sessions"][session_id]
             if readonly:
                 session = deepcopy(session)
-                session["id"] = session_id
-            result.append(session)
-    return result
+            sessions[session_id] = session
+    return sessions

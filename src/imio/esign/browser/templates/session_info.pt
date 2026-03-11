@@ -12,29 +12,36 @@
     </div>
     <div id="collapsible-session-info"
          tal:attributes="class python: view.collapsible_content_css_default()">
-      <div class="collapsible-inner-content session-info-container"
-           tal:repeat="session python:view.sessions"
-           tal:define="template python: context.unrestrictedTraverse('@@esign-macros').index">
-        <div class="session-info-column">
-            <table tal:attributes="id string:context_viewlet_session_table_${session/id}" class="no-style-table table-view-widgets">
-                <tbody>
-                <tal:block tal:repeat="macro_name python:view.get_table_rows(1)">
-                    <metal:render_cell use-macro="python: template.macros[macro_name]" />
-                </tal:block>
-                </tbody>
-            </table>
-        </div>
+      <tal:loop repeat="session_infos python:view.sessions.items()">
+        <div class="collapsible-inner-content session-info-container"
+             tal:attributes="class python:'collapsible-inner-content session-info-container ' + classOddEven"
+             tal:define="oddrow repeat/session_infos/odd;
+                         classOddEven python: oddrow and 'even' or 'odd';
+                         template python: context.unrestrictedTraverse('@@esign-macros').index">
+          <tal:session_defines define="session_id python: session_infos[0];
+                                       session python: session_infos[1]">
+            <div class="session-info-column">
+                <table tal:attributes="id string:context_viewlet_session_table_${session_id}" class="no-style-table table-view-widgets">
+                    <tbody>
+                    <tal:block tal:repeat="macro_name python:view.get_table_rows(1)">
+                        <metal:render_cell use-macro="python: template.macros[macro_name]" />
+                    </tal:block>
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="session-info-column">
-            <table tal:attributes="id string:context_viewlet_session_signers_${session/id}" class="no-style-table table-view-widgets">
-                <tbody>
-                <tal:block tal:repeat="macro_name python:view.get_table_rows(2)">
-                    <metal:render_cell use-macro="python: template.macros[macro_name]" />
-                </tal:block>
-                </tbody>
-            </table>
+            <div class="session-info-column">
+                <table tal:attributes="id string:context_viewlet_session_signers_${session_id}" class="no-style-table table-view-widgets">
+                    <tbody>
+                    <tal:block tal:repeat="macro_name python:view.get_table_rows(2)">
+                        <metal:render_cell use-macro="python: template.macros[macro_name]" />
+                    </tal:block>
+                    </tbody>
+                </table>
+            </div>
+        </tal:session_defines>
         </div>
-    </div>
+      </tal:loop>
     <script>$('table.context_viewlet_signers_table').each(setoddeven);</script>
     </div>
   </div>

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Browser views tests for this package."""
 from AccessControl import Unauthorized
+from collections import OrderedDict
 from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import datetime
 from datetime import timedelta
@@ -453,7 +454,7 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
     def test_sessions_empty(self):
         """No files in esign annotation → sessions returns empty list."""
         viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
-        self.assertEqual(viewlet.sessions, [])
+        self.assertEqual(viewlet.sessions, OrderedDict())
         self.assertEqual(viewlet.render(), "")
 
     def test_sessions_single_session(self):
@@ -463,7 +464,8 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
         viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
         sessions = viewlet.sessions
         self.assertEqual(len(sessions), 1)
-        self.assertEqual(sessions[0]["id"], 0)
+        self.assertEqual(sessions.keys(), [0])
+        self.assertEqual(len(sessions[0]["files"]), len(uids))
 
     def test_sessions_multiple_sessions(self):
         """Files in two sessions (different discriminators) → sessions returns two dicts."""
@@ -472,5 +474,5 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
         viewlet = ItemSessionInfoViewlet(self.folder, self.request, None, None)
         sessions = viewlet.sessions
         self.assertEqual(len(sessions), 2)
-        session_ids = {s["id"] for s in sessions}
-        self.assertEqual(session_ids, {0, 1})
+        session_ids = sessions.keys()
+        self.assertEqual(session_ids, [0, 1])

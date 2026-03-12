@@ -29,6 +29,8 @@ Changelog
   [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
+- Added possibility to have elements of the same context to belong to different sessions.
+  [chris-adam]
 - Manage file added again to same session, data is updated.
   [gbastien]
 

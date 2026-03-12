@@ -29,6 +29,8 @@ Changelog
   [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
+- Added possibility to have elements of the same context to belong to different sessions.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

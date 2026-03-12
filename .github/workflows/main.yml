@@ -79,7 +79,7 @@ jobs:
           restore-keys: ${{ runner.os }}-coverage-${{ env.cache-name }}
       - name: buildout
         run: |
-          buildout -c ci.cfg
+          buildout -c gha.cfg
       - name: test coverage
         run: |
           bin/coverage run bin/test

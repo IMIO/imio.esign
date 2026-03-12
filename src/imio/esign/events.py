@@ -10,7 +10,7 @@ def on_categorized_annex_updated(annex, event):
     if not old_values:
         return
 
-    sessions = get_sessions_for(event.parent.UID())
+    sessions = get_sessions_for(event.parent.UID(), readonly=False)
     if not sessions:
         return
 
@@ -24,7 +24,7 @@ def on_categorized_annex_updated(annex, event):
             break
     if update:
         annex_uid = annex.UID()
-        for session in sessions:
+        for session_id, session in sessions.items():
             # size
             size_diff = new_values['filesize'] - old_values['filesize']
             session['size'] += size_diff

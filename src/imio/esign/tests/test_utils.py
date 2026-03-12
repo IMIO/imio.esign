@@ -30,6 +30,8 @@ from plone.app.testing import TEST_USER_ID
 from plone.namedfile.file import NamedBlobFile
 from plone.namedfile.file import NamedBlobImage
 from zope.annotation import IAnnotations
+from zope.event import notify
+from zope.lifecycleevent import ObjectModifiedEvent
 
 import collective.iconifiedcategory
 import json
@@ -501,6 +503,7 @@ class TestUtils(unittest.TestCase):
         # edit file, filename and content so size changed
         with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
             annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
+        notify(ObjectModifiedEvent(annex1))
         sid, session = add_files_to_session(signers, (annex1_uid,))
         self.assertEqual(sid, 0)
         self.assertEqual(len(session["files"]), 2)

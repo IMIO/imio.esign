@@ -68,7 +68,7 @@ jobs:
       - name: Setup Env
         run: |
           sudo apt-get update
-          pip install -r requirements.txt coverage==5.3.1
+          pip install -r requirements-4.3.txt coverage==5.3.1
       - name: Cache eggs
         uses: actions/cache@v4
         env:

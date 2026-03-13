@@ -64,7 +64,7 @@ jobs:
       - name: Setup Env
         run: |
           sudo apt-get update -qqy
-          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev libreadline-dev
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:
@@ -90,6 +90,7 @@ jobs:
       - name: test coverage
         run: |
           bin/coverage run bin/test
+          bin/coverage report
       - name: Install Coveralls
         run: |
           pip3 install -U pip setuptools --no-cache-dir

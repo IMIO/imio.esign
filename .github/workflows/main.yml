@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libjpeg-dev libbz2-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:
@@ -64,7 +64,7 @@ jobs:
       - name: Setup Env
         run: |
           sudo apt-get update -qqy
-          sudo apt-get install -y libjpeg8-dev libbz2-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:
@@ -74,7 +74,7 @@ jobs:
       - name: Setup Env
         run: |
           sudo apt-get update
-          pip install -r requirements-4.3.txt coverage==5.3.1 wheel
+          pip install -r requirements-4.3.txt coverage==5.3.1
       - name: Cache eggs
         uses: actions/cache@v4
         env:

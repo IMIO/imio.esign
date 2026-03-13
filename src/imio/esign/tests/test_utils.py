@@ -504,8 +504,7 @@ class TestUtils(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
             annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
         notify(ObjectModifiedEvent(annex1))
-        sid, session = add_files_to_session(signers, (annex1_uid,))
-        self.assertEqual(sid, 0)
+        # data were already updated
         self.assertEqual(len(session["files"]), 2)
         self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
         self.assertEqual(session["files"][1]["title"], "New Annex 1")

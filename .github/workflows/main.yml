@@ -93,8 +93,9 @@ jobs:
           bin/coverage report
       - name: Install Coveralls
         run: |
-          pip3 install -U pip setuptools --no-cache-dir
-          pip3 install -U "coveralls>=3.0.0" coverage==5.3.1 --no-cache-dir
+          ls -al bin/
+          pip3.8 install -U pip setuptools --no-cache-dir
+          pip3.8 install -U "coveralls>=3.0.0" coverage==5.3.1 --no-cache-dir
       - name: Publish to Coveralls
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -52,6 +52,12 @@ jobs:
           bin/test -t !robot
   coverage:
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: 2.7.18
+            plone: 4.3
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -79,6 +85,7 @@ jobs:
           restore-keys: ${{ runner.os }}-coverage-${{ env.cache-name }}
       - name: buildout
         run: |
+          sed -ie "s#test.cfg#test-${{matrix.plone}}.cfg#" gha.cfg
           buildout -c gha.cfg
       - name: test coverage
         run: |

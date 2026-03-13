@@ -31,8 +31,8 @@ Changelog
   [chris-adam, sgeulette]
 - Added possibility to have elements of the same context to belong to different sessions.
   [chris-adam]
-- Configured the `@@remove-from-esign-session` the same way the `@@remove-item-from-esign-session`
-  so relying on an `available` method to show it only if a context in a session.
+- Configured the `@@remove-from-esign-session` the same way as `@@remove-item-from-esign-session`
+  so relying on an `available` method to show it only if a context is in a session.
   [gbastien]
 
 1.0a2 (2026-02-06)

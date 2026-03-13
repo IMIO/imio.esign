@@ -50,12 +50,12 @@ class AddToSessionView(BrowserView):
         """
         try:
             signers = ISignable(self.context).get_signers()
-        except ValueError, msg:
+        except ValueError as msg:
             signers = []
             api.portal.show_message(
                 _(
                     "Problem getting signers: \"${error}\")!",
-                    mapping={"error": msg},
+                    mapping={"error": str(msg)},
                 ),
                 request=self.request,
                 type="warning",

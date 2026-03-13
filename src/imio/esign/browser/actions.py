@@ -101,6 +101,11 @@ class RemoveFromSessionView(BrowserView):
         """ """
         return self.context.UID()
 
+    def available(self):
+        """Defines if the action is available or not."""
+        annot = get_session_annotation()
+        return self.context.UID() in annot.get("c_uids", {})
+
 
 class RemoveItemFromSessionView(BrowserView):
     """View to remove an item from an esign session."""

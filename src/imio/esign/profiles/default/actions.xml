@@ -18,7 +18,7 @@
    <property name="description" i18n:translate="">This will remove this element or configured sub elements from the relevant esign session</property>
    <property name="url_expr">string:${object/absolute_url}/@@remove-from-esign-session</property>
    <property name="icon_expr"></property>
-   <property name="available_expr"></property>
+   <property name="available_expr">object/@@remove-from-esign-session/available</property>
    <property name="permissions">
     <element value="Manage portal"/>
    </property>

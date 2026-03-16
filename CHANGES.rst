@@ -34,6 +34,8 @@ Changelog
 - Configured the `@@remove-from-esign-session` the same way as `@@remove-item-from-esign-session`
   so relying on an `available` method to show it only if a context is in a session.
   [gbastien]
+- Fixed faceted viewlet broken because sessions format changed from list to OrderedDict.
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

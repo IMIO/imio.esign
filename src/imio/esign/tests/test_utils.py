@@ -555,9 +555,9 @@ class TestUtils(unittest.TestCase):
         """Test getting info about a given session id."""
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
-        self.assertIsNone(get_session_info(0))
-        self.assertIsNone(get_session_info(1))
-        self.assertIsNone(get_session_info(2))
+        self.assertEqual(get_session_info(0), {})
+        self.assertEqual(get_session_info(1), {})
+        self.assertEqual(get_session_info(2), {})
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),

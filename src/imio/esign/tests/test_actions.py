@@ -17,8 +17,8 @@ import os
 import unittest
 
 
-class TestRemoveItemFromSessionView(unittest.TestCase):
-    """Test RemoveItemFromSessionView browser view."""
+class BaseRemoveFromSession(unittest.TestCase):
+    """Base class to centralize setUp."""
 
     layer = IMIO_ESIGN_INTEGRATION_TESTING
 
@@ -73,6 +73,10 @@ class TestRemoveItemFromSessionView(unittest.TestCase):
                 self.annexes.append(annex)
         self.signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
 
+
+class TestRemoveItemFromSessionView(BaseRemoveFromSession):
+    """Test RemoveItemFromSessionView browser view."""
+
     def test_available(self):
         """Test available method returns True."""
         view = getMultiAdapter((self.annexes[0], self.request), name="remove-item-from-esign-session")
@@ -124,3 +128,27 @@ class TestRemoveItemFromSessionView(unittest.TestCase):
         self.assertEqual(len(messages), 1)
         self.assertIn("removed from session", messages[0].message)
         self.assertEqual(self.request.RESPONSE.getHeader("location"), self.annexes[0].absolute_url())
+
+
+class TestRemoveFromSessionView(BaseRemoveFromSession):
+    """Test RemoveFromSessionView browser view."""
+
+    def test_available(self):
+        """Test available method returns True."""
+        annot = get_session_annotation()
+        self.assertFalse(annot["sessions"])
+        # only available on "context_uid"
+        annex = self.annexes[0]
+        view = getMultiAdapter((annex, self.request), name="remove-from-esign-session")
+        self.assertFalse(view.available())
+        add_files_to_session(self.signers, [annex.UID()])
+        self.assertTrue(annot["sessions"])
+        self.assertFalse(view.available())
+        # available on parent
+        folder = annex.aq_parent
+        view = getMultiAdapter((folder, self.request), name="remove-from-esign-session")
+        self.assertTrue(view.available())
+        # call the view so context is removed so no more session
+        view()
+        self.assertFalse(annot["sessions"])
+        self.assertFalse(view.available())

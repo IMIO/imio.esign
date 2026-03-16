@@ -340,15 +340,20 @@ def get_session_annotation(portal=None):
     return annotations["imio.esign"]
 
 
-def get_session_info(session_id, portal=None):
+def get_session_info(session_id, portal=None, readonly=True):
     """Return a session info for a given numbering.
 
     :param session_id: the session id to return
     :param portal: portal if necessary to get the session annotation
+    :param readonly: return a copy of stored data to avoid modifying it
     """
     annot = get_session_annotation(portal=portal)
+    session = {}
     if session_id in annot['sessions']:
-        return annot['sessions'][session_id]
+        session = annot['sessions'][session_id]
+        if readonly:
+            session = deepcopy(session)
+    return session
 
 
 def remove_context_from_session(context_uids):

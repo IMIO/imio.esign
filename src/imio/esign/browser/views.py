@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
-from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
@@ -224,7 +223,10 @@ class FacetedSessionInfoViewlet(ViewletBase):
             session_id = int(session_id)
         except (TypeError, ValueError):
             return {}
-        session = {session_id: get_session_info(session_id)}
+        session = {}
+        session_info = get_session_info(session_id)
+        if session_info:
+            session = {session_id: session_info}
         # caching
         self._cached_session = session
         return session

@@ -508,7 +508,15 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(session["files"]), 2)
         self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
         self.assertEqual(session["files"][1]["title"], "New Annex 1")
+        self.assertEqual(session["files"][1]["scan_id"], "012345600000001")
         self.assertEqual(session["size"], 13936)
+        # change file but add a filename already used, change scan_id as well
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex0.pdf", contentType="application/pdf")
+        annex1.scan_id = str(int(annex1.scan_id) + 1)
+        notify(ObjectModifiedEvent(annex1))
+        self.assertEqual(session["files"][1]["filename"], "new_annex0-1.pdf")
+        self.assertEqual(session["files"][1]["scan_id"], "012345600000002")
         # just to check, remove annex1
         remove_files_from_session((annex0_uid,))
         self.assertEqual(session["size"], 6968)

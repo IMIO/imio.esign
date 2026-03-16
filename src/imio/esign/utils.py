@@ -340,6 +340,17 @@ def get_session_annotation(portal=None):
     return annotations["imio.esign"]
 
 
+def get_file_info(session_id, file_uid, portal=None, readonly=True):
+    """ """
+    session = get_session_info(session_id, portal=portal)
+    if session:
+        for file_info in session['files']:
+            if file_info['uid'] == file_uid:
+                if readonly:
+                    file_info = deepcopy(file_info)
+                return file_info
+
+
 def get_session_info(session_id, portal=None, readonly=True):
     """Return a session info for a given numbering.
 

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from imio.esign.utils import get_file_info
 from imio.esign.utils import get_sessions_for
+from imio.helpers.transmogrifier import get_correct_id
+from os import path
 
 
 def on_categorized_annex_updated(annex, event):
@@ -14,6 +17,7 @@ def on_categorized_annex_updated(annex, event):
     if not sessions:
         return
 
+    annex_uid = annex.UID()
     new_values = event.new_values
     # if something usefull changed, we will update the session
     update = False
@@ -22,8 +26,15 @@ def on_categorized_annex_updated(annex, event):
         if new_values[checked_key] != old_values[checked_key]:
             update = True
             break
+    # check scan_id and filename
+    for session_id in sessions:
+        file_info = get_file_info(session_id, annex_uid)
+        if annex.scan_id != file_info['scan_id'] or \
+           annex.file.filename != file_info['filename']:
+            update = True
+            break
+
     if update:
-        annex_uid = annex.UID()
         for session_id, session in sessions.items():
             # size
             size_diff = new_values['filesize'] - old_values['filesize']
@@ -32,4 +43,12 @@ def on_categorized_annex_updated(annex, event):
             for file_data in session['files']:
                 if file_data['uid'] == annex_uid:
                     file_data['title'] = new_values['title']
-                    file_data['filename'] = annex.file.filename
+                    file_data['scan_id'] = annex.scan_id
+                    # filename changed, need to make sure new filename is unique
+                    if annex.file.filename != file_data['filename']:
+                        existing_files = [path.splitext(f["filename"])[0]
+                                          for f in session["files"]]
+                        filename, ext = path.splitext(annex.file.filename)
+                        new_filename = get_correct_id(existing_files, filename)
+                        file_data['filename'] = new_filename + ext
+                        session._p_changed = True

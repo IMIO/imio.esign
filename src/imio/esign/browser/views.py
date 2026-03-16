@@ -224,7 +224,7 @@ class FacetedSessionInfoViewlet(ViewletBase):
             session_id = int(session_id)
         except (TypeError, ValueError):
             return {}
-        session = get_session_info(session_id)
+        session = {session_id: get_session_info(session_id)}
         # caching
         self._cached_session = session
         return session

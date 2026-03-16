@@ -344,7 +344,6 @@ def get_session_info(session_id, portal=None, readonly=True):
         session = annot['sessions'][session_id]
         if readonly:
             session = deepcopy(session)
-        session = {session_id: session}
     return session
 
 

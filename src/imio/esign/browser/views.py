@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
-from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
@@ -13,6 +12,7 @@ from imio.esign.config import get_registry_parapheo_url
 from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
@@ -215,18 +215,21 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
     @property
     def sessions(self):
+        # caching
+        if hasattr(self, "_cached_session"):
+            return self._cached_session
         session_id = self.request.form.get("esign_session_id[]", None)
         try:
             session_id = int(session_id)
         except (TypeError, ValueError):
-            return []
-        sessions = get_session_annotation()["sessions"]
-        session = sessions.get(session_id)
-        if not session:
-            return []
-        session = deepcopy(session)
-        session["id"] = session_id
-        return [session]
+            return {}
+        session = {}
+        session_info = get_session_info(session_id)
+        if session_info:
+            session = {session_id: session_info}
+        # caching
+        self._cached_session = session
+        return session
 
     def get_table_rows(self, column):
         """Get the table rows following the column"""

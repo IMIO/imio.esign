@@ -17,9 +17,19 @@ def on_categorized_annex_updated(annex, event):
     if not sessions:
         return
 
+    # make sure annex_uid is in a session
     annex_uid = annex.UID()
-    new_values = event.new_values
+    file_infos = []
+    for session_id in sessions:
+        file_info = get_file_info(session_id, annex_uid)
+        if file_info:
+            file_infos.append(file_info)
+    if not file_infos:
+        return
+
+    # here we are sure that annex is in a session, we need to update data
     # if something usefull changed, we will update the session
+    new_values = event.new_values
     update = False
     checked_keys = ['title', 'filesize', 'relative_url']
     for checked_key in checked_keys:
@@ -27,14 +37,14 @@ def on_categorized_annex_updated(annex, event):
             update = True
             break
     # check scan_id and filename
-    for session_id in sessions:
-        file_info = get_file_info(session_id, annex_uid)
-        if annex.scan_id != file_info['scan_id'] or \
-           annex.file.filename != file_info['filename']:
-            update = True
-            break
+    if update is False:
+        for file_info in file_infos:
+            if file_info and (annex.scan_id != file_info['scan_id'] or \
+               annex.file.filename != file_info['filename']):
+                update = True
+                break
 
-    if update:
+    if update is True:
         for session_id, session in sessions.items():
             # size
             size_diff = new_values['filesize'] - old_values['filesize']

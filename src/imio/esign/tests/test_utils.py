@@ -518,6 +518,10 @@ class TestUtils(unittest.TestCase):
         notify(ObjectModifiedEvent(annex1))
         self.assertEqual(session["files"][1]["filename"], "new_annex0-1.pdf")
         self.assertEqual(session["files"][1]["scan_id"], "012345600000002")
+        # edit annex out of any session
+        annex2_uid = self.uids[2]
+        annex2 = api.content.get(UID=annex2_uid)
+        notify(ObjectModifiedEvent(annex2))
         # just to check, remove annex0
         remove_files_from_session((annex0_uid,))
         self.assertEqual(session["size"], 6968)

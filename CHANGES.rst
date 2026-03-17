@@ -38,6 +38,8 @@ Changelog
   [gbastien]
 - Fixed faceted viewlet broken because sessions format changed from list to OrderedDict.
   [gbastien]
+- Turned file info in session annotation from `dict` to `PersistentMapping`.
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

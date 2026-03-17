@@ -51,4 +51,5 @@ def on_categorized_annex_updated(annex, event):
                         filename, ext = path.splitext(annex.file.filename)
                         new_filename = get_correct_id(existing_files, filename)
                         file_data['filename'] = new_filename + ext
-                        session._p_changed = True
+                    # file_uid is only there one time per session
+                    break

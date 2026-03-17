@@ -11,6 +11,7 @@ from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_file_download_url
+from imio.esign.utils import get_file_info
 from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
@@ -596,6 +597,30 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_session_info(0)['watchers'], [])
         sessions[0]['watchers'] = ["watcher@sign.com"]
         self.assertEqual(get_session_info(0)['watchers'], ["watcher@sign.com"])
+
+    def test_get_file_info(self):
+        """Test getting infos for a given file."""
+        annex0_uid = self.uids[0]
+        annex1_uid = self.uids[1]
+        # no session
+        self.assertIsNone(get_file_info(0, annex0_uid))
+        # create session
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(get_file_info(0, annex0_uid)['uid'], annex0_uid)
+        self.assertIsNone(get_file_info(0, annex1_uid))
+        # readonly=True by default
+        file_info = get_file_info(0, annex0_uid)
+        file_info['title'] = u'New title annex 0'
+        # not changed in the annotation
+        self.assertEqual(
+            get_session_annotation()['sessions'][0]['files'][0]['title'], u'Annex 0')
+        # readonly=False
+        file_info = get_file_info(0, annex0_uid, readonly=False)
+        file_info['title'] = u'New title annex 0'
+        # changed in the annotation
+        self.assertEqual(
+            get_session_annotation()['sessions'][0]['files'][0]['title'], u'New title annex 0')
 
     def test_get_file_download_url(self):
         """Test generating file download URL from UID."""

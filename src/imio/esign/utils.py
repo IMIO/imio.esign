@@ -98,14 +98,14 @@ def add_files_to_session(
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
-            {
+            PersistentMapping({
                 "scan_id": annex.scan_id,
                 "filename": new_filename + ext,
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
                 "status": "",
-            }
+            })
         )
         existing_files.append(new_filename)
         annot["uids"][uid] = session_id
@@ -341,8 +341,14 @@ def get_session_annotation(portal=None):
 
 
 def get_file_info(session_id, file_uid, portal=None, readonly=True):
-    """ """
-    session = get_session_info(session_id, portal=portal)
+    """Return informations about a file (uid, title, filename, ...) in a session.
+
+    :param session_id: the session id to return
+    :param file_uid: the file UID in the session
+    :param portal: portal if necessary to get the session annotation
+    :param readonly: return a copy of stored data to avoid modifying it
+    """
+    session = get_session_info(session_id, portal=portal, readonly=readonly)
     if session:
         for file_info in session['files']:
             if file_info['uid'] == file_uid:

@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libjpeg-dev libbz2-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:
@@ -50,6 +50,56 @@ jobs:
       - name: test
         run: |
           bin/test -t !robot
+  coverage:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: 2.7.18
+            plone: 4.3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Setup Env
+        run: |
+          sudo apt-get update -qqy
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev libreadline-dev
+      - name: Set up pyenv and Python
+        uses: "gabrielfalcao/pyenv-action@v18"
+        with:
+          default: 2.7.18
+          versions: 3.8.16
+          command: pyenv -v
+      - name: Setup Env
+        run: |
+          sudo apt-get update
+          pip install -r requirements-4.3.txt coverage==5.3.1
+      - name: Cache eggs
+        uses: actions/cache@v4
+        env:
+          cache-name: cache-eggs
+        with:
+          path: ~/buildout-cache/eggs
+          key: ${{ runner.os }}-coverage-${{ env.cache-name }}
+          restore-keys: ${{ runner.os }}-coverage-${{ env.cache-name }}
+      - name: buildout
+        run: |
+          sed -ie "s#test.cfg#test-${{matrix.plone}}.cfg#" gha.cfg
+          buildout -c gha.cfg
+      - name: test coverage
+        run: |
+          bin/coverage run bin/test
+          bin/coverage report
+      - name: Install Coveralls
+        run: |
+          pip3 install -U pip setuptools --no-cache-dir
+          pip3 install -U "coveralls>=3.0.0" coverage==5.3.1 --no-cache-dir
+      - name: Publish to Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          coveralls --service=github
 #  coverage:
 #    runs-on: ubuntu-24.04
 #    strategy:

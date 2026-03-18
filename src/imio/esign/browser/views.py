@@ -30,6 +30,7 @@ from Products.CMFPlone.utils import base_hasattr
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.cachedescriptors.property import CachedProperty
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
@@ -213,11 +214,8 @@ class FacetedSessionInfoViewlet(ViewletBase):
             return self.sessions_listing_view(self.context, self.request).render_table()
         return ""
 
-    @property
+    @CachedProperty
     def sessions(self):
-        # caching
-        if hasattr(self, "_cached_session"):
-            return self._cached_session
         session_id = self.request.form.get("esign_session_id[]", None)
         try:
             session_id = int(session_id)
@@ -227,8 +225,6 @@ class FacetedSessionInfoViewlet(ViewletBase):
         session_info = get_session_info(session_id)
         if session_info:
             session = {session_id: session_info}
-        # caching
-        self._cached_session = session
         return session
 
     def get_table_rows(self, column):
@@ -271,7 +267,7 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
             return self.index()
         return ""
 
-    @property
+    @CachedProperty
     def sessions(self):
         """Return all sessions that contain files from this context."""
         return get_sessions_for(self.context.UID())

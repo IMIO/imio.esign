@@ -86,17 +86,26 @@ def add_files_to_session(
         annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
+        # update data if adding same file to same session
+        if annot['uids'].get(uid, -1) == session_id:
+            logger.info('File with UID %s is already in session_id %s and data were updated!', uid, session_id)
+            # remove old filename to avoid filename being renamed
+            old_filename = path.splitext([fn for fn in session["files"]
+                                          if fn['uid'] == uid][0]['filename'])[0]
+            existing_files.remove(old_filename)
+            remove_files_from_session([uid], remove_empty_session=False)
+
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
-            {
+            PersistentMapping({
                 "scan_id": annex.scan_id,
                 "filename": new_filename + ext,
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
                 "status": "",
-            }
+            })
         )
         existing_files.append(new_filename)
         annot["uids"][uid] = session_id
@@ -110,7 +119,6 @@ def add_files_to_session(
         if u"{session_id}" in session["title"]:
             session["title"] = session["title"].replace(u"{session_id}", str(session_id))
     session["last_update"] = datetime.now()
-    annot._p_changed = True
     return session_id, session
 
 
@@ -331,6 +339,23 @@ def get_session_annotation(portal=None):
     return annotations["imio.esign"]
 
 
+def get_file_info(session_id, file_uid, portal=None, readonly=True):
+    """Return informations about a file (uid, title, filename, ...) in a session.
+
+    :param session_id: the session id to return
+    :param file_uid: the file UID in the session
+    :param portal: portal if necessary to get the session annotation
+    :param readonly: return a copy of stored data to avoid modifying it
+    """
+    session = get_session_info(session_id, portal=portal, readonly=readonly)
+    if session:
+        for file_info in session['files']:
+            if file_info['uid'] == file_uid:
+                if readonly:
+                    file_info = deepcopy(file_info)
+                return file_info
+
+
 def get_session_info(session_id, portal=None, readonly=True):
     """Return a session info for a given numbering.
 
@@ -361,10 +386,11 @@ def remove_context_from_session(context_uids):
         remove_files_from_session(list(c_uids[context_uid]))
 
 
-def remove_files_from_session(files_uids):
+def remove_files_from_session(files_uids, remove_empty_session=True):
     """Remove files from their corresponding sessions.
 
     :param files_uids: list of file UIDs to remove
+    :param remove_empty_session: when the last file of a session is removed the session will be removed by default, except when False, the empty session is kept
     """
     annot = get_session_annotation()
     sessions = annot["sessions"]
@@ -394,7 +420,7 @@ def remove_files_from_session(files_uids):
             continue
 
         del session["files"][i]
-        if not session["files"]:
+        if not session["files"] and remove_empty_session:
             del sessions[session_id]
         else:
             session["last_update"] = datetime.now()

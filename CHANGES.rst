@@ -31,10 +31,17 @@ Changelog
   [chris-adam, sgeulette]
 - Added possibility to have elements of the same context to belong to different sessions.
   [chris-adam]
+- Manage file added again to same session, data is updated.
+  [gbastien]
 - Configured the `@@remove-from-esign-session` the same way as `@@remove-item-from-esign-session`
   so relying on an `available` method to show it only if a context is in a session.
   [gbastien]
 - Fixed faceted viewlet broken because sessions format changed from list to OrderedDict.
+  [gbastien]
+- Turned file info in session annotation from `dict` to `PersistentMapping`.
+  Entire annotation structure is now persistent, remove `_p_changed`.
+  [gbastien]
+- Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
 
 1.0a2 (2026-02-06)

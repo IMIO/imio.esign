@@ -35,10 +35,6 @@ except NameError:
 class BaseRemoveFromSession(unittest.TestCase):
     """Base class to centralize setUp."""
 
-
-class TestRemoveItemFromSessionView(unittest.TestCase):
-    """Test RemoveItemFromSessionView browser view."""
-
     layer = IMIO_ESIGN_INTEGRATION_TESTING
 
     def setUp(self):
@@ -280,14 +276,57 @@ class TestSessionAnnotationInfoView(unittest.TestCase):
     def test_esign_sessions(self):
         uids = [a.UID() for a in self.annexes]
         add_files_to_session(self.signers, uids, title=u"[ia.parapheo] Session {sign_id}")
+
+        # Add a second session with a separate folder/annex
+        folder2 = api.content.create(
+            container=self.portal, type="Folder", id="test_session_folder2", title="Test Session Folder 2"
+        )
+        tests_dir = os.path.dirname(__file__)
+        with open(os.path.join(tests_dir, "annex1.pdf"), "rb") as f:
+            annex2 = api.content.create(
+                container=folder2,
+                type="annex",
+                id="annex2",
+                title=u"Annex 2",
+                content_category=calculate_category_id(self.portal["annexes_types"]["annexes"]["to_sign"]),
+                scan_id="01234560000002",
+                file=NamedBlobFile(data=f.read(), filename=u"annex2.pdf", contentType="application/pdf"),
+            )
+        add_files_to_session(self.signers, [annex2.UID()], title=u"[ia.parapheo] Session {sign_id}",
+                             discriminators=(u"second",))
+
         view = SessionAnnotationInfoView(self.folder, self.portal.REQUEST)
 
+        # No filter params — returns all sessions
         esign_sessions = view.esign_sessions
-        self.assertEqual(len(esign_sessions), 1)
+        self.assertEqual(len(esign_sessions), 2)
         esign_session = esign_sessions[0]
         self.assertIsInstance(esign_session, tuple)
         self.assertEqual(esign_session[0], 0)
 
+        # Filter by session_id
+        self.portal.REQUEST.form["session_id"] = "0"
+        self.assertEqual(len(view.esign_sessions), 1)
+        self.assertEqual(view.esign_sessions[0][0], 0)
+        self.portal.REQUEST.form["session_id"] = "1"
+        self.assertEqual(len(view.esign_sessions), 1)
+        self.assertEqual(view.esign_sessions[0][0], 1)
+        self.portal.REQUEST.form["session_id"] = "999"
+        self.assertEqual(len(view.esign_sessions), 0)
+        del self.portal.REQUEST.form["session_id"]
+
+        # Filter by context_uid
+        self.portal.REQUEST.form["context_uid"] = self.folder.UID()
+        self.assertEqual(len(view.esign_sessions), 1)
+        self.assertEqual(view.esign_sessions[0][0], 0)
+        self.portal.REQUEST.form["context_uid"] = folder2.UID()
+        self.assertEqual(len(view.esign_sessions), 1)
+        self.assertEqual(view.esign_sessions[0][0], 1)
+        self.portal.REQUEST.form["context_uid"] = u"a" * 32
+        self.assertEqual(len(view.esign_sessions), 0)
+        del self.portal.REQUEST.form["context_uid"]
+
+        # Test rendered HTML
         self.assertEqual(
             unescape(view.esign_session_html(esign_session[1])),
             u"""{{

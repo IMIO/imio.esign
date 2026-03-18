@@ -6,6 +6,7 @@ from imio.esign import _
 from imio.esign.config import get_registry_seal_code
 from imio.esign.config import get_registry_seal_email
 from imio.esign.utils import get_state_description
+from imio.helpers.security import check_zope_admin
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -188,6 +189,15 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
+            )
+        if check_zope_admin():
+            admin_buttons += u"""
+            <a href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+                <img title="Annotation info" src="info.png">
+            </a>
+            """.format(
+                sessions_url=sessions_url,
+                session_id=session_id,
             )
         dashboard_button = u"""
         <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer"

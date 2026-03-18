@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
 from html import escape
-from imio.esign.utils import persistent_to_native
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
 from imio.helpers.content import uuidToObject
@@ -186,15 +186,28 @@ class SessionAnnotationInfoView(BrowserView):
 
     @property
     def esign_sessions(self):
-        """Return list of (session_id, session_data) for all sessions."""
+        """
+        Return list of (session_id, session_data) for all sessions.
+        Filter sessions using request params "session_id" and "context_uid" if provided.
+        Returns all sessions if no filter params provided.
+        """
         annot = get_session_annotation()
-        c_uid = self.context.UID()
+        request_session_id = self.request.form.get("session_id")
+        try:
+            request_session_id = int(request_session_id)
+        except (ValueError, TypeError):
+            request_session_id = None
+
+        c_uid = self.request.form.get("context_uid")
         result = []
         for session_id in annot['sessions']:
+            if request_session_id is not None and request_session_id != session_id:
+                continue
             session = annot.get("sessions", {}).get(session_id)
             # If any file in this session is in this context
-            if any(f['context_uid'] == c_uid for f in session['files']):
-                result.append((session_id, persistent_to_native(session)))
+            if c_uid and not any(f['context_uid'] == c_uid for f in session['files']):
+                continue
+            result.append((session_id, persistent_to_native(session)))
         return sorted(result)
 
     def esign_session_html(self, session_data):

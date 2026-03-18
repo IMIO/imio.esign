@@ -41,6 +41,8 @@ Changelog
 - Turned file info in session annotation from `dict` to `PersistentMapping`.
   Entire annotation structure is now persistent, remove `_p_changed`.
   [gbastien]
+- Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
+  [gbastien]
 
 1.0a2 (2026-02-06)
 ------------------

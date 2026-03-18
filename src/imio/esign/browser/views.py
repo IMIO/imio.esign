@@ -267,7 +267,7 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
             return self.index()
         return ""
 
-    @property
+    @CachedProperty
     def sessions(self):
         """Return all sessions that contain files from this context."""
         return get_sessions_for(self.context.UID())

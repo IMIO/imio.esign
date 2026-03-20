@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a3 (unreleased)
+1.0a3 (2026-03-20)
 ------------------
 
 - Replaced external_session_link p by span.

@@ -5,8 +5,9 @@ Changelog
 1.0a4 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Redirect to `HTTP_REFERER` instead context's url after
+  `add/remove/remove item` actions.
+  [gbastien]
 
 1.0a3 (2026-03-20)
 ------------------

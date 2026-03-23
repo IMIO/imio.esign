@@ -22,7 +22,7 @@ class AddToSessionView(BrowserView):
             msgid = failed_msgid
             msg_type = "warning"
         api.portal.show_message(_(msgid, mapping=mapping), request=self.request, type=msg_type)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         files_uids = ISignable(self.context).get_files_uids()
@@ -91,7 +91,7 @@ class RemoveFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         remove_context_from_session(context_uids=[self.get_uid_to_remove()])
@@ -116,7 +116,7 @@ class RemoveItemFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         remove_files_from_session(files_uids=[self.context.UID()])

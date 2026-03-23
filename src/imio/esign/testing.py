@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from imio.fpaudit import utils as _fpaudit_utils
 from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
 from plone.app.testing import applyProfile
 from plone.app.testing import FunctionalTesting
@@ -9,6 +10,16 @@ from plone.testing import z2
 from zope.globalrequest import setLocal
 
 import imio.esign  # noqa: F401
+
+
+logged_actions = []
+
+
+def _mock_fpalog(log_id, action, extras):
+    logged_actions.append(extras)
+
+
+_fpaudit_utils.fpalog = _mock_fpalog
 
 
 class ImioEsignLayer(PloneSandboxLayer):

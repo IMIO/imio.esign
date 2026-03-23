@@ -1,10 +1,10 @@
 <tr metal:define-macro="session_id" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Session ID</label></td>
     <td class="table_widget_value" tal:define="can_link python:view.can_display_sessions_listing_link()">
-        <span tal:condition="not: can_link" tal:content="python: session['id']">25452</span>
+        <span tal:condition="not: can_link" tal:content="python: session_id">25452</span>
         <a tal:condition="can_link" href="#" target="_blank"
-           tal:content="python: session['id']"
-           tal:attributes="href python:'{}#{}'.format(view.session_listing_url, session['id'])">25452 - College</a>
+           tal:content="python: session_id"
+           tal:attributes="href python:'{}#{}'.format(view.session_listing_url, session_id)">25452 - College</a>
     </td>
 </tr>
 <tr metal:define-macro="state" i18n:domain="imio.esign">
@@ -40,7 +40,7 @@
 <tr metal:define-macro="signers" i18n:domain="imio.esign">
     <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
     <td class="table_widget_value">
-        <table id="context_viewlet_signers_table" class="no-border no-style-table listing"
+        <table class="context_viewlet_signers_table no-border no-style-table listing"
                  tal:define="signers python:session.get('signers', [])">
             <thead>
             <tr>

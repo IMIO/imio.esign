@@ -57,8 +57,9 @@ class IImioEsignSettings(Interface):
 
     file_url = schema.URI(
         title=_("File URL download domain"),
-        description=_("URL domain where the file can be donwloaded."),
+        description=_("URL domain where the file can be downloaded."),
         required=False,
+        default="https://documents.imio-egov.be/esign",
     )
 
     seal_code = schema.TextLine(

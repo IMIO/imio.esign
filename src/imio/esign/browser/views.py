@@ -13,6 +13,8 @@ from imio.esign.config import get_registry_parapheo_url
 from imio.esign.config import get_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_info
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
@@ -29,6 +31,7 @@ from Products.CMFPlone.utils import base_hasattr
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.cachedescriptors.property import CachedProperty
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
@@ -215,22 +218,22 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def render(self):
         """Render the viewlet."""
         if self.request.form.get("c1[]", None) == self.sessions_collection_uid:
-            if self.session:
+            if self.sessions:
                 return self.index()
             return self.sessions_listing_view(self.context, self.request).render_table()
         return ""
 
-    @property
-    def session(self):
-        session = None
+    @CachedProperty
+    def sessions(self):
         session_id = self.request.form.get("esign_session_id[]", None)
-        if not session_id:
-            return
-        sessions = get_session_annotation()["sessions"]
-        session = sessions.get(int(session_id))
-        if not session:
-            return
-        session["id"] = session_id
+        try:
+            session_id = int(session_id)
+        except (TypeError, ValueError):
+            return {}
+        session = {}
+        session_info = get_session_info(session_id)
+        if session_info:
+            session = {session_id: session_info}
         return session
 
     def get_table_rows(self, column):
@@ -261,7 +264,7 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
-    """Show selected session info for an item."""
+    """Show session info for all sessions linked to a context item."""
 
     def available(self):
         """Global availability of the viewlet."""
@@ -269,19 +272,14 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
 
     def render(self):
         """Render the viewlet."""
-        if self.session:
+        if self.sessions:
             return self.index()
         return ""
 
-    @property
-    def session(self):
-        annot = get_session_annotation()
-        for f_uid in annot["c_uids"].get(self.context.UID(), []):
-            if f_uid in annot["uids"]:
-                session = annot["sessions"].get(annot["uids"][f_uid], {})
-                session["id"] = annot["uids"][f_uid]
-                return session
-        return {}
+    @CachedProperty
+    def sessions(self):
+        """Return all sessions that contain files from this context."""
+        return get_sessions_for(self.context.UID())
 
 
 @implementer(IPublishTraverse)
@@ -429,12 +427,17 @@ class SigningUsersCsv(BrowserView):
             portal_type="held_position",
             userid=user_data["userid"],
         )
-        if not hps:
-            return False
         for hp in hps:
             hp_obj = hp.getObject()
             if base_hasattr(hp_obj, "usages") and "signer" in hp_obj.usages:
                 return True
+
+        user_obj = api.user.get(userid=user_data["userid"])
+        if user_obj:
+            for group in api.group.get_groups(user=user_obj):
+                if group.getId().endswith("watchers"):
+                    return True
+
         return False
 
     def get_users_data(self):
@@ -524,7 +527,7 @@ class SigningUsersCsv(BrowserView):
         # Parse JSON array
         try:
             return json.loads(selected)
-        except (json.JSONDecodeError, ValueError, TypeError):
+        except (ValueError, TypeError):
             return []
 
     def _download_csv(self):

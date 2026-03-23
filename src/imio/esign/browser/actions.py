@@ -23,7 +23,7 @@ class AddToSessionView(BrowserView):
             msgid = failed_msgid
             msg_type = "warning"
         api.portal.show_message(_(msgid, mapping=mapping), request=self.request, type=msg_type)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         files_uids = ISignable(self.context).get_files_uids()
@@ -58,7 +58,7 @@ class AddToSessionView(BrowserView):
             api.portal.show_message(
                 _(
                     "Problem getting signers: \"${error}\")!",
-                    mapping={"error": msg},
+                    mapping={"error": str(msg)},
                 ),
                 request=self.request,
                 type="warning",
@@ -94,7 +94,7 @@ class RemoveFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         uid = self.get_uid_to_remove()
@@ -109,6 +109,11 @@ class RemoveFromSessionView(BrowserView):
         """ """
         return self.context.UID()
 
+    def available(self):
+        """Defines if the action is available or not."""
+        annot = get_session_annotation()
+        return self.context.UID() in annot.get("c_uids", {})
+
 
 class RemoveItemFromSessionView(BrowserView):
     """View to remove an item from an esign session."""
@@ -119,7 +124,7 @@ class RemoveItemFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         uid = self.context.UID()

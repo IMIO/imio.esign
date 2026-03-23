@@ -29,7 +29,7 @@ Changelog
   [chris-adam]
 - Added external watchers for esign sessions.
   [chris-adam, sgeulette]
-- Added fingerpointing.
+- Added separated fingerpointing log.
   [chris-adam]
 
 1.0a2 (2026-02-06)

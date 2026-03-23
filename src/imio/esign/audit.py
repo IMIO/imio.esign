@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from imio.fpaudit import utils as fpaudit_utils
+from imio.fpaudit.utils import fpalog
 
 
 LOG_ID = u"esign"
@@ -7,4 +7,4 @@ LOG_ID = u"esign"
 
 def audit(action, extras=""):
     """Log an eSignature action to the dedicated audit log."""
-    fpaudit_utils.fplog(LOG_ID, action, extras)
+    fpalog(LOG_ID, action, extras)

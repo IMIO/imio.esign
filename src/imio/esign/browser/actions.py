@@ -41,8 +41,8 @@ class AddToSessionView(BrowserView):
             watchers=self.get_watchers(),
             discriminators=self.get_discriminators(),
         )
-        audit("add_to_session", "session={} context={} files={} signers={}".format(
-            session_id, self.context.UID(), len(files_uids), len(signers)))
+        # audit("add_to_session", "session={} context={} files={} signers={}".format(
+        #     session_id, self.context.UID(), ",".join(files_uids), len(signers)))
         self._finished()
 
     def get_signers(self):
@@ -53,7 +53,7 @@ class AddToSessionView(BrowserView):
         """
         try:
             signers = ISignable(self.context).get_signers()
-        except ValueError, msg:
+        except ValueError as msg:
             signers = []
             api.portal.show_message(
                 _(

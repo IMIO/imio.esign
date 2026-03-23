@@ -79,12 +79,12 @@ class ExternalSessionFeedbackPost(Service):
             if session_update:
                 session.update(session_update)
                 session["last_update"] = datetime.now()
+            audit("session_feedback", "session={} code={} db_state={}".format(session_id, code, db_state))
 
         except Exception as e:
             self.request.response.setStatus(500)
             logger.error(str(e))
             return {"message": str(e)}
-        audit("session_feedback", "session={} code={} db_state={}".format(session_id, code, db_state))
         return {"message": "Information correctly handled"}
     """ microservice session state
     to_create_session = "to_create_session"

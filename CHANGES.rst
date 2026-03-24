@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a4 (unreleased)
+1.0a4 (2026-03-24)
 ------------------
 
 - Redirect to `HTTP_REFERER` instead context's url after

@@ -8,6 +8,8 @@ Changelog
 - Redirect to `HTTP_REFERER` instead context's url after
   `add/remove/remove item` actions.
   [gbastien]
+- Added `odd/even` class on `<li>` of the files `collapsible` on sessions view.
+  [gbastien]
 
 1.0a3 (2026-03-20)
 ------------------

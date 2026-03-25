@@ -60,6 +60,8 @@ Changelog
   [gbastien]
 - Added separated fingerpointing log.
   [chris-adam]
+- Added SessionAnnotationInfoView.
+  [chris-adam,sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

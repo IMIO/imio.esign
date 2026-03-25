@@ -6,6 +6,7 @@ from imio.esign import _
 from imio.esign.config import get_registry_seal_code
 from imio.esign.config import get_registry_seal_email
 from imio.esign.utils import get_state_description
+from imio.helpers.security import check_zope_admin
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -55,8 +56,10 @@ class StateColumn(Column):
         state = escape(translate(
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign",
         ))
-        title = escape(translate(get_state_description(item.get("state", "")), context=self.request, domain="imio.esign"))
-        return u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' /></span>".format(state=state, title=title)
+        title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
+                                 domain="imio.esign"))
+        return (u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' />"
+                u"</span>".format(state=state, title=title))
 
 
 class TitleColumn(Column):
@@ -84,7 +87,8 @@ class SealColumn(Column):
             return u""
         label = escape(translate(_("Sealed"), context=self.request))
         # icon: https://www.flaticon.com/free-icon/verification_3556787
-        return u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
+        return (u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' "
+                u"aria-label='{label}'></img>".format(label=label))
 
 
 class SignersColumn(Column):
@@ -188,6 +192,15 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
+            )
+        if check_zope_admin():
+            admin_buttons += u"""
+            <a href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+                <span class="fa fa-info-circle" title="Annotation info"></span>
+            </a>
+            """.format(
+                sessions_url=sessions_url,
+                session_id=session_id,
             )
         dashboard_button = u"""
         <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer"

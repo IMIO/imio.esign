@@ -509,6 +509,15 @@ def get_suid_from_uuid(uid):
     return shortuid_encode_id(uid, separator="-", block_size=5)
 
 
+def persistent_to_native(value):
+    """Convert persistent object to native object recursively."""
+    if isinstance(value, (PersistentMapping, dict)):
+        return {k: persistent_to_native(v) for k, v in value.items()}
+    elif isinstance(value, (PersistentList, list, tuple)):
+        return [persistent_to_native(v) for v in value]
+    return value
+
+
 def get_state_description(state):
     """
     Get a human readable description for a given session state.

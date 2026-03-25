@@ -113,6 +113,13 @@
     />
 
     <browser:page
+        for="*"
+        name="session-annotation-info"
+        class=".actions.SessionAnnotationInfoView"
+        permission="cmf.ManagePortal"
+        />
+
+    <browser:page
             name="signing-users-csv"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SigningUsersCsv"

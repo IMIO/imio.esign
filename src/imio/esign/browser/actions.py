@@ -15,6 +15,7 @@ from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from six import string_types
 
 import pprint
 import re
@@ -189,7 +190,7 @@ class SessionAnnotationInfoView(BrowserView):
                 lines.append(u"{}{},".format(inner, self._render_value(item, inner)))
             lines.append(u"{}]".format(indent))
             return u"\n".join(lines)
-        elif isinstance(value, basestring) and re.match(r"^[0-9a-f]{32}$", value):
+        elif isinstance(value, string_types) and re.match(r"^[0-9a-f]{32}$", value):
             # Looks like a UUID
             return self._uid_to_link(value)
         else:
@@ -214,7 +215,7 @@ class SessionAnnotationInfoView(BrowserView):
         for session_id in annot['sessions']:
             if request_session_id is not None and request_session_id != session_id:
                 continue
-            session = annot.get("sessions", {}).get(session_id)
+            session = annot['sessions'][session_id]
             # If any file in this session is in this context
             if c_uid and not any(f['context_uid'] == c_uid for f in session['files']):
                 continue

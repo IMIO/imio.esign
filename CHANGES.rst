@@ -7,6 +7,8 @@ Changelog
 
 - Disable sorting on checkbox column of `@@signing-users-csv`.
   [gbastien]
+- Added SessionAnnotationInfoView.
+  [chris-adam,sgeulette]
 
 1.0a4 (2026-03-24)
 ------------------
@@ -60,8 +62,6 @@ Changelog
   [gbastien]
 - Added separated fingerpointing log.
   [chris-adam]
-- Added SessionAnnotationInfoView.
-  [chris-adam,sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

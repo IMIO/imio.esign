@@ -18,6 +18,8 @@ Changelog
   [gbastien]
 - Added `odd/even` class on `<li>` of the files `collapsible` on sessions view.
   [gbastien]
+- Added separated fingerpointing log.
+  [chris-adam]
 
 1.0a3 (2026-03-20)
 ------------------
@@ -60,8 +62,6 @@ Changelog
   [gbastien]
 - Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
-- Added separated fingerpointing log.
-  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

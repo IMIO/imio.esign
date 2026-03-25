@@ -195,7 +195,7 @@ class ActionsColumn(Column):
             )
         if check_zope_admin():
             admin_buttons += u"""
-            <a href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
                 <span class="fa fa-info-circle" title="Annotation info"></span>
             </a>
             """.format(

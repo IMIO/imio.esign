@@ -9,7 +9,8 @@
                 tal:attributes="class classOddEven">
                 <a tal:condition="python: context.unrestrictedTraverse('@@session-annotation-info').available()"
                    tal:attributes="href python:file[0].absolute_url() + '/@@session-annotation-info?context_uid=' + file[0].UID()"
-                   target="_blank">
+                   target="_blank"
+                   class="link-overlay-info">
                     <span class="fa fa-info-circle" title="Annotation info"></span>
                 </a>
                 <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>

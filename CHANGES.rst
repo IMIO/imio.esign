@@ -9,6 +9,8 @@ Changelog
   [gbastien]
 - Added SessionAnnotationInfoView.
   [chris-adam,sgeulette]
+- Open the `@@session-annotation-info` in an overlay.
+  [gbastien]
 
 1.0a4 (2026-03-24)
 ------------------

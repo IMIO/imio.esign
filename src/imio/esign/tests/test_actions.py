@@ -139,6 +139,7 @@ class TestRemoveItemFromSessionView(BaseRemoveFromSession):
 
     def test_finished_shows_message_and_redirects(self):
         """Test _finished sets a status message and redirects."""
+        self.request.environ['HTTP_REFERER'] = self.annexes[0].absolute_url()
         view = getMultiAdapter((self.annexes[0], self.request), name="remove-item-from-esign-session")
         view._finished()
         messages = IStatusMessage(self.request).show()

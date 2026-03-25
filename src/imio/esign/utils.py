@@ -7,6 +7,7 @@ from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
+from imio.esign.audit import audit
 from imio.esign.config import get_registry_external_watchers
 from imio.esign.config import get_registry_file_url
 from imio.esign.config import get_registry_max_session_size
@@ -80,6 +81,10 @@ def add_files_to_session(
             watchers=watchers,
             create_session_custom_data=create_session_custom_data,
         )
+        audit(
+            "create_session",
+            "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers]))
+        )
     session["size"] = session.get("size", 0) + size
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
@@ -110,6 +115,10 @@ def add_files_to_session(
         existing_files.append(new_filename)
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
+        audit(
+            "add_files_to_session",
+            "session={} context={} file={}".format(session_id, context_uid, uid)
+        )
     if session["client_id"] is None:
         # FIXME what if scan_id is None ?
         session["client_id"] = session["files"][0]["scan_id"][0:7]
@@ -276,7 +285,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
 def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None, size=0):
     """Discriminate sessions based on seal value and signers in the same order.
 
-    :param signers: a list of signers, each is a tuple with userid and email
+    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators

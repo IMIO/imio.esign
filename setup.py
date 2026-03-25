@@ -16,7 +16,7 @@ long_description = "\n\n".join(
 
 setup(
     name="imio.esign",
-    version="1.0a3.dev0",
+    version="1.0a5.dev0",
     description="Integration of IMIO esign webservice",
     long_description=long_description,
     # Get more from https://pypi.org/classifiers/
@@ -55,6 +55,7 @@ setup(
         "collective.compoundcriterion",
         "collective.eeafaceted.z3ctable",
         "eea.facetednavigation",
+        "imio.fpaudit",
         "imio.helpers>1.3.10",
         "imio.prettylink",
         "imio.pyutils",

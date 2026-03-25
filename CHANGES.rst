@@ -2,7 +2,22 @@ Changelog
 =========
 
 
-1.0a3 (unreleased)
+1.0a5 (unreleased)
+------------------
+
+- Nothing changed yet.
+
+
+1.0a4 (2026-03-24)
+------------------
+
+- Redirect to `HTTP_REFERER` instead context's url after
+  `add/remove/remove item` actions.
+  [gbastien]
+- Added `odd/even` class on `<li>` of the files `collapsible` on sessions view.
+  [gbastien]
+
+1.0a3 (2026-03-20)
 ------------------
 
 - Replaced external_session_link p by span.
@@ -43,6 +58,8 @@ Changelog
   [gbastien]
 - Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
+- Added separated fingerpointing log.
+  [chris-adam]
 - Added SessionAnnotationInfoView.
   [chris-adam,sgeulette]
 

@@ -3,6 +3,7 @@ from AccessControl import Unauthorized
 from html import escape
 from imio.esign import _
 from imio.esign.adapters import ISignable
+from imio.esign.audit import audit
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import persistent_to_native
@@ -32,7 +33,7 @@ class AddToSessionView(BrowserView):
             msgid = failed_msgid
             msg_type = "warning"
         api.portal.show_message(_(msgid, mapping=mapping), request=self.request, type=msg_type)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         files_uids = ISignable(self.context).get_files_uids()
@@ -42,7 +43,7 @@ class AddToSessionView(BrowserView):
         if not signers:
             return self._finished(failed_msgid="Could not get signers to add to the session!")
         # watchers = self.get_watchers()
-        add_files_to_session(
+        session_id, _session = add_files_to_session(
             signers=signers,
             # watchers=watchers,
             files_uids=files_uids,
@@ -50,6 +51,8 @@ class AddToSessionView(BrowserView):
             watchers=self.get_watchers(),
             discriminators=self.get_discriminators(),
         )
+        # audit("add_to_session", "session={} context={} files={} signers={}".format(
+        #     session_id, self.context.UID(), ",".join(files_uids), len(signers)))
         self._finished()
 
     def get_signers(self):
@@ -101,10 +104,15 @@ class RemoveFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
-        remove_context_from_session(context_uids=[self.get_uid_to_remove()])
+        uid = self.get_uid_to_remove()
+        annot = get_session_annotation()
+        file_uids = annot.get("c_uids", {}).get(uid, [])
+        session_id = annot.get("uids", {}).get(file_uids[0]) if file_uids else None
+        remove_context_from_session(context_uids=[uid])
+        audit("remove_context_from_session", "session={} context={}".format(session_id, uid))
         self._finished()
 
     def get_uid_to_remove(self):
@@ -126,10 +134,13 @@ class RemoveItemFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
-        remove_files_from_session(files_uids=[self.context.UID()])
+        uid = self.context.UID()
+        session_id = get_session_annotation().get("uids", {}).get(uid)
+        remove_files_from_session(files_uids=[uid])
+        audit("remove_item_from_session", "session={} file={}".format(session_id, uid))
         self._finished()
 
     def available(self):

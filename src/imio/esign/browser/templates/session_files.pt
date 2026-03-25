@@ -4,10 +4,10 @@
     </tal:none>
     <ol tal:condition="files">
         <li tal:repeat="file files">
-            <a tal:condition="python: context.portal_membership.checkPermission('Manage portal', context)"
+            <a tal:condition="python: context.unrestrictedTraverse('@@session-annotation-info').available()"
                tal:attributes="href python:file[0].absolute_url() + '/@@session-annotation-info?context_uid=' + file[0].UID()"
                target="_blank">
-                <img title="Annotation info" src="info.png">
+                <span class="fa fa-info-circle" title="Annotation info"></span>
             </a>
             <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>
         </li>

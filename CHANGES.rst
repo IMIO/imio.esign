@@ -44,7 +44,7 @@ Changelog
 - Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
 - Added SessionAnnotationInfoView.
-  [chris-adam]
+  [chris-adam,sgeulette]
 
 1.0a2 (2026-02-06)
 ------------------

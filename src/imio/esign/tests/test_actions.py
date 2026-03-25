@@ -37,11 +37,7 @@ class BaseRemoveFromSession(unittest.TestCase):
 
     layer = IMIO_ESIGN_INTEGRATION_TESTING
 
-    def setUp(self):
-        self.portal = self.layer["portal"]
-        self.request = self.portal.REQUEST
-        setRoles(self.portal, TEST_USER_ID, ["Manager"])
-        # add content category configuration
+    def _setup_categories(self):
         at_folder = api.content.create(
             container=self.portal,
             id="annexes_types",
@@ -67,6 +63,12 @@ class BaseRemoveFromSession(unittest.TestCase):
                 to_sign=True,
                 show_preview=False,
             )
+
+    def setUp(self):
+        self.portal = self.layer["portal"]
+        self.request = self.portal.REQUEST
+        setRoles(self.portal, TEST_USER_ID, ["Manager"])
+        self._setup_categories()
         # add users and annexes
         api.user.create(email="user1@sign.com", username="user1", password="password1")
         self.folder = api.content.create(
@@ -169,39 +171,14 @@ class TestRemoveFromSessionView(BaseRemoveFromSession):
         self.assertFalse(view.available())
 
 
-class TestSessionAnnotationInfoView(unittest.TestCase):
+class TestSessionAnnotationInfoView(BaseRemoveFromSession):
     """Test SessionAnnotationInfoView"""
-
-    layer = IMIO_ESIGN_INTEGRATION_TESTING
 
     def setUp(self):
         self.portal = self.layer["portal"]
+        self.request = self.portal.REQUEST
         setRoles(self.portal, TEST_USER_ID, ["Manager"])
-        at_folder = api.content.create(
-            container=self.portal,
-            id="annexes_types",
-            title="Annexes Types",
-            type="ContentCategoryConfiguration",
-            exclude_from_nav=True,
-        )
-        category_group = api.content.create(
-            type="ContentCategoryGroup",
-            title="Annexes",
-            container=at_folder,
-            id="annexes",
-        )
-        icon_path = os.path.join(os.path.dirname(collective.iconifiedcategory.__file__), "tests", "icône1.png")
-        with open(icon_path, "rb") as fl:
-            api.content.create(
-                type="ContentCategory",
-                title="To sign",
-                container=category_group,
-                icon=NamedBlobImage(fl.read(), filename=u"icône1.png"),
-                id="to_sign",
-                predefined_title="To be signed",
-                to_sign=True,
-                show_preview=False,
-            )
+        self._setup_categories()
         self.folder = api.content.create(
             container=self.portal, type="Folder", id="test_session_folder", title="Test Session Folder"
         )

@@ -87,8 +87,6 @@ class SessionsListingView(BrowserView):
 class SessionFilesView(BrowserView):
     """View to display documents of a session."""
 
-    index = ViewPageTemplateFile("templates/session_files.pt")
-
     def __init__(self, context, request):
         super(SessionFilesView, self).__init__(context, request)
         self.files = []

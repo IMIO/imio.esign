@@ -56,8 +56,10 @@ class StateColumn(Column):
         state = escape(translate(
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign",
         ))
-        title = escape(translate(get_state_description(item.get("state", "")), context=self.request, domain="imio.esign"))
-        return u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' /></span>".format(state=state, title=title)
+        title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
+                                 domain="imio.esign"))
+        return (u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' />"
+                u"</span>".format(state=state, title=title))
 
 
 class TitleColumn(Column):
@@ -85,7 +87,8 @@ class SealColumn(Column):
             return u""
         label = escape(translate(_("Sealed"), context=self.request))
         # icon: https://www.flaticon.com/free-icon/verification_3556787
-        return u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
+        return (u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' "
+                u"aria-label='{label}'></img>".format(label=label))
 
 
 class SignersColumn(Column):
@@ -193,7 +196,7 @@ class ActionsColumn(Column):
         if check_zope_admin():
             admin_buttons += u"""
             <a href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
-                <img title="Annotation info" src="info.png">
+                <span class="fa fa-info-circle" title="Annotation info"></span>
             </a>
             """.format(
                 sessions_url=sessions_url,

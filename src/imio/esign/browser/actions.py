@@ -213,3 +213,7 @@ class SessionAnnotationInfoView(BrowserView):
     def esign_session_html(self, session_data):
         """Renders esign session annot in HTML"""
         return self._render_value(session_data)
+
+    def available(self):
+        """Defines if the action is available or not."""
+        return check_zope_admin()

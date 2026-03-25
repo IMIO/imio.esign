@@ -6,6 +6,7 @@ from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
@@ -109,11 +110,9 @@ class RemoveFromSessionView(BrowserView):
 
     def index(self):
         uid = self.get_uid_to_remove()
-        annot = get_session_annotation()
-        file_uids = annot.get("c_uids", {}).get(uid, [])
-        session_id = annot.get("uids", {}).get(file_uids[0]) if file_uids else None
+        str_session_ids = ",".join([str(sid) for sid in get_sessions_for(uid).keys()])
         remove_context_from_session(context_uids=[uid])
-        audit("remove_context_from_session", "session={} context={}".format(session_id, uid))
+        audit("remove_context_from_session", "sessions={} context={}".format(str_session_ids, uid))
         self._finished()
 
     def get_uid_to_remove(self):

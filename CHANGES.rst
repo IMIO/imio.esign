@@ -5,8 +5,8 @@ Changelog
 1.0a5 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Disable sorting on checkbox column of `@@signing-users-csv`.
+  [gbastien]
 
 1.0a4 (2026-03-24)
 ------------------

@@ -208,7 +208,7 @@
                     <table class="listing" id="users-table" style="width: 100%;">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">
+                                <th style="width: 20px;" class="nosort">
                                     <input type="checkbox" id="select-all-checkbox" />
                                 </th>
                                 <th i18n:translate="">User ID</th>

@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0a5 (unreleased)
+1.0b1 (2026-03-26)
 ------------------
 
 - Disable sorting on checkbox column of `@@signing-users-csv`.
@@ -11,6 +11,8 @@ Changelog
   [chris-adam,sgeulette]
 - Open the `@@session-annotation-info` in an overlay.
   [gbastien]
+- Fixed audit message when firing action remove context
+  [chris-adam]
 
 1.0a4 (2026-03-24)
 ------------------

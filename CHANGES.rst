@@ -5,8 +5,9 @@ Changelog
 1.0b3 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- In sessions annotation, use a `PersistentMapping` instead a `dict` to store
+  `signers` informations as the `status` will be updated.
+  [gbastien]
 
 1.0b2 (2026-03-26)
 ------------------

@@ -103,7 +103,7 @@ class SignersColumn(Column):
             "<li>%s, %s%s (%s)</li>" % (
                 s.get("fullname", ""),
                 s.get("position"),
-                " (%s)" % s.get("status") if s.get("status") else "",
+                " (%s)" % translate(s.get("status"), domain="imio.esign", context=self.request) if s.get("status") else "",
                 s.get("email"), )
             for s in signers
         ]

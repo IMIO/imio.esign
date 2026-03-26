@@ -267,7 +267,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
         "sign_url": None,
         "signers": PersistentList(
             [
-                {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
+                PersistentMapping({"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""})
                 for userid, email, fullname, position in signers
             ]
         ),

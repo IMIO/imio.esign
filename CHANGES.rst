@@ -5,8 +5,8 @@ Changelog
 1.0b2 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Redo release.
+  [gbastien]
 
 1.0b1 (2026-03-26)
 ------------------

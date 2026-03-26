@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b3 (unreleased)
+1.0b3 (2026-03-26)
 ------------------
 
 - In sessions annotation, use a `PersistentMapping` instead a `dict` to store

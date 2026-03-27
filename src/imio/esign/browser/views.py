@@ -8,9 +8,9 @@ from imio.esign import manage_session_perm
 from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
-from imio.esign.config import get_registry_enabled
-from imio.esign.config import get_registry_parapheo_url
-from imio.esign.config import get_registry_signing_users_email_content
+from imio.esign.config import get_esign_registry_enabled
+from imio.esign.config import get_esign_registry_parapheo_url
+from imio.esign.config import get_esign_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
@@ -63,7 +63,7 @@ class SessionsListingView(BrowserView):
         return super(SessionsListingView, self).__call__()
 
     def available(self):
-        return get_registry_enabled()
+        return get_esign_registry_enabled()
 
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())
@@ -575,7 +575,7 @@ class SigningUsersCsv(BrowserView):
             api.portal.show_message(_("No users selected for email sending."), request=self.request, type="warning")
             return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        email_content = get_registry_signing_users_email_content()
+        email_content = get_esign_registry_signing_users_email_content()
         if not email_content:
             api.portal.show_message(
                 _("Email content is not configured in the settings."), request=self.request, type="error"
@@ -669,7 +669,7 @@ class SigningUsersCsv(BrowserView):
                 "view": self,
                 "context": self.context,
                 "user_data": user_data,
-                "parapheo_url": get_registry_parapheo_url(),
+                "parapheo_url": get_esign_registry_parapheo_url(),
                 "modules": SecureModuleImporter,
             }
         )

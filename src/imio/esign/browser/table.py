@@ -3,8 +3,8 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
-from imio.esign.config import get_registry_seal_code
-from imio.esign.config import get_registry_seal_email
+from imio.esign.config import get_esign_registry_seal_code
+from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.utils import get_state_description
 from imio.helpers.security import check_zope_admin
 from plone import api
@@ -239,7 +239,7 @@ class SessionsTable(Table):
             LastUpdateColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),
         ]
-        if get_registry_seal_code() and get_registry_seal_email():
+        if get_esign_registry_seal_code() and get_esign_registry_seal_email():
             seal_col = SealColumn(ctx, req, tbl)
             columns.insert(4, seal_col)
         return columns

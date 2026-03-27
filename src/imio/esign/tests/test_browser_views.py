@@ -10,7 +10,7 @@ from imio.esign.browser.views import ExternalSessionCreateView
 from imio.esign.browser.views import ItemSessionInfoViewlet
 from imio.esign.browser.views import SessionDeleteView
 from imio.esign.browser.views import SigningUsersCsv
-from imio.esign.config import set_registry_signing_users_email_content
+from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.testing import IMIO_ESIGN_FUNCTIONAL_TESTING
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
@@ -612,7 +612,7 @@ class TestSigningUsersCsv(unittest.TestCase):
 
     def test_send_emails_no_email_content(self):
         """Shows error and redirects when signing users email content is not configured."""
-        set_registry_signing_users_email_content(u"")
+        set_esign_registry_signing_users_email_content(u"")
         self.request.form["selected_users"] = json.dumps([self.user.getId()])
         view = SigningUsersCsv(self.portal, self.request)
         view._send_emails()
@@ -634,7 +634,7 @@ class TestSigningUsersCsv(unittest.TestCase):
     def test_send_emails_success(self):
         """Sends emails to all selected users and shows a success message."""
         self.portal.manage_changeProperties({"email_from_address": "from@test.com"})
-        set_registry_signing_users_email_content(u"<p>Hello</p>")
+        set_esign_registry_signing_users_email_content(u"<p>Hello</p>")
         self.request.form["selected_users"] = json.dumps([self.user.getId()])
         view = SigningUsersCsv(self.portal, self.request)
         with patch("imio.esign.browser.views.send_email", return_value=(True, None)):
@@ -647,7 +647,7 @@ class TestSigningUsersCsv(unittest.TestCase):
     def test_send_emails_user_with_no_email(self):
         """Shows per-user warning when a selected user has no email address."""
         self.portal.manage_changeProperties({"email_from_address": "from@test.com"})
-        set_registry_signing_users_email_content(u"<p>Hello</p>")
+        set_esign_registry_signing_users_email_content(u"<p>Hello</p>")
         no_email_user = api.user.create(
             email="placeholder@test.com", username="no_email_user", password="password1"  # noqa: S106
         )

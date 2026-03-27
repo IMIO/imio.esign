@@ -4,9 +4,9 @@ from collections import OrderedDict
 from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
-from imio.esign.config import get_registry_max_session_size
-from imio.esign.config import set_registry_external_watchers
-from imio.esign.config import set_registry_max_session_size
+from imio.esign.config import get_esign_registry_max_session_size
+from imio.esign.config import set_esign_registry_external_watchers
+from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
@@ -411,9 +411,9 @@ class TestUtils(unittest.TestCase):
 
         # set session size just under the 1 MB limit so adding another file exceeds it
         session["size"] = 1 * 1024**2 - 1  # 1 MB - 1 byte
-        previous_max = get_registry_max_session_size()
-        self.addCleanup(set_registry_max_session_size, previous_max)
-        set_registry_max_session_size(1)
+        previous_max = get_esign_registry_max_session_size()
+        self.addCleanup(set_esign_registry_max_session_size, previous_max)
+        set_esign_registry_max_session_size(1)
 
         # adding a file (~7KB) would exceed 1 MB => new session created
         sid2, session2 = add_files_to_session(signers, (self.uids[1],))
@@ -770,7 +770,7 @@ class TestUtils(unittest.TestCase):
         sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
         api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        set_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
+        set_esign_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
         mock_response = Mock()

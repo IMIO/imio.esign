@@ -58,8 +58,8 @@ class StateColumn(Column):
         ))
         title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
                                  domain="imio.esign"))
-        return (u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' />"
-                u"</span>".format(state=state, title=title))
+        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} <span class='far fa-question-circle' />"
+                u"</span>".format(state=state, title=title, state_title_value=item.get("state")))
 
 
 class TitleColumn(Column):
@@ -79,7 +79,7 @@ class TitleColumn(Column):
 class SealColumn(Column):
     header = _("Sealed")
     weight = 40
-    cssClasses = {"th": "th_header_sessions_seal",
+    cssClasses = {"th": "th_header_sessions_seal nosort",
                   "td": "seal-column"}
 
     def renderCell(self, item):
@@ -113,7 +113,7 @@ class SignersColumn(Column):
 class FilesColumn(Column):
     header = _("Files")
     weight = 60
-    cssClasses = {"th": "th_header_sessions_documents",
+    cssClasses = {"th": "th_header_sessions_documents nosort",
                   "td": "documents-column"}
 
     def renderCell(self, item):
@@ -151,7 +151,9 @@ class LastUpdateColumn(Column):
 
     def renderCell(self, item):
         last_update = item.get("last_update")
-        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
+        # make sortable
+        value = "<span style='display:none'>{0}</span>".format(last_update)
+        return value + self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
             last_update, long_format=True)
 
 
@@ -160,7 +162,7 @@ class ActionsColumn(Column):
 
     header = _("Actions")
     weight = 80
-    cssClasses = {"th": "th_header_sessions_actions",
+    cssClasses = {"th": "th_header_sessions_actions nosort",
                   "td": "actions-column"}
 
     def renderCell(self, item):
@@ -215,7 +217,7 @@ class ActionsColumn(Column):
 class SessionsTable(Table):
     cssClassEven = "even"
     cssClassOdd = "odd"
-    cssClasses = {"table": "listing nosort sessions-table width-full"}
+    cssClasses = {"table": "listing sessions-table width-full"}
     sortOn = None
     results = []
 

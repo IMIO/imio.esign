@@ -5,8 +5,10 @@ Changelog
 1.0b4 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Renamed imio.esign config functions.
+  [cadam]
+- Highlight `draft` session and make `sessions` view columns sortable.
+  [gbastien]
 
 1.0b3 (2026-03-26)
 ------------------

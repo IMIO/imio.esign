@@ -7,7 +7,9 @@ Changelog
 
 - Renamed imio.esign config functions.
   [cadam]
-- Highlight `draft` session and make `sessions` view columns sortable.
+- Highlight `draft` session in table view and viewlet, use `Id` as
+  column header instead `identifier` so it is more narrow and
+  make `sessions` view columns sortable.
   [gbastien]
 
 1.0b3 (2026-03-26)

@@ -16,7 +16,8 @@ from zope.i18n import translate
 
 
 class IdColumn(Column):
-    header = _("ID")
+    # not translated so it stays short
+    header = "Id"
     weight = 10
     cssClasses = {"th": "th_header_sessions_id",
                   "td": "id-column"}

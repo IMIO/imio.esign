@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b4 (unreleased)
+1.0b4 (2026-03-27)
 ------------------
 
 - Renamed imio.esign config functions.

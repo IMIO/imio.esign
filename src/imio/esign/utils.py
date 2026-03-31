@@ -65,7 +65,7 @@ def add_files_to_session(
     :param create_session_custom_data: optional custom dict of custom session data
     :return: session_id, session
     """
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=False)
     size = sum(get_filesize(uid) for uid in files_uids)
     if session_id is not None:
         if session_id not in annot["sessions"]:
@@ -139,7 +139,7 @@ def create_external_session(session_id, esign_root_url=None):
     :return: session information
     """
     session_url = get_esign_session_url(esign_root_url)
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=False)
     session = annot["sessions"].get(session_id)
     if not session:
         logger.error("Session with id %s not found.", session_id)
@@ -251,7 +251,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
     :return: session id and session information
     """
     if not annot:
-        annot = get_session_annotation()
+        annot = get_session_annotation(readonly=False)
     sessions = annot.setdefault("sessions", PersistentMapping())
     session_id = annot["numbering"]
     annot["numbering"] += 1
@@ -294,7 +294,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     :return: session id and session if found, or (None, None) if no session found
     """
     if not annot:
-        annot = get_session_annotation()
+        annot = get_session_annotation(readonly=False)
     sessions = annot.get("sessions", {})
     max_session_size = get_esign_registry_max_session_size() * 1024**2
 
@@ -331,7 +331,7 @@ def get_esign_session_url(esign_root_url):
         return "{}/{}".format(API_ROOT_URL, SESSION_URL)
 
 
-def get_session_annotation(portal=None):
+def get_session_annotation(portal=None, readonly=True):
     """Get the e-sign session annotation."""
     if not portal:
         portal = api.portal.get()
@@ -345,6 +345,8 @@ def get_session_annotation(portal=None):
                 "c_uids": PersistentMapping(),
             }
         )
+    if readonly:
+        return deepcopy(annotations["imio.esign"])
     return annotations["imio.esign"]
 
 
@@ -372,7 +374,7 @@ def get_session_info(session_id, portal=None, readonly=True):
     :param portal: portal if necessary to get the session annotation
     :param readonly: return a copy of stored data to avoid modifying it
     """
-    annot = get_session_annotation(portal=portal)
+    annot = get_session_annotation(portal=portal, readonly=readonly)
     session = {}
     if session_id in annot['sessions']:
         session = annot['sessions'][session_id]
@@ -386,7 +388,7 @@ def remove_context_from_session(context_uids):
 
     :param context_uids: context_uids list
     """
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=False)
     c_uids = annot["c_uids"]
     for context_uid in context_uids:
         if context_uid not in c_uids:
@@ -401,7 +403,7 @@ def remove_files_from_session(files_uids, remove_empty_session=True):
     :param files_uids: list of file UIDs to remove
     :param remove_empty_session: when the last file of a session is removed the session will be removed by default, except when False, the empty session is kept
     """
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=False)
     sessions = annot["sessions"]
     uids = annot["uids"]
     c_uids = annot["c_uids"]
@@ -447,7 +449,7 @@ def remove_session(session_id):
 
     :param session_id: ID of the session to remove
     """
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=False)
     sessions = annot["sessions"]
     uids = annot["uids"]
     c_uids = annot["c_uids"]
@@ -572,7 +574,7 @@ def get_state_description(state):
 
 def get_sessions_for(context_uid, readonly=True):
     """Returns a list of all sessions involving the provided context_uid"""
-    annot = get_session_annotation()
+    annot = get_session_annotation(readonly=readonly)
     sessions = OrderedDict()
     seen = set()
     for f_uid in annot["c_uids"].get(context_uid, []):

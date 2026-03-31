@@ -104,7 +104,7 @@ class TestRemoveItemFromSessionView(BaseRemoveFromSession):
 
     def test_index_removes_file_from_session(self):
         """Test index() removes the file from the esign session."""
-        annot = get_session_annotation()
+        annot = get_session_annotation(readonly=False)
         # Add files to a session
         uids = [a.UID() for a in self.annexes]
         add_files_to_session(self.signers, uids)
@@ -127,7 +127,7 @@ class TestRemoveItemFromSessionView(BaseRemoveFromSession):
 
     def test_index_removes_last_file_removes_session(self):
         """Test removing the last file from a session also removes the session."""
-        annot = get_session_annotation()
+        annot = get_session_annotation(readonly=False)
         uids = [self.annexes[0].UID()]
         add_files_to_session(self.signers, uids)
         self.assertEqual(len(annot["sessions"]), 1)
@@ -153,7 +153,7 @@ class TestRemoveFromSessionView(BaseRemoveFromSession):
 
     def test_available(self):
         """Test available method returns True."""
-        annot = get_session_annotation()
+        annot = get_session_annotation(readonly=False)
         self.assertFalse(annot["sessions"])
         # only available on "context_uid"
         annex = self.annexes[0]

@@ -16,6 +16,9 @@ Changelog
 - Avoid `UnicodeDecodeError` in `SignersColumn` if signers
   contain mixed encoding values.
   [gbastien]
+- Adapted `utils.get_session_annotation` to return a copy (`readonly=True`)
+  of the annotation by default so it is not modified by mistake.
+  [gbastien]
 
 1.0b4 (2026-03-27)
 ------------------

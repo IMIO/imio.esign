@@ -5,8 +5,9 @@ Changelog
 1.0b5 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Avoid `UnicodeDecodeError` in `SignersColumn` if signers
+  contain mixed encoding values.
+  [gbastien]
 
 1.0b4 (2026-03-27)
 ------------------

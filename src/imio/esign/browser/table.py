@@ -7,6 +7,7 @@ from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.utils import get_state_description
 from imio.helpers.security import check_zope_admin
+from imio.pyutils.utils import safe_encode
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -102,8 +103,8 @@ class SignersColumn(Column):
         signers = item.get("signers") or []
         parts = [
             "<li>%s, %s%s (%s)</li>" % (
-                s.get("fullname", ""),
-                s.get("position"),
+                safe_encode(s.get("fullname", "")),
+                safe_encode(s.get("position")),
                 " (%s)" % translate(s.get("status"), domain="imio.esign", context=self.request) if s.get("status") else "",
                 s.get("email"), )
             for s in signers

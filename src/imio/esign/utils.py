@@ -183,9 +183,9 @@ def create_external_session(session_id, esign_root_url=None):
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
-            "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, uid),
-                              "docUuid": get_suid_from_uuid(uid)}
-                             for unique_code, filename, z, uid in files],
+            "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, fuid),
+                              "docUuid": get_suid_from_uuid(fuid)}
+                             for unique_code, filename, z, fuid in files],
             "imioAppSessionId": session["sign_id"],
             "sessionName": session["title"],
         }
@@ -227,7 +227,7 @@ def create_external_session(session_id, esign_root_url=None):
         }
 
     # files_payload = {filename: file_content for z, filename, file_content, uid in files}
-    files_payload = [("files", (filename, file_content)) for z, filename, file_content, uid in files]
+    files_payload = [("files", (filename, file_content)) for z, filename, file_content, _uid in files]
 
     # Headers avec autorisation
     headers = {

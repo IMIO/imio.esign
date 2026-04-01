@@ -5,8 +5,9 @@ Changelog
 1.0b7 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Adapted `SessionsListingView.get_sessions` to not modify the annotation
+  causing a DB write at each access to `@@parapheo`.
+  [gbastien]
 
 1.0b6 (2026-04-01)
 ------------------

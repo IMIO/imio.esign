@@ -756,3 +756,19 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
         self.assertEqual(len(sessions), 2)
         session_ids = sessions.keys()
         self.assertEqual(session_ids, [0, 1])
+
+
+class TestSessionsListingView(_BaseSessionViewTest):
+    """Test SessionsListingView browser view."""
+
+    def test_get_sessions(self):
+        """Test obtain sessions and stored annotation not modified."""
+        self.assertFalse("id" in get_session_annotation()['sessions'][0])
+        view = self.portal.restrictedTraverse("@@parapheo")
+        self.assertTrue(view.available())
+        sessions = view.get_sessions()
+        self.assertTrue("id" in sessions[0])
+        self.assertFalse("id" in get_session_annotation()['sessions'][0])
+        # get_dashboard_link will raise NotImplementedError
+        with self.assertRaises(NotImplementedError):
+            view()

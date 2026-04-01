@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
+from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
@@ -72,7 +73,8 @@ class SessionsListingView(BrowserView):
 
     def get_sessions(self):
         sessions = []
-        for session_id, session in sorted(get_session_annotation()["sessions"].items(), key=lambda x: x[0],
+        annot = deepcopy(get_session_annotation())
+        for session_id, session in sorted(annot["sessions"].items(), key=lambda x: x[0],
                                           reverse=True):
             session["id"] = session_id
             sessions.append(session)

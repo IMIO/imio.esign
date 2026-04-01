@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b6 (unreleased)
+1.0b6 (2026-04-01)
 ------------------
 
 - Use existing `utils.get_session_info` instead

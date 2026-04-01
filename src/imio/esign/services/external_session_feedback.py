@@ -93,7 +93,7 @@ class ExternalSessionFeedbackPost(Service):
             return {"message": str(e)}
         return {"message": "Information correctly handled"}
 
-    def authorized(self):
+    def _authorized(self):
         """Check if the user is authorized to access this service."""
         auth_header = getattr(self.request, "_auth", None)
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -104,5 +104,5 @@ class ExternalSessionFeedbackPost(Service):
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
 
     def check_permission(self):
-        if not self.authorized():
+        if not self._authorized():
             raise Unauthorized("Unauthorized: Invalid or missing authentication token")

@@ -9,15 +9,15 @@ Changelog
   `FilesBelongingToAGivenSession.get_session` to get the session in
   `files-belonging-to-a-given-session` adapter.
   [gbastien]
+- Adapted `SessionsListingView.get_sessions` to not modify the annotation
+  causing a DB write at each access to `@@parapheo`.
+  [gbastien]
 
 1.0b5 (2026-04-01)
 ------------------
 
 - Avoid `UnicodeDecodeError` in `SignersColumn` if signers
   contain mixed encoding values.
-  [gbastien]
-- Adapted `SessionsListingView.get_sessions` to not modify the annotation
-  causing a DB write at each access to `@@parapheo`.
   [gbastien]
 
 1.0b4 (2026-03-27)

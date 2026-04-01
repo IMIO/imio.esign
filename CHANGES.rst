@@ -2,15 +2,21 @@ Changelog
 =========
 
 
-1.0b6 (unreleased)
+1.0b7 (unreleased)
+------------------
+
+- Adapted `SessionsListingView.get_sessions` to not modify the annotation
+  causing a DB write at each access to `@@parapheo`.
+  [gbastien]
+
+1.0b6 (2026-04-01)
 ------------------
 
 - Use existing `utils.get_session_info` instead
   `FilesBelongingToAGivenSession.get_session` to get the session in
   `files-belonging-to-a-given-session` adapter.
   [gbastien]
-- Adapted `SessionsListingView.get_sessions` to not modify the annotation
-  causing a DB write at each access to `@@parapheo`.
+- Fixed table rendering when a user signed causing `UnicodeDecodeError`.
   [gbastien]
 
 1.0b5 (2026-04-01)

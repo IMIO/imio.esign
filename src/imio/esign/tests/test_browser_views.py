@@ -9,14 +9,12 @@ from imio.esign.browser.views import DownloadFileView
 from imio.esign.browser.views import ExternalSessionCreateView
 from imio.esign.browser.views import ItemSessionInfoViewlet
 from imio.esign.browser.views import SessionDeleteView
-from imio.esign.browser.views import SessionsListingView
 from imio.esign.browser.views import SigningUsersCsv
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.testing import IMIO_ESIGN_FUNCTIONAL_TESTING
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
-from imio.esign.utils import get_session_info
 from imio.pyutils.utils import shortuid_encode_id
 from mock import Mock
 from mock import patch

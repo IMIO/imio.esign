@@ -105,7 +105,7 @@ class SignersColumn(Column):
             "<li>%s, %s%s (%s)</li>" % (
                 safe_encode(s.get("fullname", "")),
                 safe_encode(s.get("position")),
-                " (%s)" % translate(s.get("status"), domain="imio.esign", context=self.request) if s.get("status") else "",
+                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign", context=self.request)) if s.get("status") else "",
                 s.get("email"), )
             for s in signers
         ]

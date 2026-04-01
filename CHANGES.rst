@@ -9,6 +9,8 @@ Changelog
   `FilesBelongingToAGivenSession.get_session` to get the session in
   `files-belonging-to-a-given-session` adapter.
   [gbastien]
+- Fixed table rendering when a user signed causing `UnicodeDecodeError`.
+  [gbastien]
 
 1.0b5 (2026-04-01)
 ------------------

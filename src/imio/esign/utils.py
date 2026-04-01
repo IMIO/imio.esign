@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
+
+from collections import OrderedDict
+from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
-from imio.esign.config import get_registry_external_watchers
-from imio.esign.config import get_registry_file_url
-from imio.esign.config import get_registry_max_session_size
-from imio.esign.config import get_registry_seal_code
-from imio.esign.config import get_registry_seal_email
-from imio.esign.config import get_registry_sign_code
-from imio.esign.config import get_registry_vat_number
+from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_external_watchers
+from imio.esign.config import get_esign_registry_file_url
+from imio.esign.config import get_esign_registry_max_session_size
+from imio.esign.config import get_esign_registry_seal_code
+from imio.esign.config import get_esign_registry_seal_email
+from imio.esign.config import get_esign_registry_sign_code
+from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
@@ -77,27 +81,44 @@ def add_files_to_session(
             watchers=watchers,
             create_session_custom_data=create_session_custom_data,
         )
+        audit(
+            "create_session",
+            "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers]))
+        )
     session["size"] = session.get("size", 0) + size
     existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
+        # update data if adding same file to same session
+        if annot['uids'].get(uid, -1) == session_id:
+            logger.info('File with UID %s is already in session_id %s and data were updated!', uid, session_id)
+            # remove old filename to avoid filename being renamed
+            old_filename = path.splitext([fn for fn in session["files"]
+                                          if fn['uid'] == uid][0]['filename'])[0]
+            existing_files.remove(old_filename)
+            remove_files_from_session([uid], remove_empty_session=False)
+
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
         session["files"].append(
-            {
+            PersistentMapping({
                 "scan_id": annex.scan_id,
                 "filename": new_filename + ext,
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
                 "status": "",
-            }
+            })
         )
         existing_files.append(new_filename)
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
+        audit(
+            "add_files_to_session",
+            "session={} context={} file={}".format(session_id, context_uid, uid)
+        )
     if session["client_id"] is None:
         # FIXME what if scan_id is None ?
         session["client_id"] = session["files"][0]["scan_id"][0:7]
@@ -107,7 +128,6 @@ def add_files_to_session(
         if u"{session_id}" in session["title"]:
             session["title"] = session["title"].replace(u"{session_id}", str(session_id))
     session["last_update"] = datetime.now()
-    annot._p_changed = True
     return session_id, session
 
 
@@ -149,11 +169,11 @@ def create_external_session(session_id, esign_root_url=None):
         }
     }
     # not mandatory now
-    vat_number = get_registry_vat_number(default="BE0000000097")
+    vat_number = get_esign_registry_vat_number(default="BE0000000097")
     data_payload["commonData"]["vatNumber"] = vat_number
 
     watchers = list(session.get("watchers", []))
-    external_watchers = get_registry_external_watchers()
+    external_watchers = get_esign_registry_external_watchers()
     watchers.extend([ew for ew in external_watchers if ew not in watchers])
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:
@@ -161,18 +181,18 @@ def create_external_session(session_id, esign_root_url=None):
             "users": list(signers),
             "acroform": session["acroform"],
         }
-        sign_code = get_registry_sign_code()
+        sign_code = get_esign_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code
         if watchers:
             data_payload["signData"]["watchers"] = watchers
 
     if session["seal"]:
-        seal_email = get_registry_seal_email()
+        seal_email = get_esign_registry_seal_email()
         if not seal_email:
             logger.error("No seal email configured in registry.")
             return "_no_seal_email_"
-        seal_code = get_registry_seal_code()  # PADES_SEAL
+        seal_code = get_esign_registry_seal_code()  # PADES_SEAL
         if not seal_code:
             logger.error("No seal code configured in registry.")
             return "_no_seal_code_"
@@ -247,7 +267,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
         "sign_url": None,
         "signers": PersistentList(
             [
-                {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
+                PersistentMapping({"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""})
                 for userid, email, fullname, position in signers
             ]
         ),
@@ -265,7 +285,7 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
 def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None, size=0):
     """Discriminate sessions based on seal value and signers in the same order.
 
-    :param signers: a list of signers, each is a tuple with userid and email
+    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators
@@ -276,7 +296,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
-    max_session_size = get_registry_max_session_size() * 1024**2
+    max_session_size = get_esign_registry_max_session_size() * 1024**2
 
     for session_id, session in sessions.items():
         if session["state"] != "draft":
@@ -328,15 +348,37 @@ def get_session_annotation(portal=None):
     return annotations["imio.esign"]
 
 
-def get_session_info(session_id, portal=None):
+def get_file_info(session_id, file_uid, portal=None, readonly=True):
+    """Return informations about a file (uid, title, filename, ...) in a session.
+
+    :param session_id: the session id to return
+    :param file_uid: the file UID in the session
+    :param portal: portal if necessary to get the session annotation
+    :param readonly: return a copy of stored data to avoid modifying it
+    """
+    session = get_session_info(session_id, portal=portal, readonly=readonly)
+    if session:
+        for file_info in session['files']:
+            if file_info['uid'] == file_uid:
+                if readonly:
+                    file_info = deepcopy(file_info)
+                return file_info
+
+
+def get_session_info(session_id, portal=None, readonly=True):
     """Return a session info for a given numbering.
 
     :param session_id: the session id to return
     :param portal: portal if necessary to get the session annotation
+    :param readonly: return a copy of stored data to avoid modifying it
     """
     annot = get_session_annotation(portal=portal)
+    session = {}
     if session_id in annot['sessions']:
-        return annot['sessions'][session_id]
+        session = annot['sessions'][session_id]
+        if readonly:
+            session = deepcopy(session)
+    return session
 
 
 def remove_context_from_session(context_uids):
@@ -353,10 +395,11 @@ def remove_context_from_session(context_uids):
         remove_files_from_session(list(c_uids[context_uid]))
 
 
-def remove_files_from_session(files_uids):
+def remove_files_from_session(files_uids, remove_empty_session=True):
     """Remove files from their corresponding sessions.
 
     :param files_uids: list of file UIDs to remove
+    :param remove_empty_session: when the last file of a session is removed the session will be removed by default, except when False, the empty session is kept
     """
     annot = get_session_annotation()
     sessions = annot["sessions"]
@@ -386,7 +429,7 @@ def remove_files_from_session(files_uids):
             continue
 
         del session["files"][i]
-        if not session["files"]:
+        if not session["files"] and remove_empty_session:
             del sessions[session_id]
         else:
             session["last_update"] = datetime.now()
@@ -435,7 +478,7 @@ def get_file_download_url(uid, root_url=None, short_uid=None):
     :return: file download URL, short_uid
     """
     if not root_url:
-        root_url = get_registry_file_url()
+        root_url = get_esign_registry_file_url()
 
     if not root_url:
         raise Exception("No root URL provided for file download url.")
@@ -464,6 +507,15 @@ def get_suid_from_uuid(uid):
     :return: short UID
     """
     return shortuid_encode_id(uid, separator="-", block_size=5)
+
+
+def persistent_to_native(value):
+    """Convert persistent object to native object recursively."""
+    if isinstance(value, (PersistentMapping, dict)):
+        return {k: persistent_to_native(v) for k, v in value.items()}
+    elif isinstance(value, (PersistentList, list, tuple)):
+        return [persistent_to_native(v) for v in value]
+    return value
 
 
 def get_state_description(state):
@@ -516,3 +568,19 @@ def get_state_description(state):
         'returned': u'The session is finished and signed documents are on the way back to the application.',
         'finalized': u'The session is finished and signed documents have been sent back to the application.',
     }.get(state, "")
+
+
+def get_sessions_for(context_uid, readonly=True):
+    """Returns a list of all sessions involving the provided context_uid"""
+    annot = get_session_annotation()
+    sessions = OrderedDict()
+    seen = set()
+    for f_uid in annot["c_uids"].get(context_uid, []):
+        session_id = annot["uids"].get(f_uid)
+        if session_id is not None and session_id not in seen:
+            seen.add(session_id)
+            session = annot["sessions"][session_id]
+            if readonly:
+                session = deepcopy(session)
+            sessions[session_id] = session
+    return sessions

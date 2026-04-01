@@ -6,7 +6,7 @@
    <property name="title" i18n:translate="">Add to esign session</property>
    <property name="description" i18n:translate="">This will add this element or configured sub elements to the relevant esign session</property>
    <property name="url_expr">string:${object/absolute_url}/@@add-to-esign-session</property>
-   <property name="icon_expr"></property>
+   <property name="icon_expr">string:$portal_url/++resource++imio.esign/add_to_esign_session.png</property>
    <property name="available_expr"></property>
    <property name="permissions">
     <element value="Manage portal"/>
@@ -17,8 +17,8 @@
    <property name="title" i18n:translate="">Remove from esign session</property>
    <property name="description" i18n:translate="">This will remove this element or configured sub elements from the relevant esign session</property>
    <property name="url_expr">string:${object/absolute_url}/@@remove-from-esign-session</property>
-   <property name="icon_expr"></property>
-   <property name="available_expr"></property>
+   <property name="icon_expr">string:$portal_url/++resource++imio.esign/remove_from_esign_session.png</property>
+   <property name="available_expr">object/@@remove-from-esign-session/available</property>
    <property name="permissions">
     <element value="Manage portal"/>
    </property>
@@ -28,7 +28,7 @@
    <property name="title" i18n:translate="">Remove item from esign session</property>
    <property name="description" i18n:translate="">This will remove this element from the relevant esign session</property>
    <property name="url_expr">string:${object/absolute_url}/@@remove-item-from-esign-session</property>
-   <property name="icon_expr"></property>
+   <property name="icon_expr">string:$portal_url/++resource++imio.esign/remove_item_from_esign_session.png</property>
    <property name="available_expr">object/@@remove-item-from-esign-session/available</property>
    <property name="permissions">
     <element value="Manage portal"/>

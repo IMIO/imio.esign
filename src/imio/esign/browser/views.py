@@ -5,13 +5,16 @@ from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
-from imio.esign.config import get_registry_enabled
-from imio.esign.config import get_registry_parapheo_url
-from imio.esign.config import get_registry_signing_users_email_content
+from imio.esign.config import get_esign_registry_enabled
+from imio.esign.config import get_esign_registry_parapheo_url
+from imio.esign.config import get_esign_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_info
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_description
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
@@ -28,6 +31,7 @@ from Products.CMFPlone.utils import base_hasattr
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.cachedescriptors.property import CachedProperty
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
@@ -59,7 +63,7 @@ class SessionsListingView(BrowserView):
         return super(SessionsListingView, self).__call__()
 
     def available(self):
-        return get_registry_enabled()
+        return get_esign_registry_enabled()
 
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())
@@ -83,8 +87,6 @@ class SessionsListingView(BrowserView):
 
 class SessionFilesView(BrowserView):
     """View to display documents of a session."""
-
-    index = ViewPageTemplateFile("templates/session_files.pt")
 
     def __init__(self, context, request):
         super(SessionFilesView, self).__init__(context, request)
@@ -126,6 +128,7 @@ class SessionDeleteView(BrowserView):
         sessions = get_session_annotation()["sessions"]
         if session_id in sessions:
             remove_session(session_id)
+            audit("delete_session", "session={}".format(session_id))
             api.portal.show_message(_("Session deleted successfully!"), request=self.request, type="info")
         else:
             api.portal.show_message(_("Session not found!"), request=self.request, type="error")
@@ -150,32 +153,39 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
+            audit("send_to_external_service", "session={} error=session_not_found".format(session_id))
             api.portal.show_message(
                 _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_code_":
+            audit("send_to_external_service", "session={} error=no_seal_code".format(session_id))
             api.portal.show_message(
                 _("No seal code defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_email_":
+            audit("send_to_external_service", "session={} error=no_seal_email".format(session_id))
             api.portal.show_message(
                 _("No seal email defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_files_":
+            audit("send_to_external_service", "session={} error=no_files".format(session_id))
             api.portal.show_message(
                 _("No files found to be sent ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp.status_code == 200:
+            audit("send_to_external_service", "session={} status=200".format(session_id))
             api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
         else:
+            audit("send_to_external_service", "session={} status={} reason={}".format(
+                session_id, resp.status_code, resp.reason))
             api.portal.show_message(
                 _("Error while sending session: ${error}", mapping={"error": "{} {} {}".format(
                     resp.status_code, resp.reason, resp.text)}),
@@ -207,22 +217,22 @@ class FacetedSessionInfoViewlet(ViewletBase):
     def render(self):
         """Render the viewlet."""
         if self.request.form.get("c1[]", None) == self.sessions_collection_uid:
-            if self.session:
+            if self.sessions:
                 return self.index()
             return self.sessions_listing_view(self.context, self.request).render_table()
         return ""
 
-    @property
-    def session(self):
-        session = None
+    @CachedProperty
+    def sessions(self):
         session_id = self.request.form.get("esign_session_id[]", None)
-        if not session_id:
-            return
-        sessions = get_session_annotation()["sessions"]
-        session = sessions.get(int(session_id))
-        if not session:
-            return
-        session["id"] = session_id
+        try:
+            session_id = int(session_id)
+        except (TypeError, ValueError):
+            return {}
+        session = {}
+        session_info = get_session_info(session_id)
+        if session_info:
+            session = {session_id: session_info}
         return session
 
     def get_table_rows(self, column):
@@ -253,7 +263,7 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
-    """Show selected session info for an item."""
+    """Show session info for all sessions linked to a context item."""
 
     def available(self):
         """Global availability of the viewlet."""
@@ -261,19 +271,14 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
 
     def render(self):
         """Render the viewlet."""
-        if self.session:
+        if self.sessions:
             return self.index()
         return ""
 
-    @property
-    def session(self):
-        annot = get_session_annotation()
-        for f_uid in annot["c_uids"].get(self.context.UID(), []):
-            if f_uid in annot["uids"]:
-                session = annot["sessions"].get(annot["uids"][f_uid], {})
-                session["id"] = annot["uids"][f_uid]
-                return session
-        return {}
+    @CachedProperty
+    def sessions(self):
+        """Return all sessions that contain files from this context."""
+        return get_sessions_for(self.context.UID())
 
 
 @implementer(IPublishTraverse)
@@ -421,12 +426,17 @@ class SigningUsersCsv(BrowserView):
             portal_type="held_position",
             userid=user_data["userid"],
         )
-        if not hps:
-            return False
         for hp in hps:
             hp_obj = hp.getObject()
             if base_hasattr(hp_obj, "usages") and "signer" in hp_obj.usages:
                 return True
+
+        user_obj = api.user.get(userid=user_data["userid"])
+        if user_obj:
+            for group in api.group.get_groups(user=user_obj):
+                if group.getId().endswith("watchers"):
+                    return True
+
         return False
 
     def get_users_data(self):
@@ -516,7 +526,7 @@ class SigningUsersCsv(BrowserView):
         # Parse JSON array
         try:
             return json.loads(selected)
-        except (json.JSONDecodeError, ValueError, TypeError):
+        except (ValueError, TypeError):
             return []
 
     def _download_csv(self):
@@ -566,7 +576,7 @@ class SigningUsersCsv(BrowserView):
             api.portal.show_message(_("No users selected for email sending."), request=self.request, type="warning")
             return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        email_content = get_registry_signing_users_email_content()
+        email_content = get_esign_registry_signing_users_email_content()
         if not email_content:
             api.portal.show_message(
                 _("Email content is not configured in the settings."), request=self.request, type="error"
@@ -660,7 +670,7 @@ class SigningUsersCsv(BrowserView):
                 "view": self,
                 "context": self.context,
                 "user_data": user_data,
-                "parapheo_url": get_registry_parapheo_url(),
+                "parapheo_url": get_esign_registry_parapheo_url(),
                 "modules": SecureModuleImporter,
             }
         )

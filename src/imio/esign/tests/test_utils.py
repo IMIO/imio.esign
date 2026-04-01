@@ -1,19 +1,22 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
+from collections import OrderedDict
 from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
-from imio.esign.config import get_registry_max_session_size
-from imio.esign.config import set_registry_external_watchers
-from imio.esign.config import set_registry_max_session_size
+from imio.esign.config import get_esign_registry_max_session_size
+from imio.esign.config import set_esign_registry_external_watchers
+from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_file_download_url
+from imio.esign.utils import get_file_info
 from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
+from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_suid_from_uuid
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
@@ -28,6 +31,8 @@ from plone.app.testing import TEST_USER_ID
 from plone.namedfile.file import NamedBlobFile
 from plone.namedfile.file import NamedBlobImage
 from zope.annotation import IAnnotations
+from zope.event import notify
+from zope.lifecycleevent import ObjectModifiedEvent
 
 import collective.iconifiedcategory
 import json
@@ -406,9 +411,9 @@ class TestUtils(unittest.TestCase):
 
         # set session size just under the 1 MB limit so adding another file exceeds it
         session["size"] = 1 * 1024**2 - 1  # 1 MB - 1 byte
-        previous_max = get_registry_max_session_size()
-        self.addCleanup(set_registry_max_session_size, previous_max)
-        set_registry_max_session_size(1)
+        previous_max = get_esign_registry_max_session_size()
+        self.addCleanup(set_esign_registry_max_session_size, previous_max)
+        set_esign_registry_max_session_size(1)
 
         # adding a file (~7KB) would exceed 1 MB => new session created
         sid2, session2 = add_files_to_session(signers, (self.uids[1],))
@@ -449,6 +454,77 @@ class TestUtils(unittest.TestCase):
         self.assertIn("same_filename.pdf", filenames)
         self.assertIn("same_filename-1.pdf", filenames)
         self.assertIn("same_filename-2.pdf", filenames)
+
+    def test_add_files_already_exist_is_updated(self):
+        """When adding a file to the same session, it is updated."""
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+        ]
+
+        annex0_uid = self.uids[0]
+        annex0 = api.content.get(UID=annex0_uid)
+
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "Annex 0")
+        self.assertEqual(session["size"], 6968)
+        # edit annex and add again, still one annex in session and data are updated
+        annex0.file.filename = u"new_annex0.pdf"
+        annex0.setTitle('New Annex 0')
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        # same session_id
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "New Annex 0")
+        self.assertEqual(session["size"], 6968)
+        # add again exact same file
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 1)
+        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(session["files"][0]["title"], "New Annex 0")
+        self.assertEqual(session["size"], 6968)
+        # add second file 2 times
+        annex1_uid = self.uids[1]
+        annex1 = api.content.get(UID=annex1_uid)
+        sid, session = add_files_to_session(signers, (annex1_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["files"][1]["filename"], "annex1.pdf")
+        self.assertEqual(session["files"][1]["title"], "Annex 1")
+        self.assertEqual(session["size"], 13982)
+        # edit and add again
+        annex1.setTitle('New Annex 1')
+        # edit file, filename and content so size changed
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
+        notify(ObjectModifiedEvent(annex1))
+        # data were already updated
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
+        self.assertEqual(session["files"][1]["title"], "New Annex 1")
+        self.assertEqual(session["files"][1]["scan_id"], "012345600000001")
+        self.assertEqual(session["size"], 13936)
+        # change file but add a filename already used, change scan_id as well
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex0.pdf", contentType="application/pdf")
+        annex1.scan_id = "012345600000002"
+        notify(ObjectModifiedEvent(annex1))
+        self.assertEqual(session["files"][1]["filename"], "new_annex0-1.pdf")
+        self.assertEqual(session["files"][1]["scan_id"], "012345600000002")
+        # edit annex out of any session
+        annex2_uid = self.uids[2]
+        annex2 = api.content.get(UID=annex2_uid)
+        notify(ObjectModifiedEvent(annex2))
+        # just to check, remove annex0
+        remove_files_from_session((annex0_uid,))
+        self.assertEqual(session["size"], 6968)
 
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""
@@ -492,15 +568,63 @@ class TestUtils(unittest.TestCase):
         """Test getting info about a given session id."""
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
-        self.assertIsNone(get_session_info(0))
-        self.assertIsNone(get_session_info(1))
-        self.assertIsNone(get_session_info(2))
+        self.assertEqual(get_session_info(0), {})
+        self.assertEqual(get_session_info(1), {})
+        self.assertEqual(get_session_info(2), {})
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
         sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
         self.assertEqual(get_session_info(sid), session)
+
+    def test_get_sessions_for(self):
+        """Test getting sessions for a given context_uid."""
+        # no session
+        context_uid = self.folders[0].UID()
+        self.assertEqual(get_sessions_for(context_uid), OrderedDict())
+        # one session
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(get_sessions_for(context_uid).keys(), [0])
+        # two sessions
+        signers = [("user2", "user2@sign.com", "User 2", "Position 2")]
+        sid, session = add_files_to_session(signers, (self.uids[2],))
+        self.assertEqual(get_sessions_for(context_uid).keys(), [0, 1])
+        # readonly=True
+        sessions = get_sessions_for(context_uid)
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        sessions[0]['watchers'] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        # readonly=False
+        sessions = get_sessions_for(context_uid, readonly=False)
+        self.assertEqual(get_session_info(0)['watchers'], [])
+        sessions[0]['watchers'] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)['watchers'], ["watcher@sign.com"])
+
+    def test_get_file_info(self):
+        """Test getting infos for a given file."""
+        annex0_uid = self.uids[0]
+        annex1_uid = self.uids[1]
+        # no session
+        self.assertIsNone(get_file_info(0, annex0_uid))
+        # create session
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        sid, session = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(get_file_info(0, annex0_uid)['uid'], annex0_uid)
+        self.assertIsNone(get_file_info(0, annex1_uid))
+        # readonly=True by default
+        file_info = get_file_info(0, annex0_uid)
+        file_info['title'] = u'New title annex 0'
+        # not changed in the annotation
+        self.assertEqual(
+            get_session_annotation()['sessions'][0]['files'][0]['title'], u'Annex 0')
+        # readonly=False
+        file_info = get_file_info(0, annex0_uid, readonly=False)
+        file_info['title'] = u'New title annex 0'
+        # changed in the annotation
+        self.assertEqual(
+            get_session_annotation()['sessions'][0]['files'][0]['title'], u'New title annex 0')
 
     def test_get_file_download_url(self):
         """Test generating file download URL from UID."""
@@ -646,7 +770,7 @@ class TestUtils(unittest.TestCase):
         sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
         api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        set_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
+        set_esign_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
         mock_response = Mock()

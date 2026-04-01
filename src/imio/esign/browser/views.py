@@ -73,8 +73,8 @@ class SessionsListingView(BrowserView):
 
     def get_sessions(self):
         sessions = []
-        annot = deepcopy(get_session_annotation())
-        for session_id, session in sorted(annot["sessions"].items(), key=lambda x: x[0],
+        annot_sessions = deepcopy(get_session_annotation()["sessions"])
+        for session_id, session in sorted(annot_sessions.items(), key=lambda x: x[0],
                                           reverse=True):
             session["id"] = session_id
             sessions.append(session)

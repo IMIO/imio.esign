@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b5 (unreleased)
+1.0b5 (2026-04-01)
 ------------------
 
 - Avoid `UnicodeDecodeError` in `SignersColumn` if signers

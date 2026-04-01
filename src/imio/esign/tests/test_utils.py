@@ -528,7 +528,7 @@ class TestUtils(unittest.TestCase):
 
     def test_remove_context_from_session(self):
         """Test removing a context from a session."""
-        annot = get_session_annotation(readonly=False)
+        annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),
@@ -549,7 +549,7 @@ class TestUtils(unittest.TestCase):
 
     def test_remove_session(self):
         """Test removing a session."""
-        annot = get_session_annotation(readonly=False)
+        annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),

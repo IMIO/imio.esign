@@ -9,14 +9,12 @@ from imio.esign.browser.views import DownloadFileView
 from imio.esign.browser.views import ExternalSessionCreateView
 from imio.esign.browser.views import ItemSessionInfoViewlet
 from imio.esign.browser.views import SessionDeleteView
-from imio.esign.browser.views import SessionsListingView
 from imio.esign.browser.views import SigningUsersCsv
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.testing import IMIO_ESIGN_FUNCTIONAL_TESTING
 from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
-from imio.esign.utils import get_session_info
 from imio.pyutils.utils import shortuid_encode_id
 from mock import Mock
 from mock import patch
@@ -758,19 +756,3 @@ class TestItemSessionInfoViewlet(unittest.TestCase):
         self.assertEqual(len(sessions), 2)
         session_ids = sessions.keys()
         self.assertEqual(session_ids, [0, 1])
-
-
-class TestSessionsListingView(_BaseSessionViewTest):
-    """Test SessionsListingView browser view."""
-
-    def test_get_sessions(self):
-        """Test obtain sessions and stored annotation not modified."""
-        self.assertFalse("id" in get_session_annotation(0))
-        view = self.portal.restrictedTraverse("@@parapheo")
-        self.assertTrue(view.available())
-        sessions = view.get_sessions()
-        self.assertTrue("id" in sessions[0])
-        self.assertFalse("id" in get_session_annotation(0))
-        # get_dashboard_link will raise NotImplementedError
-        with self.assertRaises(NotImplementedError):
-            view()

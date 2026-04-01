@@ -5,8 +5,10 @@ Changelog
 1.0b6 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Use existing `utils.get_session_info` instead
+  `FilesBelongingToAGivenSession.get_session` to get the session in
+  `files-belonging-to-a-given-session` adapter.
+  [gbastien]
 
 1.0b5 (2026-04-01)
 ------------------

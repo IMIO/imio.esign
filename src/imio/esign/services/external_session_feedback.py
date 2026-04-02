@@ -42,15 +42,16 @@ class ExternalSessionFeedbackPost(Service):
                 return {"message": "Session ID {} not found".format(session_id)}
             session = annot["sessions"][session_id]
             session_update = {"returns": session["returns"]}
-            session_update["returns"].append((code, db_state, data.get("value", ""), data.get("message", ""),
-                                              datetime.now()))
+            session_update["returns"].append(
+                (code, db_state, data.get("value", ""), data.get("message", ""), datetime.now())
+            )
             if code == 21:
-                # sign_session_confirmed
+                # 21: sign_session_confirmed
                 session_update["state"] = "to_sign"
                 if value and "sign_session_url" in value and not session["sign_url"]:
                     session_update["sign_url"] = value["sign_session_url"]
             elif code == 22:
-                # one_signer_accepted
+                # 22: signature_signed (one signer signed)
                 if value and "signed_users" in value:
                     session_update["signers"] = session["signers"]
                     for i, d in enumerate(session["signers"]):
@@ -58,11 +59,8 @@ class ExternalSessionFeedbackPost(Service):
                             continue
                         if d["email"] in value["signed_users"]:
                             session_update["signers"][i]["status"] = "signed"
-            elif code == 23:
-                # upload_success (files returned)
-                session_update["state"] = "returned"
             elif code == 52:
-                # one_signer_refused
+                # 52: document_declined (one signer refused)
                 session_update["state"] = "refused"
                 if value and "user" in value:
                     session_update["signers"] = session["signers"]
@@ -70,11 +68,21 @@ class ExternalSessionFeedbackPost(Service):
                         if d["email"] == value["user"]:
                             session_update["signers"][i]["status"] = "refused"
                             break
+            elif code == 23:
+                # 23: upload_successful (files returned)
+                session_update["state"] = "returned"
             elif code == 53:
-                # upload_failed
+                # 53: upload_error
                 session_update["state"] = "signed"
-            elif code in (50, 40, 51, 41):
-                # seal_creation_error, seal_creation_not_available, sign_creation_error, sign_creation_not_available
+            elif code in (50, 51, 54, 55, 56, 57, 58, 59):
+                # 50: seal_creation_error
+                # 51: sign_creation_error
+                # 54: fatal_error_session_creation
+                # 55: error_event_notification_signature
+                # 56: error_event_notification_refusal
+                # 57: fatal_error_completion_notification
+                # 58: fatal_error_unknown_notification
+                # 59: fatal_error_unknown
                 session_update["state"] = "errored"
             if session_update:
                 session.update(session_update)
@@ -86,15 +94,6 @@ class ExternalSessionFeedbackPost(Service):
             logger.error(str(e))
             return {"message": str(e)}
         return {"message": "Information correctly handled"}
-    """ microservice session state
-    to_create_session = "to_create_session"
-    session_creation_failed = "session_creation_failed"
-    to_sign = "to_sign"
-    refused = "refused"
-    to_upload = "to_upload"
-    to_notify_ged_upload = "to_notify_ged_upload"
-    completed = "completed"
-    """
 
     def authorized(self):
         """Check if the user is authorized to access this service."""

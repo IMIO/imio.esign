@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b7 (unreleased)
+1.0b7 (2026-04-02)
 ------------------
 
 - Adapted `SessionsListingView.get_sessions` to not modify the annotation

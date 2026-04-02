@@ -31,7 +31,17 @@
         .documents-column {
             width: 700px !important;
         }
+
+        .apButtonAction_parapheo {
+            background-image: url("++resource++imio.esign/parapheo.svg");
+            background-size: 18px 18px;
+        }
     </style>
+    <td class="noPadding" i18n:domain="imio.esign">
+        <a tal:attributes="href view/get_parapheo_link" target="_blank" i18n:translate="">
+            <input type="button" value="Open Paraphéo dashboard" i18n:attributes="value" class="apButton apButtonAction apButtonAction_parapheo"/>
+        </a>
+    </td>
     <div tal:replace="structure view/render_table"></div>
 </metal:content-core>
 

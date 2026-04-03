@@ -37,12 +37,16 @@
             background-size: 18px 18px;
         }
     </style>
-    <td class="noPadding" i18n:domain="imio.esign">
-        <a tal:attributes="href view/get_parapheo_link" target="_blank" i18n:translate="">
-            <input type="button" value="Open Paraphéo dashboard" i18n:attributes="value" class="apButton apButtonAction apButtonAction_parapheo"/>
-        </a>
-    </td>
     <div tal:replace="structure view/render_table"></div>
+    <div style="text-align: right;">
+        <a tal:attributes="href view/get_parapheo_link" target="_blank">
+            <button class="apButton apButtonAction apButtonAction_parapheo">
+                <span i18n:translate="" i18n:domain="imio.esign">Open eSign platform</span>
+                <!-- <i class="fas fa-external-link-alt"></i> --> <!-- FontAwesome 5 -->
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> <!-- FontAwesome 6 -->
+            </button>
+        </a>
+    </div>
 </metal:content-core>
 
 

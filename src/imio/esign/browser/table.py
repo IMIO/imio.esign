@@ -7,6 +7,7 @@ from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
+from imio.esign.utils import get_deletion_date_msg
 from imio.esign.utils import get_state_description
 from imio.helpers.security import check_zope_admin
 from imio.pyutils.utils import safe_encode
@@ -62,6 +63,9 @@ class StateColumn(Column):
         ))
         title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
                                  domain="imio.esign"))
+        deletion_msg = escape(get_deletion_date_msg(item, self.request))
+        if deletion_msg:
+            title = title + u"\n\n" + deletion_msg
         return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} "
                 u"<span class='far fa-question-circle' />"
                 u"</span>".format(state=state, title=title, state_title_value=item.get("state")))

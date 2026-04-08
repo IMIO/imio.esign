@@ -6,8 +6,10 @@ from datetime import datetime
 from datetime import timedelta
 from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
+from imio.esign import CLEANUP_THROTTLE_HOURS
 from imio.esign import logger
 from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_auto_cleanup_days
 from imio.esign.config import get_esign_registry_external_watchers
 from imio.esign.config import get_esign_registry_file_url
 from imio.esign.config import get_esign_registry_max_session_files
@@ -28,6 +30,7 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
+from zope.i18n import translate
 
 import json
 import requests
@@ -541,6 +544,82 @@ def remove_session(session_id):
 
     del sessions[session_id]
     # logger.info("Session %s removed", session_id)
+
+
+def get_session_deletion_date(session, cleanup_days=None):
+    """Return the expected auto-deletion date for a finalized session, or None.
+
+    Deletion is scheduled ``cleanup_days`` days after the session entered
+    the 'to_sign' state.  Falls back to ``last_update`` when ``to_sign_date``
+    was not recorded (sessions created before this feature).  Returns ``None``
+    when the session is not in 'finalized' state or auto-cleanup is disabled
+    (cleanup_days == 0).
+    """
+    if session.get("state") != "finalized":
+        return None
+    if cleanup_days is None:
+        cleanup_days = get_esign_registry_auto_cleanup_days()
+    if not cleanup_days:
+        return None
+    reference_date = session.get("to_sign_date") or session.get("last_update")
+    if not reference_date:
+        return None
+    deletion_date = reference_date + timedelta(days=cleanup_days)
+    annot = get_session_annotation()
+    return max(deletion_date, annot["last_cleanup"] + timedelta(hours=CLEANUP_THROTTLE_HOURS))
+
+
+def get_deletion_date_msg(session, request):
+    """Return translated deletion date message for a finalized session, or empty string."""
+    deletion_date = get_session_deletion_date(session)
+    if not deletion_date:
+        return u""
+    return translate(
+        _("The session will be automatically deleted on ${date}. "
+          "Files won't be deleted from the application, but the session won't be accessible anymore.",
+          mapping={"date": deletion_date.strftime("%d/%m/%Y %H:%M")}),
+        context=request, domain="imio.esign",
+    )
+
+
+def cleanup_expired_sessions():
+    """Remove finalized sessions that have exceeded the auto_cleanup_days delay.
+
+    The delay is counted from ``to_sign_date`` when available, falling back
+    to ``last_update`` for older sessions that predate this feature.
+
+    Throttled to run at most once every CLEANUP_THROTTLE_HOURS hours via a
+    'last_cleanup' timestamp stored in the portal annotation.
+    """
+    cleanup_days = get_esign_registry_auto_cleanup_days()
+    if not cleanup_days:
+        return
+
+    annot = get_session_annotation()
+    now = datetime.now()
+
+    last_cleanup = annot.get("last_cleanup", datetime.min)
+    if now - last_cleanup < timedelta(hours=CLEANUP_THROTTLE_HOURS):
+        return
+
+    expired = [
+        sid for sid, session in annot["sessions"].items()
+        if (get_session_deletion_date(session, cleanup_days=cleanup_days) or now) < now
+    ]
+
+    for session_id in expired:
+        session = annot["sessions"].get(session_id)
+        if session:
+            logger.info(
+                "Auto-cleanup: removing expired session %s (state=%s, to_sign_date=%s, sign_id=%s)",
+                session_id,
+                session.get("state"),
+                session.get("to_sign_date"),
+                session.get("sign_id"),
+            )
+        remove_session(session_id)
+
+    annot["last_cleanup"] = now
 
 
 def get_file_download_url(uid, root_url=None, short_uid=None):

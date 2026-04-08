@@ -2,14 +2,17 @@
 """utils tests for this package."""
 from collections import OrderedDict
 from datetime import date
+from datetime import datetime
 from datetime import timedelta
 from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
+from imio.esign.config import set_esign_registry_auto_cleanup_days
 from imio.esign.config import set_esign_registry_external_watchers
 from imio.esign.config import set_esign_registry_max_session_files
 from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import cleanup_expired_sessions
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_file_info
@@ -684,3 +687,105 @@ class TestUtils(BaseEsignTest):
                 result = create_external_session(sid6, esign_root_url="http://test.example.com")
         self.assertEqual(result, "_no_files_")
         mock_requests.post.assert_not_called()
+
+    def test_cleanup_expired_sessions(self):
+        """Auto-cleanup removes expired finalized sessions and respects the delay and throttle."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        annot = get_session_annotation()
+        self.addCleanup(set_esign_registry_auto_cleanup_days, 100)
+
+        # --- Eligibility: only finalized sessions are cleaned up ---
+
+        # Draft session with old last_update: never removed
+        sid_draft, session_draft = add_files_to_session(signers, (self.uids[0],), discriminators=("draft",))[-1]
+        session_draft["last_update"] = datetime.now() - timedelta(days=200)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertIn(sid_draft, annot["sessions"])
+        self.assertIn("last_cleanup", annot)
+
+        # Non-finalized states (sent, to_sign, returned, etc.): never removed regardless of age
+        for state in ("sent", "to_sign", "returned", "refused", "signed", "errored"):
+            sid, session = add_files_to_session(
+                signers, (self.uids[1],), discriminators=(state,)
+            )[-1]
+            session["state"] = state
+            session["last_update"] = datetime.now() - timedelta(days=200)
+            annot["last_cleanup"] = datetime.min
+            cleanup_expired_sessions()
+            self.assertIn(sid, annot["sessions"], "State %s should not be cleaned up" % state)
+            del annot["sessions"][sid]  # clean up manually for next iteration
+
+        # --- Expiry based on last_update (fallback when to_sign_date absent) ---
+
+        # Finalized, last_update within window: not removed
+        sid_recent_fin, session_recent_fin = add_files_to_session(
+            signers, (self.uids[1],), discriminators=("recent_fin",)
+        )[-1]
+        session_recent_fin["state"] = "finalized"
+        session_recent_fin["last_update"] = datetime.now() - timedelta(days=50)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertIn(sid_recent_fin, annot["sessions"])
+
+        # Finalized, last_update expired (> 100 days), no to_sign_date: removed
+        sid_old_fin, session_old_fin = add_files_to_session(
+            signers, (self.uids[2],), discriminators=("old_fin",)
+        )[-1]
+        session_old_fin["state"] = "finalized"
+        session_old_fin["last_update"] = datetime.now() - timedelta(days=101)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertNotIn(sid_old_fin, annot["sessions"])
+        self.assertNotIn(self.uids[2], annot["uids"])
+        self.assertIn(sid_recent_fin, annot["sessions"])  # recent session untouched
+
+        # --- Expiry based on to_sign_date (takes priority over last_update) ---
+
+        # to_sign_date expired but last_update recent: to_sign_date wins → removed
+        sid_ts_old, session_ts_old = add_files_to_session(
+            signers, (self.uids[2],), discriminators=("ts_old",)
+        )[-1]
+        session_ts_old["state"] = "finalized"
+        session_ts_old["to_sign_date"] = datetime.now() - timedelta(days=101)
+        session_ts_old["last_update"] = datetime.now() - timedelta(days=1)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertNotIn(sid_ts_old, annot["sessions"])
+
+        # to_sign_date within window but last_update old: to_sign_date wins → kept
+        sid_ts_recent, session_ts_recent = add_files_to_session(
+            signers, (self.uids[2],), discriminators=("ts_recent",)
+        )[-1]
+        session_ts_recent["state"] = "finalized"
+        session_ts_recent["to_sign_date"] = datetime.now() - timedelta(days=50)
+        session_ts_recent["last_update"] = datetime.now() - timedelta(days=200)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertIn(sid_ts_recent, annot["sessions"])
+
+        # --- Throttle ---
+
+        sid_throttle, session_throttle = add_files_to_session(
+            signers, (self.uids[3],), discriminators=("throttle",)
+        )[-1]
+        session_throttle["state"] = "finalized"
+        session_throttle["last_update"] = datetime.now() - timedelta(days=101)
+        annot["last_cleanup"] = datetime.now() - timedelta(hours=1)  # ran 1h ago
+        cleanup_expired_sessions()
+        self.assertIn(sid_throttle, annot["sessions"])  # throttled: skipped
+
+        # --- Disabled (0 days) ---
+
+        set_esign_registry_auto_cleanup_days(0)
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertIn(sid_throttle, annot["sessions"])  # disabled: skipped
+
+        # --- Custom delay: 10 days ---
+
+        set_esign_registry_auto_cleanup_days(10)
+        # session_throttle has last_update 101 days ago → expired under 10-day rule
+        annot["last_cleanup"] = datetime.min
+        cleanup_expired_sessions()
+        self.assertNotIn(sid_throttle, annot["sessions"])

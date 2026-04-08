@@ -50,6 +50,10 @@ def get_esign_registry_external_watchers():
     return [ew.strip() for ew in value.split(",") if ew.strip()]
 
 
+def get_esign_registry_auto_cleanup_days(default=100):
+    return api.portal.get_registry_record("imio.esign.auto_cleanup_days", default=default)
+
+
 def set_esign_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -92,6 +96,10 @@ def set_esign_registry_max_session_files(value):
 
 def set_esign_registry_external_watchers(value):
     api.portal.set_registry_record("imio.esign.external_watchers", value)
+
+
+def set_esign_registry_auto_cleanup_days(value):
+    api.portal.set_registry_record("imio.esign.auto_cleanup_days", value)
 
 
 SIGNERS_EMAIL_CONTENT = u"""

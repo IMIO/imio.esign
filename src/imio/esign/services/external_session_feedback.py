@@ -46,6 +46,7 @@ class ExternalSessionFeedbackPost(Service):
             if code == 21:
                 # 21: sign_session_confirmed
                 session_update["state"] = "to_sign"
+                session_update["to_sign_date"] = datetime.now()
                 if value and "sign_session_url" in value and not session["sign_url"]:
                     session_update["sign_url"] = value["sign_session_url"]
             elif code == 22:

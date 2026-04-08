@@ -11,7 +11,7 @@
     <td class="table_widget_label"><label i18n:translate="">State</label></td>
     <td class="table_widget_value">
         <span tal:attributes="class string:state-title state-title-${session/state};
-                              title python:view.get_state_description(session['state'])">
+                              title python:view.get_state_title(session)">
           <tal:block content="python:session['state']" i18n:translate="">draft</tal:block>
           <span class='far fa-question-circle' />
         </span>

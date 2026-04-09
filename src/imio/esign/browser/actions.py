@@ -1,12 +1,25 @@
 # -*- coding: utf-8 -*-
+from AccessControl import Unauthorized
+from html import escape
 from imio.esign import _
 from imio.esign.adapters import ISignable
+from imio.esign.audit import audit
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_sessions_for
+from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
+from imio.helpers.content import uuidToObject
+from imio.helpers.security import check_zope_admin
 from plone import api
+from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from six import string_types
+
+import pprint
+import re
 
 
 class AddToSessionView(BrowserView):
@@ -22,7 +35,7 @@ class AddToSessionView(BrowserView):
             msgid = failed_msgid
             msg_type = "warning"
         api.portal.show_message(_(msgid, mapping=mapping), request=self.request, type=msg_type)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
         files_uids = ISignable(self.context).get_files_uids()
@@ -32,7 +45,7 @@ class AddToSessionView(BrowserView):
         if not signers:
             return self._finished(failed_msgid="Could not get signers to add to the session!")
         # watchers = self.get_watchers()
-        add_files_to_session(
+        session_id, _session = add_files_to_session(
             signers=signers,
             # watchers=watchers,
             files_uids=files_uids,
@@ -40,6 +53,8 @@ class AddToSessionView(BrowserView):
             watchers=self.get_watchers(),
             discriminators=self.get_discriminators(),
         )
+        # audit("add_to_session", "session={} context={} files={} signers={}".format(
+        #     session_id, self.context.UID(), ",".join(files_uids), len(signers)))
         self._finished()
 
     def get_signers(self):
@@ -91,10 +106,13 @@ class RemoveFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
-        remove_context_from_session(context_uids=[self.get_uid_to_remove()])
+        uid = self.get_uid_to_remove()
+        str_session_ids = ",".join([str(sid) for sid in get_sessions_for(uid).keys()])
+        remove_context_from_session(context_uids=[uid])
+        audit("remove_context_from_session", "sessions={} context={}".format(str_session_ids, uid))
         self._finished()
 
     def get_uid_to_remove(self):
@@ -116,13 +134,97 @@ class RemoveItemFromSessionView(BrowserView):
     def _finished(self):
         msg = _("Element removed from session!")
         api.portal.show_message(msg, request=self.request)
-        self.request.RESPONSE.redirect(self.context.absolute_url())
+        self.request.RESPONSE.redirect(self.request['HTTP_REFERER'])
 
     def index(self):
-        remove_files_from_session(files_uids=[self.context.UID()])
+        uid = self.context.UID()
+        session_id = get_session_annotation().get("uids", {}).get(uid)
+        remove_files_from_session(files_uids=[uid])
+        audit("remove_item_from_session", "session={} file={}".format(session_id, uid))
         self._finished()
 
     def available(self):
         """Defines if the action is available or not."""
         annot = get_session_annotation()
         return self.context.UID() in annot.get("uids", {})
+
+
+class SessionAnnotationInfoView(BrowserView):
+    """Admin-only view displaying imio.esign session annotations for a specific context item."""
+
+    index = ViewPageTemplateFile("templates/session_annotation_info.pt")
+
+    def __call__(self):
+        if not check_zope_admin():
+            raise Unauthorized
+        return self.index()
+
+    def _uid_to_link(self, uid):
+        """Return an HTML link for an object UID, or the UID if not found."""
+        obj = uuidToObject(uid, unrestricted=True)
+        if obj is None:
+            return u"<span title='not found'>{}</span>".format(safe_unicode(uid))
+        url = escape(obj.absolute_url() + "/view", quote=True)
+        path = escape(u"/".join(obj.getPhysicalPath()))
+        title = escape(safe_unicode(getattr(obj, "title", "") or path))
+        return u"<a href='{}' title='{}'>{}</a>".format(url, path, title)
+
+    def _render_value(self, value, indent=u""):
+        """Render a value, replacing UIDs with links where possible."""
+        inner = indent + u"  "
+        if isinstance(value, dict):
+            if not value:
+                return u"{}"
+            lines = [u"{"]
+            for k, v in sorted(value.items()):
+                key = escape(safe_unicode(pprint.pformat(k)))
+                lines.append(u"{}{}: {},".format(inner, key, self._render_value(v, inner)))
+            lines.append(u"{}}}".format(indent))
+            return u"\n".join(lines)
+        elif isinstance(value, (list, tuple)):
+            if not value:
+                return u"[]"
+            lines = [u"["]
+            for item in value:
+                lines.append(u"{}{},".format(inner, self._render_value(item, inner)))
+            lines.append(u"{}]".format(indent))
+            return u"\n".join(lines)
+        elif isinstance(value, string_types) and re.match(r"^[0-9a-f]{32}$", value):
+            # Looks like a UUID
+            return self._uid_to_link(value)
+        else:
+            return escape(safe_unicode(pprint.pformat(value)))
+
+    @property
+    def esign_sessions(self):
+        """
+        Return list of (session_id, session_data) for all sessions.
+        Filter sessions using request params "session_id" and "context_uid" if provided.
+        Returns all sessions if no filter params provided.
+        """
+        annot = get_session_annotation()
+        request_session_id = self.request.form.get("session_id")
+        try:
+            request_session_id = int(request_session_id)
+        except (ValueError, TypeError):
+            request_session_id = None
+
+        c_uid = self.request.form.get("context_uid")
+        result = []
+        for session_id in annot['sessions']:
+            if request_session_id is not None and request_session_id != session_id:
+                continue
+            session = annot['sessions'][session_id]
+            # If any file in this session is in this context
+            if c_uid and not any(f['context_uid'] == c_uid for f in session['files']):
+                continue
+            result.append((session_id, persistent_to_native(session)))
+        return sorted(result)
+
+    def esign_session_html(self, session_data):
+        """Renders esign session annot in HTML"""
+        return self._render_value(session_data)
+
+    def available(self):
+        """Defines if the action is available or not."""
+        return check_zope_admin()

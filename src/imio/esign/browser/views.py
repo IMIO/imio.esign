@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
+from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
-from imio.esign.config import get_registry_enabled
-from imio.esign.config import get_registry_parapheo_url
-from imio.esign.config import get_registry_signing_users_email_content
+from imio.esign.config import get_esign_registry_enabled
+from imio.esign.config import get_esign_registry_parapheo_url
+from imio.esign.config import get_esign_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
@@ -62,7 +64,7 @@ class SessionsListingView(BrowserView):
         return super(SessionsListingView, self).__call__()
 
     def available(self):
-        return get_registry_enabled()
+        return get_esign_registry_enabled()
 
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())
@@ -71,7 +73,8 @@ class SessionsListingView(BrowserView):
 
     def get_sessions(self):
         sessions = []
-        for session_id, session in sorted(get_session_annotation()["sessions"].items(), key=lambda x: x[0],
+        annot_sessions = deepcopy(get_session_annotation()["sessions"])
+        for session_id, session in sorted(annot_sessions.items(), key=lambda x: x[0],
                                           reverse=True):
             session["id"] = session_id
             sessions.append(session)
@@ -86,8 +89,6 @@ class SessionsListingView(BrowserView):
 
 class SessionFilesView(BrowserView):
     """View to display documents of a session."""
-
-    index = ViewPageTemplateFile("templates/session_files.pt")
 
     def __init__(self, context, request):
         super(SessionFilesView, self).__init__(context, request)
@@ -128,6 +129,7 @@ class SessionDeleteView(BrowserView):
         sessions = get_session_annotation()["sessions"]
         if session_id in sessions:
             remove_session(session_id)
+            audit("delete_session", "session={}".format(session_id))
             api.portal.show_message(_("Session deleted successfully!"), request=self.request, type="info")
         else:
             api.portal.show_message(_("Session not found!"), request=self.request, type="error")
@@ -152,32 +154,39 @@ class ExternalSessionCreateView(BrowserView):
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
+            audit("send_to_external_service", "session={} error=session_not_found".format(session_id))
             api.portal.show_message(
                 _("Session with ID ${id} doesn't exist anymore !", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_code_":
+            audit("send_to_external_service", "session={} error=no_seal_code".format(session_id))
             api.portal.show_message(
                 _("No seal code defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_seal_email_":
+            audit("send_to_external_service", "session={} error=no_seal_email".format(session_id))
             api.portal.show_message(
                 _("No seal email defined in configuration ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp == "_no_files_":
+            audit("send_to_external_service", "session={} error=no_files".format(session_id))
             api.portal.show_message(
                 _("No files found to be sent ! Session ${id} not sent.", mapping={"id": session_id}),
                 request=self.request,
                 type="error",
             )
         elif resp.status_code == 200:
+            audit("send_to_external_service", "session={} status=200".format(session_id))
             api.portal.show_message(_("External session sent successfully!"), request=self.request, type="info")
         else:
+            audit("send_to_external_service", "session={} status={} reason={}".format(
+                session_id, resp.status_code, resp.reason))
             api.portal.show_message(
                 _("Error while sending session: ${error}", mapping={"error": "{} {} {}".format(
                     resp.status_code, resp.reason, resp.text)}),
@@ -568,7 +577,7 @@ class SigningUsersCsv(BrowserView):
             api.portal.show_message(_("No users selected for email sending."), request=self.request, type="warning")
             return self.request.RESPONSE.redirect(self.context.absolute_url() + "/@@signing-users-csv")
 
-        email_content = get_registry_signing_users_email_content()
+        email_content = get_esign_registry_signing_users_email_content()
         if not email_content:
             api.portal.show_message(
                 _("Email content is not configured in the settings."), request=self.request, type="error"
@@ -662,7 +671,7 @@ class SigningUsersCsv(BrowserView):
                 "view": self,
                 "context": self.context,
                 "user_data": user_data,
-                "parapheo_url": get_registry_parapheo_url(),
+                "parapheo_url": get_esign_registry_parapheo_url(),
                 "modules": SecureModuleImporter,
             }
         )

@@ -3,8 +3,18 @@
         <span i18n:translate="">No files</span>
     </tal:none>
     <ol tal:condition="files">
-        <li tal:repeat="file files">
-            <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>
-        </li>
-    </ol>
+        <tal:loop repeat="file files">
+            <li tal:define="oddrow repeat/file/odd;
+                            classOddEven python: oddrow and 'even' or 'odd';"
+                tal:attributes="class classOddEven">
+                <a tal:condition="python: context.unrestrictedTraverse('@@session-annotation-info').available()"
+                   tal:attributes="href python:file[0].absolute_url() + '/@@session-annotation-info?context_uid=' + file[0].UID()"
+                   target="_blank"
+                   class="link-overlay-info">
+                    <span class="fa fa-info-circle" title="Annotation info"></span>
+                </a>
+                <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>
+          </li>
+      </tal:loop>
+  </ol>
 </div>

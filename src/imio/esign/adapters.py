@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_info
 from plone.memoize import ram
 from zope.interface import Interface
 
@@ -31,7 +34,7 @@ class FilesBelongingToAGivenSession(object):
         session_id = self.get_session_id()
         if not session_id:
             return {"UID": {"query": []}}
-        session = self.get_session(session_id)
+        session = get_session_info(int(session_id))
         obj_uids = []
         for f in session.get("files", []):
             obj_uids.append(f["context_uid"])
@@ -42,11 +45,6 @@ class FilesBelongingToAGivenSession(object):
             return self.request.form["esign_session_id[]"]
         else:
             return self.request.get("esign_session_id", None)
-
-    def get_session(self, session_id=None):
-        if session_id is None:
-            session_id = self.get_session_id()
-        return get_session_annotation()["sessions"].get(int(session_id), {})
 
     query = query_session_files
 

@@ -2,11 +2,81 @@ Changelog
 =========
 
 
-1.0a4 (unreleased)
+1.0b8 (unreleased)
 ------------------
 
 - Nothing changed yet.
 
+
+1.0b7 (2026-04-02)
+------------------
+
+- Adapted `SessionsListingView.get_sessions` to not modify the annotation
+  causing a DB write at each access to `@@parapheo`.
+  [gbastien]
+
+1.0b6 (2026-04-01)
+------------------
+
+- Use existing `utils.get_session_info` instead
+  `FilesBelongingToAGivenSession.get_session` to get the session in
+  `files-belonging-to-a-given-session` adapter.
+  [gbastien]
+- Fixed table rendering when a user signed causing `UnicodeDecodeError`.
+  [gbastien]
+
+1.0b5 (2026-04-01)
+------------------
+
+- Avoid `UnicodeDecodeError` in `SignersColumn` if signers
+  contain mixed encoding values.
+  [gbastien]
+
+1.0b4 (2026-03-27)
+------------------
+
+- Renamed imio.esign config functions.
+  [cadam]
+- Highlight `draft` session in table view and viewlet, use `Id` as
+  column header instead `identifier` so it is more narrow and
+  make `sessions` view columns sortable.
+  [gbastien]
+
+1.0b3 (2026-03-26)
+------------------
+
+- In sessions annotation, use a `PersistentMapping` instead a `dict` to store
+  `signers` informations as the `status` will be updated.
+  [gbastien]
+
+1.0b2 (2026-03-26)
+------------------
+
+- Redo release.
+  [gbastien]
+
+1.0b1 (2026-03-26)
+------------------
+
+- Disable sorting on checkbox column of `@@signing-users-csv`.
+  [gbastien]
+- Added SessionAnnotationInfoView.
+  [chris-adam,sgeulette]
+- Open the `@@session-annotation-info` in an overlay.
+  [gbastien]
+- Fixed audit message when firing action remove context
+  [chris-adam]
+
+1.0a4 (2026-03-24)
+------------------
+
+- Redirect to `HTTP_REFERER` instead context's url after
+  `add/remove/remove item` actions.
+  [gbastien]
+- Added `odd/even` class on `<li>` of the files `collapsible` on sessions view.
+  [gbastien]
+- Added separated fingerpointing log.
+  [chris-adam]
 
 1.0a3 (2026-03-20)
 ------------------

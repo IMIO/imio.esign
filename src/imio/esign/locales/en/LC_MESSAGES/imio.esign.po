@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-04 11:53+0000\n"
+"POT-Creation-Date: 2026-03-25 20:09+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../browser/views.py:307
+#: ../browser/views.py:312
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:157
+#: ../browser/table.py:161
 msgid "Actions"
 msgstr ""
 
@@ -39,11 +39,11 @@ msgstr ""
 msgid "Confirm Email Sending"
 msgstr ""
 
-#: ../browser/table.py:190
+#: ../browser/table.py:194
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:176
+#: ../browser/table.py:180
 msgid "Delete session"
 msgstr ""
 
@@ -51,7 +51,7 @@ msgstr ""
 msgid "Deselect All"
 msgstr ""
 
-#: ../browser/actions.py:92
+#: ../browser/actions.py:107
 msgid "Element removed from session!"
 msgstr ""
 
@@ -60,19 +60,19 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/views.py:571
+#: ../browser/views.py:581
 msgid "Email content is not configured in the settings."
 msgstr ""
 
-#: ../browser/settings.py:90
+#: ../browser/settings.py:91
 msgid "Email content model for signing users"
 msgstr ""
 
-#: ../browser/settings.py:91
+#: ../browser/settings.py:92
 msgid "Email content sent to users when inviting them to Parapheo. TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
 msgstr ""
 
-#: ../browser/settings.py:72
+#: ../browser/settings.py:73
 msgid "Email of the eidas provider account containing the seal image."
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Email:"
 msgstr ""
 
-#: ../browser/views.py:631
+#: ../browser/views.py:641
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
@@ -88,23 +88,23 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:179
+#: ../browser/views.py:189
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:176
+#: ../browser/views.py:184
 msgid "External session sent successfully!"
 msgstr ""
 
-#: ../browser/settings.py:108
+#: ../browser/settings.py:109
 msgid "External watchers emails"
 msgstr ""
 
-#: ../browser/views.py:618
+#: ../browser/views.py:628
 msgid "Failed to send email to ${userid}."
 msgstr ""
 
-#: ../browser/views.py:638
+#: ../browser/views.py:648
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:110
+#: ../browser/table.py:114
 msgid "Files"
 msgstr ""
 
@@ -128,11 +128,11 @@ msgstr ""
 msgid "Full name"
 msgstr ""
 
-#: ../browser/table.py:18
+#: ../browser/table.py:19
 msgid "ID"
 msgstr ""
 
-#: ../browser/settings.py:118
+#: ../browser/settings.py:119
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr ""
@@ -141,7 +141,7 @@ msgstr ""
 msgid "Important:"
 msgstr ""
 
-#: ../configure.zcml:23
+#: ../configure.zcml:25
 msgid "Installs the imio.esign add-on."
 msgstr ""
 
@@ -157,7 +157,7 @@ msgstr ""
 msgid "Last Name"
 msgstr ""
 
-#: ../browser/table.py:143
+#: ../browser/table.py:147
 #: ../browser/templates/macros.pt:20
 msgid "Last update"
 msgstr ""
@@ -166,15 +166,15 @@ msgstr ""
 msgid "List of electronic signing sessions"
 msgstr ""
 
-#: ../browser/settings.py:99
+#: ../browser/settings.py:100
 msgid "Max session size (MB)"
 msgstr ""
 
-#: ../browser/settings.py:100
+#: ../browser/settings.py:101
 msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
 msgstr ""
 
-#: ../browser/settings.py:109
+#: ../browser/settings.py:110
 msgid "Multiple values must be separated by a comma."
 msgstr ""
 
@@ -186,35 +186,35 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:171
+#: ../browser/views.py:178
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:159
+#: ../browser/views.py:164
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:165
+#: ../browser/views.py:171
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:121
+#: ../browser/views.py:123
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/views.py:526
+#: ../browser/views.py:536
 msgid "No users selected for CSV download."
 msgstr ""
 
-#: ../browser/views.py:565
+#: ../browser/views.py:575
 msgid "No users selected for email sending."
 msgstr ""
 
-#: ../browser/settings.py:83
+#: ../browser/settings.py:84
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/views.py:580
+#: ../browser/views.py:590
 msgid "Portal from email is not configured."
 msgstr ""
 
@@ -222,11 +222,11 @@ msgstr ""
 msgid "Position"
 msgstr ""
 
-#: ../browser/actions.py:56
+#: ../browser/actions.py:71
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:119
+#: ../browser/table.py:123
 msgid "Quick look"
 msgstr ""
 
@@ -238,19 +238,19 @@ msgstr ""
 msgid "Remove item from esign session"
 msgstr ""
 
-#: ../browser/settings.py:65
+#: ../browser/settings.py:66
 msgid "Seal code"
 msgstr ""
 
-#: ../browser/settings.py:66
+#: ../browser/settings.py:67
 msgid "Seal code given by eidas provider."
 msgstr ""
 
-#: ../browser/settings.py:71
+#: ../browser/settings.py:72
 msgid "Seal email"
 msgstr ""
 
-#: ../browser/table.py:77
+#: ../browser/table.py:80
 #: ../browser/templates/macros.pt:27
 msgid "Sealed"
 msgstr ""
@@ -271,7 +271,7 @@ msgstr ""
 msgid "Send Emails"
 msgstr ""
 
-#: ../utils.py:140
+#: ../utils.py:160
 msgid "Session ${id}"
 msgstr ""
 
@@ -279,7 +279,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/views.py:128
+#: ../browser/views.py:131
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -287,7 +287,7 @@ msgstr ""
 msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
-#: ../browser/views.py:130
+#: ../browser/views.py:133
 msgid "Session not found!"
 msgstr ""
 
@@ -295,15 +295,15 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:153
+#: ../browser/views.py:157
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
-#: ../browser/settings.py:77
+#: ../browser/settings.py:78
 msgid "Sign code"
 msgstr ""
 
-#: ../browser/settings.py:78
+#: ../browser/settings.py:79
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr ""
 
@@ -311,11 +311,11 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:359
+#: ../browser/views.py:364
 msgid "Signed file download"
 msgstr ""
 
-#: ../browser/table.py:91
+#: ../browser/table.py:95
 #: ../browser/templates/macros.pt:41
 msgid "Signers"
 msgstr ""
@@ -324,7 +324,7 @@ msgstr ""
 msgid "Signing Users: Export CSV"
 msgstr ""
 
-#: ../browser/table.py:49
+#: ../browser/table.py:50
 #: ../browser/templates/macros.pt:11
 msgid "State"
 msgstr ""
@@ -333,15 +333,15 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:335
+#: ../browser/views.py:340
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:315
+#: ../browser/views.py:320
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:327
+#: ../browser/views.py:332
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
@@ -377,7 +377,7 @@ msgstr ""
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
-#: ../browser/views.py:311
+#: ../browser/views.py:316
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -393,24 +393,24 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:63
+#: ../browser/table.py:66
 #: ../browser/templates/macros.pt:34
 msgid "Title"
 msgstr ""
 
 #: ../browser/settings.py:60
-msgid "URL domain where the file can be donwloaded."
+msgid "URL domain where the file can be downloaded."
 msgstr ""
 
-#: ../configure.zcml:32
+#: ../configure.zcml:34
 msgid "Uninstalls the imio.esign add-on."
 msgstr ""
 
-#: ../browser/settings.py:84
+#: ../browser/settings.py:85
 msgid "Used in signers email template."
 msgstr ""
 
-#: ../browser/views.py:589
+#: ../browser/views.py:599
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr ""
 
@@ -442,7 +442,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:197
+#: ../browser/table.py:210
 msgid "View session in dashboard"
 msgstr ""
 
@@ -458,7 +458,7 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:604
+#: ../browser/views.py:614
 msgid "You have been invited to Paraphéo"
 msgstr ""
 
@@ -474,11 +474,11 @@ msgstr "Errored"
 msgid "finalized"
 msgstr ""
 
-#: ../configure.zcml:23
+#: ../configure.zcml:25
 msgid "imio.esign"
 msgstr ""
 
-#: ../configure.zcml:32
+#: ../configure.zcml:34
 msgid "imio.esign (uninstall)"
 msgstr ""
 

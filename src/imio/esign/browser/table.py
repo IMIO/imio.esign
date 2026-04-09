@@ -3,9 +3,11 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
-from imio.esign.config import get_registry_seal_code
-from imio.esign.config import get_registry_seal_email
+from imio.esign.config import get_esign_registry_seal_code
+from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.utils import get_state_description
+from imio.helpers.security import check_zope_admin
+from imio.pyutils.utils import safe_encode
 from plone import api
 from Products.CMFPlone.utils import safe_unicode
 from z3c.table.column import Column
@@ -15,7 +17,8 @@ from zope.i18n import translate
 
 
 class IdColumn(Column):
-    header = _("ID")
+    # not translated so it stays short
+    header = "Id"
     weight = 10
     cssClasses = {"th": "th_header_sessions_id",
                   "td": "id-column"}
@@ -55,8 +58,10 @@ class StateColumn(Column):
         state = escape(translate(
             (item.get("state", "")), context=self.request, default=item.get("state", ""), domain="imio.esign",
         ))
-        title = escape(translate(get_state_description(item.get("state", "")), context=self.request, domain="imio.esign"))
-        return u"<span class='state-title' title='{title}'>{state} <span class='far fa-question-circle' /></span>".format(state=state, title=title)
+        title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
+                                 domain="imio.esign"))
+        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} <span class='far fa-question-circle' />"
+                u"</span>".format(state=state, title=title, state_title_value=item.get("state")))
 
 
 class TitleColumn(Column):
@@ -76,7 +81,7 @@ class TitleColumn(Column):
 class SealColumn(Column):
     header = _("Sealed")
     weight = 40
-    cssClasses = {"th": "th_header_sessions_seal",
+    cssClasses = {"th": "th_header_sessions_seal nosort",
                   "td": "seal-column"}
 
     def renderCell(self, item):
@@ -84,7 +89,8 @@ class SealColumn(Column):
             return u""
         label = escape(translate(_("Sealed"), context=self.request))
         # icon: https://www.flaticon.com/free-icon/verification_3556787
-        return u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' aria-label='{label}'></img>".format(label=label)
+        return (u"<img width='16' height='16' src='++resource++imio.esign/seal.png' title='{label}' "
+                u"aria-label='{label}'></img>".format(label=label))
 
 
 class SignersColumn(Column):
@@ -97,9 +103,9 @@ class SignersColumn(Column):
         signers = item.get("signers") or []
         parts = [
             "<li>%s, %s%s (%s)</li>" % (
-                s.get("fullname", ""),
-                s.get("position"),
-                " (%s)" % s.get("status") if s.get("status") else "",
+                safe_encode(s.get("fullname", "")),
+                safe_encode(s.get("position")),
+                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign", context=self.request)) if s.get("status") else "",
                 s.get("email"), )
             for s in signers
         ]
@@ -109,7 +115,7 @@ class SignersColumn(Column):
 class FilesColumn(Column):
     header = _("Files")
     weight = 60
-    cssClasses = {"th": "th_header_sessions_documents",
+    cssClasses = {"th": "th_header_sessions_documents nosort",
                   "td": "documents-column"}
 
     def renderCell(self, item):
@@ -147,7 +153,9 @@ class LastUpdateColumn(Column):
 
     def renderCell(self, item):
         last_update = item.get("last_update")
-        return self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
+        # make sortable
+        value = "<span style='display:none'>{0}</span>".format(last_update)
+        return value + self.context.unrestrictedTraverse('@@plone').toLocalizedTime(
             last_update, long_format=True)
 
 
@@ -156,7 +164,7 @@ class ActionsColumn(Column):
 
     header = _("Actions")
     weight = 80
-    cssClasses = {"th": "th_header_sessions_actions",
+    cssClasses = {"th": "th_header_sessions_actions nosort",
                   "td": "actions-column"}
 
     def renderCell(self, item):
@@ -189,6 +197,15 @@ class ActionsColumn(Column):
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
             )
+        if check_zope_admin():
+            admin_buttons += u"""
+            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+                <span class="fa fa-info-circle" title="Annotation info"></span>
+            </a>
+            """.format(
+                sessions_url=sessions_url,
+                session_id=session_id,
+            )
         dashboard_button = u"""
         <a href="{dashboard_link}"><img title="{dashboard_view}" style="cursor:pointer"
         src="++resource++imio.esign/view_element.png"></a>
@@ -202,7 +219,7 @@ class ActionsColumn(Column):
 class SessionsTable(Table):
     cssClassEven = "even"
     cssClassOdd = "odd"
-    cssClasses = {"table": "listing nosort sessions-table width-full"}
+    cssClasses = {"table": "listing sessions-table width-full"}
     sortOn = None
     results = []
 
@@ -226,7 +243,7 @@ class SessionsTable(Table):
             LastUpdateColumn(ctx, req, tbl),
             ActionsColumn(ctx, req, tbl),
         ]
-        if get_registry_seal_code() and get_registry_seal_email():
+        if get_esign_registry_seal_code() and get_esign_registry_seal_email():
             seal_col = SealColumn(ctx, req, tbl)
             columns.insert(4, seal_col)
         return columns

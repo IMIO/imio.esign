@@ -5,8 +5,8 @@ Changelog
 1.0b8 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Set registry parapheo_url following is_test_url.
+  [sgeulette]
 
 1.0b7 (2026-04-02)
 ------------------

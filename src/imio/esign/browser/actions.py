@@ -155,7 +155,7 @@ class SessionAnnotationInfoView(BrowserView):
     index = ViewPageTemplateFile("templates/session_annotation_info.pt")
 
     def __call__(self):
-        if not check_zope_admin():
+        if not self.available():
             raise Unauthorized
         return self.index()
 

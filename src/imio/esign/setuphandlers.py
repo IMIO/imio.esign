@@ -5,6 +5,7 @@ from imio.esign.config import get_esign_registry_signing_users_email_content
 from imio.esign.config import set_esign_registry_parapheo_url
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.config import SIGNERS_EMAIL_CONTENT
+from imio.helpers.path import is_test_url
 from plone.registry.interfaces import IRegistry
 from Products.CMFPlone.interfaces import INonInstallable
 from zope.component import getUtility
@@ -27,7 +28,10 @@ class HiddenProfiles(object):
 def post_install(context):
     """Post install script"""
     if not get_esign_registry_parapheo_url():
-        set_esign_registry_parapheo_url(u"https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO")
+        if is_test_url():
+            set_esign_registry_parapheo_url(u"https://simplycosi-1-test.trustsigneurope.com/login?tenantName=IMIO")
+        else:
+            set_esign_registry_parapheo_url(u"https://simplycosi-1.trustsigneurope.com/login?tenantName=IMIO")
     if not get_esign_registry_signing_users_email_content():
         set_esign_registry_signing_users_email_content(SIGNERS_EMAIL_CONTENT)
     configure_fpaudit()

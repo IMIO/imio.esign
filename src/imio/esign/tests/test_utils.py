@@ -355,10 +355,10 @@ class TestUtils(unittest.TestCase):
         files_param = call_args[1]["files"]
         self.assertEqual(len(files_param), 3)
         self.assertEqual(files_param[0][0], "files")
-        self.assertEqual(files_param[0][1][0], u"annex4.pdf")
+        self.assertEqual(files_param[0][1][0], u"annex1-1.pdf")
         self.assertEqual(files_param[1][0], "files")
-        self.assertEqual(files_param[1][1][0], u"annex1.pdf")
-        self.assertEqual(files_param[2][1][0], u"annex1-1.pdf")
+        self.assertEqual(files_param[1][1][0], u"annex4.pdf")
+        self.assertEqual(files_param[2][1][0], u"annex1.pdf")
 
         # Case 6: session without files to send => returns "_no_files_", no HTTP call
         for i in range(len(session3["files"])):
@@ -426,6 +426,41 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(sid3, 1)
         self.assertIs(session3, session2)
         self.assertEqual(session3["size"], 7014 + 6968)
+
+    def test_add_files_ordering_by_context(self):
+        """Files added to a session are ordered by their position within their context."""
+        def reset_annotation():
+            annot = get_session_annotation()
+            annot["sessions"].clear()
+            annot["uids"].clear()
+            annot["c_uids"].clear()
+            annot["numbering"] = 0
+
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+
+        # Case 1: uid[0] then uid[1] (different context) then uid[2] (same context as uid[0])
+        # uid[2] must land immediately after uid[0], not after uid[1]
+        reset_annotation()
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
+        self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[2], self.uids[1]])
+
+        # Case 2: uid[4] (3rd in folder0) added before uid[0] (1st in folder0)
+        # uid[0] must land before uid[4]
+        reset_annotation()
+        sid, session = add_files_to_session(signers, (self.uids[4],))
+        sid, session = add_files_to_session(signers, (self.uids[0],), session_id=sid)
+        self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[4]])
+
+        # Case 3: uid[0], uid[4] in session, then uid[1] (different context), then uid[2]
+        # uid[2] must be inserted between uid[0] and uid[4]
+        reset_annotation()
+        sid, session = add_files_to_session(signers, (self.uids[0],))
+        sid, session = add_files_to_session(signers, (self.uids[4],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
+        self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[2], self.uids[4], self.uids[1]])
 
     def test_add_files_with_duplicate_filenames(self):
         """Test that files with duplicate filenames are renamed with suffix."""

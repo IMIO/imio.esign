@@ -2,7 +2,30 @@ Changelog
 =========
 
 
-1.0b5 (unreleased)
+1.0b8 (unreleased)
+------------------
+
+- Set registry parapheo_url following is_test_url.
+  [sgeulette]
+
+1.0b7 (2026-04-02)
+------------------
+
+- Adapted `SessionsListingView.get_sessions` to not modify the annotation
+  causing a DB write at each access to `@@parapheo`.
+  [gbastien]
+
+1.0b6 (2026-04-01)
+------------------
+
+- Use existing `utils.get_session_info` instead
+  `FilesBelongingToAGivenSession.get_session` to get the session in
+  `files-belonging-to-a-given-session` adapter.
+  [gbastien]
+- Fixed table rendering when a user signed causing `UnicodeDecodeError`.
+  [gbastien]
+
+1.0b5 (2026-04-01)
 ------------------
 
 - Avoid `UnicodeDecodeError` in `SignersColumn` if signers
@@ -100,6 +123,8 @@ Changelog
   [gbastien]
 - Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
+- Files added to session are inserted alongside other files from the same context, ordered by position.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

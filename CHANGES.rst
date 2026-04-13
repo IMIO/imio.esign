@@ -119,6 +119,8 @@ Changelog
   [gbastien]
 - Use `@CachedProperty` for `FacetedSessionInfoViewlet.sessions` and `ItemSessionInfoViewlet.sessions`.
   [gbastien]
+- Files added to session are inserted alongside other files from the same context, ordered by position.
+  [chris-adam]
 
 1.0a2 (2026-02-06)
 ------------------

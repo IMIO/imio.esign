@@ -102,16 +102,38 @@ def add_files_to_session(
 
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
-        session["files"].append(
-            PersistentMapping({
-                "scan_id": annex.scan_id,
-                "filename": new_filename + ext,
-                "title": annex.title or "no_title",
-                "uid": uid,
-                "context_uid": context_uid,
-                "status": "",
-            })
-        )
+        file_dict = PersistentMapping({
+            "scan_id": annex.scan_id,
+            "filename": new_filename + ext,
+            "title": annex.title or "no_title",
+            "uid": uid,
+            "context_uid": context_uid,
+            "status": "",
+        })
+        # Find the range of files already belonging to this context (if any)
+        context_start_idx, context_end_idx = None, None
+        for i, f in enumerate(session["files"]):
+            if f["context_uid"] == context_uid:
+                if context_start_idx is None:
+                    context_start_idx = i
+                context_end_idx = i
+            elif context_start_idx is not None:
+                break
+        if context_start_idx is None:
+            # No files from this context yet, append at end
+            session["files"].append(file_dict)
+        else:
+            # Insert alongside other files from the same context, ordered by position
+            context = uuidToObject(context_uid)
+            if context is not None:
+                uid_order = {a.UID(): idx for idx, a in enumerate(context.values())}
+            else:
+                uid_order = {}
+            files = session["files"][context_start_idx:context_end_idx + 1]
+            files.append(file_dict)
+            session["files"][context_start_idx:context_end_idx + 1] = sorted(
+                files, key=lambda f: uid_order.get(f["uid"], -1)
+            )
         existing_files.append(new_filename)
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)

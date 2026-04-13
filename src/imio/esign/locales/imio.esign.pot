@@ -234,10 +234,6 @@ msgstr ""
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:123
-msgid "Quick look"
-msgstr ""
-
 #: ../profiles/default/actions.xml
 msgid "Remove from esign session"
 msgstr ""

@@ -106,7 +106,6 @@ class SessionFilesView(BrowserView):
             obj = uuidToObject(f["uid"])
             if obj and ctx:
                 files.append((ctx, obj))
-        self.files_count = len(files)
         self.files = files
         return self.index()
 

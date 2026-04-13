@@ -121,15 +121,19 @@ class FilesColumn(Column):
                   "td": "documents-column"}
 
     def renderQuickLook(self, item):
-        """Renders quick look label including session size info"""
-        quick_look_label = translate(_("Quick look"), context=self.request)
+        """Renders collapsible label with file count and session size info"""
+        count = len(item.get("files", []))
+        label = translate(
+            _("This session contains ${count} element(s).", mapping={"count": count}),
+            context=self.request,
+        )
         max_size_mb = get_esign_registry_max_session_size()
         max_size_bytes = max_size_mb * 1024 * 1024
         size_bytes = item.get("size", 0)
         size_mb = size_bytes / (1024.0 * 1024.0)
         size_style = u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u''
         size_label = u"(%.2f MB / %d MB)" % (size_mb, max_size_mb)
-        return u"%s <span%s>%s</span>" % (quick_look_label, size_style, size_label)
+        return u"%s <span%s>%s</span>" % (label, size_style, size_label)
 
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""

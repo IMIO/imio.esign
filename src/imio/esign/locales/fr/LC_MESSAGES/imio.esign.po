@@ -235,10 +235,6 @@ msgstr "Fonction"
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/table.py:123
-msgid "Quick look"
-msgstr "Aperçu rapide"
-
 #: ../profiles/default/actions.xml
 msgid "Remove from esign session"
 msgstr "Retirer de la session"

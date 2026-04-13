@@ -31,20 +31,12 @@
         .documents-column {
             width: 700px !important;
         }
-
-        .apButtonAction_parapheo {
-            background-image: url("++resource++imio.esign/parapheo.svg");
-            background-size: 18px 18px;
-        }
     </style>
     <div tal:replace="structure view/render_table"></div>
-    <div style="text-align: right;">
+    <div style="text-align: center; margin-top: 8px;">
         <a tal:attributes="href view/get_parapheo_link" target="_blank">
-            <button class="apButton apButtonAction apButtonAction_parapheo">
-                <span i18n:translate="" i18n:domain="imio.esign">Open eSign platform</span>
-                <!-- <i class="fas fa-external-link-alt"></i> --> <!-- FontAwesome 5 -->
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> <!-- FontAwesome 6 -->
-            </button>
+            <span i18n:translate="" i18n:domain="imio.esign">Open eSign platform</span>
+            <i class="fas fa-external-link-alt"></i>
         </a>
     </div>
 </metal:content-core>

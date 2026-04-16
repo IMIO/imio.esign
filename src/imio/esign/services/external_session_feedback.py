@@ -6,6 +6,7 @@ from imio.esign.utils import get_session_annotation
 from imio.helpers.ws import verify_auth_token
 from plone.restapi.deserializer import json_body
 from plone.restapi.services import Service
+from zExceptions import Unauthorized
 
 
 class ExternalSessionFeedbackPost(Service):
@@ -19,9 +20,6 @@ class ExternalSessionFeedbackPost(Service):
             * "value": json dict contaaining sign URL or signer/refused emails
             * "message": "some message", optional message with feedback
         """
-        if not self.authorized():
-            self.request.response.setStatus(403)
-            return {"message": "Unauthorized access"}
         data = json_body(self.request)
         app_session_id = data.get("app_session_id")
         logger.info("External session feedback received: {}".format(data))
@@ -95,7 +93,7 @@ class ExternalSessionFeedbackPost(Service):
             return {"message": str(e)}
         return {"message": "Information correctly handled"}
 
-    def authorized(self):
+    def _authorized(self):
         """Check if the user is authorized to access this service."""
         auth_header = getattr(self.request, "_auth", None)
         if not auth_header or not auth_header.startswith("Bearer "):
@@ -104,3 +102,7 @@ class ExternalSessionFeedbackPost(Service):
         if not token:
             return False
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
+
+    def check_permission(self):
+        if not self._authorized():
+            raise Unauthorized("Unauthorized: Invalid or missing authentication token")

@@ -48,4 +48,16 @@
     provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"
     name="files-belonging-to-a-given-session" />
 
+  <genericsetup:upgradeSteps
+      profile="imio.esign:default"
+      source="1000"
+      destination="1001"
+      >
+    <genericsetup:upgradeDepends
+        title="Apply rolemap"
+        description=""
+        import_steps="rolemap"
+        />
+  </genericsetup:upgradeSteps>
+
 </configure>

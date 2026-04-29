@@ -123,17 +123,26 @@ class FilesColumn(Column):
     def renderQuickLook(self, item):
         """Renders collapsible label with file count and session size info"""
         count = len(item.get("files", []))
-        label = translate(
-            _("This session contains ${count} element(s).", mapping={"count": count}),
-            context=self.request,
-        )
         max_size_mb = get_esign_registry_max_session_size()
         max_size_bytes = max_size_mb * 1024 * 1024
         size_bytes = item.get("size", 0)
         size_mb = size_bytes / (1024.0 * 1024.0)
-        size_style = u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u''
-        size_label = u"(%.2f MB / %d MB)" % (size_mb, max_size_mb)
-        return u"%s <span%s>%s</span>" % (label, size_style, size_label)
+        size_style = (
+            u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u""
+        )
+        size_label = u"%.2f MB / %d MB" % (size_mb, max_size_mb)
+        label = translate(
+            _(
+                "Quick look (${count} element(s), total size: ${size})",
+                mapping={
+                    "count": count,
+                    "size": u"<span%s>%s</span>" % (size_style, size_label),
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
+        return label
 
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""

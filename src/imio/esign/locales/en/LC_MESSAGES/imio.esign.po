@@ -187,7 +187,7 @@ msgid "No files"
 msgstr ""
 
 #: ../browser/templates/session_files.pt:5
-msgid "This session contains ${count} element(s)."
+msgid "Quick look (${count} element(s), total size: ${size})"
 msgstr ""
 
 #: ../browser/views.py:178

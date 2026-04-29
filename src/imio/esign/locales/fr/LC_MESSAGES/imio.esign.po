@@ -188,8 +188,8 @@ msgid "No files"
 msgstr "Aucun fichier"
 
 #: ../browser/templates/session_files.pt:5
-msgid "This session contains ${count} element(s)."
-msgstr "Cette session contient ${count} élément(s)."
+msgid "Quick look (${count} element(s), total size: ${size})"
+msgstr "Aperçu rapide (${count} élément(s), taille totale: ${size})"
 
 #: ../browser/views.py:178
 msgid "No files found to be sent ! Session ${id} not sent."
@@ -217,7 +217,7 @@ msgstr "Aucun utilisateur sélectionné pour l'envoi d'emails."
 
 #: ../browser/templates/sessions.pt:44
 msgid "Open eSign platform"
-msgstr "Ouvrir la plateforme de eSignature"
+msgstr "Ouvrir la plateforme de signature électronique"
 
 #: ../browser/settings.py:84
 msgid "Parapheo url"

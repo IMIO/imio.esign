@@ -258,6 +258,25 @@ class ActionsColumn(Column):
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
             )
+        if (item.get("state") != "draft"
+                and getMultiAdapter((portal, self.request),
+                                    name="esign-session-recreate").may_recreate_session()):
+            confirm_msg = translate(
+                _("This action will create a new session with the same files and signers. Continue ?"),
+                context=self.request,
+            )
+            recreate_title = translate(_("Recreate session"), context=self.request)
+            admin_buttons += u"""
+            <a href="javascript:void(0)" title="{recreate_title}"
+               onclick="if(confirm('{confirm_msg}')){{callViewAndReload('{sessions_url}','@@esign-session-recreate',{{'esign_session_id': '{session_id}'}});}}">
+                <i class="fa fa-clone" style="cursor:pointer"></i>
+            </a>
+            """.format(
+                recreate_title=recreate_title,
+                confirm_msg=confirm_msg.replace(u"'", u"\\'"),
+                sessions_url=sessions_url,
+                session_id=session_id,
+            )
         if check_zope_admin():
             admin_buttons += u"""
             <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}"

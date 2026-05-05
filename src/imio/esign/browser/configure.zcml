@@ -61,6 +61,15 @@
     />
 
     <browser:page
+            name="esign-session-recreate"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".actions.RecreateSessionView"
+            permission="zope2.View"
+            allowed_attributes="may_recreate_session"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:page
             name="external-esign-session-create"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.ExternalSessionCreateView"

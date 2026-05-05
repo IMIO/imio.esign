@@ -45,6 +45,8 @@ Changelog
 - Override `check_permission` method to `ExternalSessionFeedbackPost` service
   to ignore `UseRESTAPI` permission and only check the validity of the authentication token.
   [chris-adam]
+- Added action RecreateSession.
+  [chris-adam]
 
 1.0b7 (2026-04-02)
 ------------------

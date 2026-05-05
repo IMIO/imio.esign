@@ -2,9 +2,11 @@
 from AccessControl import Unauthorized
 from html import escape
 from imio.esign import _
+from imio.esign import manage_session_perm
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import create_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import persistent_to_native
@@ -228,3 +230,60 @@ class SessionAnnotationInfoView(BrowserView):
     def available(self):
         """Defines if the action is available or not."""
         return check_zope_admin()
+
+
+class RecreateSessionView(BrowserView):
+    """Admin view to recreate a fresh draft session from an existing non-draft session."""
+
+    _new_session_id = None
+
+    def __call__(self):
+        if not self.may_recreate_session():
+            raise Unauthorized
+        session_id = self.request.form.get("esign_session_id")
+        if not session_id:
+            api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
+            return self.context.absolute_url() + "/@@parapheo"
+        if not session_id.isdigit():
+            api.portal.show_message(_("Invalid session ID!"), request=self.request, type="error")
+            return self.context.absolute_url() + "/@@parapheo"
+        session_id = int(session_id)
+        annot = get_session_annotation()
+        sessions = annot["sessions"]
+        if session_id not in sessions:
+            api.portal.show_message(_("Session not found!"), request=self.request, type="error")
+            return self.context.absolute_url() + "/@@parapheo"
+        old = sessions[session_id]
+        if old["state"] == "draft":
+            api.portal.show_message(_("Cannot recreate a draft session!"), request=self.request, type="warning")
+            return self.context.absolute_url() + "/@@parapheo"
+        # Build signers as tuples expected by create_session
+        signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
+        # Call create_session directly to guarantee a brand-new session (no merge via discriminate_sessions)
+        new_id, _new_session = create_session(
+            signers=signers,
+            seal=old.get("seal"),
+            acroform=old.get("acroform", True),
+            annot=annot,
+            discriminators=old.get("discriminators", ()),
+            watchers=list(old.get("watchers", [])),
+            create_session_custom_data={"recreated_from": session_id},
+        )
+        # Copy file entries from old session with reset status
+        add_files_to_session(
+            signers=signers,
+            files_uids=[f["uid"] for f in old["files"]],
+            session_id=new_id,
+        )
+        self._new_session_id = new_id
+        audit("recreate_session", "old_session={} new_session={}".format(session_id, new_id))
+        api.portal.show_message(
+            _("New session ${nid} created from session ${oid}", mapping={"nid": new_id, "oid": session_id}),
+            request=self.request,
+            type="info",
+        )
+        return self.context.absolute_url() + "/@@parapheo"
+
+    def may_recreate_session(self):
+        """Check if the user may recreate sessions."""
+        return api.user.has_permission(manage_session_perm, obj=self.context)

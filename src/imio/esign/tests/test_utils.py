@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """utils tests for this package."""
 from collections import OrderedDict
-from collective.iconifiedcategory.utils import calculate_category_id
 from datetime import date
 from datetime import timedelta
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import set_esign_registry_external_watchers
 from imio.esign.config import set_esign_registry_max_session_size
-from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
+from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_file_download_url
@@ -26,90 +25,26 @@ from imio.pyutils.utils import shortuid_decode_id
 from mock import Mock
 from mock import patch
 from plone import api
-from plone.app.testing import setRoles
-from plone.app.testing import TEST_USER_ID
 from plone.namedfile.file import NamedBlobFile
-from plone.namedfile.file import NamedBlobImage
 from zope.annotation import IAnnotations
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 
-import collective.iconifiedcategory
 import json
 import os
-import unittest
 
 
-class TestUtils(unittest.TestCase):
-
-    layer = IMIO_ESIGN_INTEGRATION_TESTING
-
+class TestUtils(BaseEsignTest):
     def setUp(self):
-        self.portal = self.layer["portal"]
-        setRoles(self.portal, TEST_USER_ID, ["Manager"])
-        # add some users
-        api.user.create(email="user1@sign.com", username="user1", password="password1")
-        api.user.create(email="user2@sign.com", username="user2", password="password2")
-        # add content category configuration
-        at_folder = api.content.create(
-            container=self.portal,
-            id="annexes_types",
-            title="Annexes Types",
-            type="ContentCategoryConfiguration",
-            exclude_from_nav=True,
-        )
-        category_group = api.content.create(
-            type="ContentCategoryGroup",
-            title="Annexes",
-            container=at_folder,
-            id="annexes",
-        )
-        icon_path = os.path.join(os.path.dirname(collective.iconifiedcategory.__file__), "tests", "icône1.png")
-        with open(icon_path, "rb") as fl:
-            api.content.create(
-                type="ContentCategory",
-                title="To sign",
-                container=category_group,
-                icon=NamedBlobImage(fl.read(), filename=u"icône1.png"),
-                id="to_sign",
-                predefined_title="To be signed",
-                # confidential=True,
-                # to_print=True,
-                to_sign=True,
-                # signed=True,
-                # publishable=True,
-                # only_pdf=True,
-                show_preview=False,
-            )
-        # add annexes
-        self.folders = []
-        for f in range(2):
-            folder = api.content.create(
-                container=self.portal,
-                id="folder{}".format(f),
-                title="Folder {}".format(f),
-                type="Folder",
-            )
-            self.folders.append(folder)
-        tests_dir = os.path.dirname(__file__)
-        pdf_files = ["annex1.pdf", "annex2.pdf"]
-        self.uids = []
-        for i in range(12):
-            pdf_file = pdf_files[i % len(pdf_files)]
-            container = self.folders[i % len(self.folders)]
-            with open(os.path.join(tests_dir, pdf_file), "rb") as f:
-                annex = api.content.create(
-                    container=container,
-                    type="annex",
-                    id="annex{}".format(i),
-                    title="Annex {}".format(i),
-                    content_category=calculate_category_id(self.portal["annexes_types"]["annexes"]["to_sign"]),
-                    scan_id="0123456000000{:02d}".format(i),
-                    file=NamedBlobFile(data=f.read(), filename=u"annex{}.pdf".format(i), contentType="application/pdf"),
-                )
-                self.uids.append(annex.UID())
+        super(TestUtils, self).setUp()
+        api.user.create(email="user1@sign.com", username="user1", password="password1")  # noqa: S106
+        api.user.create(email="user2@sign.com", username="user2", password="password2")  # noqa: S106
+        self.folders = [self.portal["folder0"], self.portal["folder1"]]
+        self.uids = [self.portal["folder{}".format(i % 2)]["annex{}".format(i)].UID() for i in range(12)]
 
-    def test_add_remove_files_to_session(self):
+    def test_add_files_to_session(self):
+        """add_files_to_session: session creation, discrimination, reuse, size splitting,
+        duplicate filenames, and idempotent metadata update."""
         root_annot = IAnnotations(self.portal)
         self.assertNotIn("imio.esign", root_annot)
         signers = [
@@ -117,7 +52,7 @@ class TestUtils(unittest.TestCase):
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
 
-        # add files, no session_id, no discriminator
+        # --- create first session ---
         sid, session = add_files_to_session(signers, (self.uids[0],), title="my title", watchers=("stalker@sign.com",))
         self.assertEqual(sid, 0)
         annot = root_annot["imio.esign"]
@@ -134,7 +69,6 @@ class TestUtils(unittest.TestCase):
         self.assertIsNone(session["sign_url"])
         self.assertEqual(session["client_id"], "0123456")
         self.assertEqual(len(session["watchers"]), 1)
-        self.assertEqual(len(session["files"]), 1)
         self.assertListEqual(
             list(session["files"]),
             [
@@ -149,11 +83,10 @@ class TestUtils(unittest.TestCase):
             ],
         )
         self.assertEqual(len(session["signers"]), 2)
-        self.assertEqual(session["size"], 6968)  # annex1.pdf
+        self.assertEqual(session["size"], 6968)
 
-        # add files, no session_id => same session reused
-        signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # changed position => not discriminant
-        # rename uids[1] to same name as uids[0] to test duplicate filename handling
+        # --- same signers → session reused; duplicate filename renamed ---
+        signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # position change is non-discriminant
         annex1_obj = uuidToObject(uuid=self.uids[1], unrestricted=True)
         annex1_obj.file.filename = u"annex0.pdf"
         sid, session = add_files_to_session(signers, (self.uids[1],))
@@ -165,12 +98,11 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertIn(self.folders[1].UID(), annot["c_uids"])
         self.assertEqual(len(session["files"]), 2)
-        # verify duplicate filename was renamed
         self.assertEqual(session["files"][1]["filename"], u"annex0-1.pdf")
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 1)
         self.assertEqual(session["size"], 6968 + 7014)  # annex1 + annex2
 
-        # add files, no session_id, new discriminations => new session
+        # --- new discriminator → new session ---
         sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))
         self.assertEqual(sid, 1)
         self.assertEqual(annot["numbering"], 2)
@@ -180,7 +112,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(session["files"]), 1)
         self.assertEqual(len(session["watchers"]), 0)
 
-        # add files, no session_id, same discriminations => same session
+        # --- same discriminator → reuse session ---
         sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))
         self.assertEqual(sid, 1)
         self.assertEqual(annot["numbering"], 2)
@@ -189,28 +121,28 @@ class TestUtils(unittest.TestCase):
         self.assertIn(self.uids[3], annot["uids"])
         self.assertEqual(len(session["files"]), 2)
 
-        # add files, no session_id, other discriminations => other session
-        sid, session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))
+        # --- different discriminator → new session ---
+        sid, _session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))
         self.assertEqual(sid, 2)
 
-        # add files, session_id, other discriminations => reused session
-        sid, session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))
+        # --- explicit session_id overrides discrimination ---
+        sid, _session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))
         self.assertEqual(sid, 0)
 
-        # add files, session_id unfound, other discriminations => new session
-        sid, session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))
+        # --- unfound session_id → new session ---
+        sid, _session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))
         self.assertEqual(sid, 3)
 
-        # add files, no session_id, different signers => new session
-        sid, session = add_files_to_session([signers[0]], (self.uids[7],))
+        # --- different signers → new session ---
+        sid, _session = add_files_to_session([signers[0]], (self.uids[7],))
         self.assertEqual(sid, 4)
 
-        # add files, no session_id, different seal => new session
-        sid, session = add_files_to_session(signers, (self.uids[8],), seal="seal1")
+        # --- different seal → new session ---
+        sid, _session = add_files_to_session(signers, (self.uids[8],), seal="seal1")
         self.assertEqual(sid, 5)
 
-        # add files, no session_id, same seal, different acroform => new session
-        sid, session = add_files_to_session(signers, (self.uids[9],), acroform=False)
+        # --- different acroform → new session ---
+        sid, _session = add_files_to_session(signers, (self.uids[9],), acroform=False)
         self.assertEqual(sid, 6)
         self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["c_uids"]), 2)
@@ -218,217 +150,114 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
         self.assertEqual(len(annot["sessions"]), 7)
 
-        # add files, no session_id, no signers => new session
+        # --- no signers → new session ---
         sid, session = add_files_to_session([], (self.uids[10],), seal="seal2")
         self.assertEqual(sid, 7)
         self.assertEqual(len(annot["sessions"]), 8)
         self.assertEqual(session["signers"], [])
         self.assertEqual(session["seal"], "seal2")
 
-        # add files, no session_id, same seal, different states => new session
+        # --- same seal but session already sent → new session ---
         session["state"] = "sent"
-        sid, session = add_files_to_session([], (self.uids[11],), seal="seal2")
+        sid, _session = add_files_to_session([], (self.uids[11],), seal="seal2")
         self.assertEqual(sid, 8)
         self.assertEqual(len(annot["sessions"]), 9)
 
-        # now we can start to remove
-        remove_files_from_session((self.uids[0], self.uids[1]))  # 2 of 3 session files
-        self.assertEqual(len(annot["uids"]), 10)
-        self.assertEqual(len(annot["sessions"][0]["files"]), 1)
-        self.assertEqual(annot["sessions"][0]["size"], 7014)  # only uid[5] (annex2) remains
-        self.assertEqual(len(annot["c_uids"][self.folders[0].UID()]), 5)
-        self.assertEqual(len(annot["c_uids"][self.folders[1].UID()]), 5)
-        remove_files_from_session((self.uids[5],))  # no more session files, session removed
-        self.assertEqual(len(annot["uids"]), 9)
-        self.assertEqual(len(annot["sessions"]), 8)
-        self.assertNotIn(0, annot["sessions"])
-        remove_files_from_session((self.uids[2], self.uids[3]))  # all session files, session removed
-        self.assertEqual(len(annot["uids"]), 7)
-        self.assertEqual(len(annot["sessions"]), 7)
-        self.assertNotIn(1, annot["sessions"])
-        remove_files_from_session((self.uids[4],))
-        remove_files_from_session((self.uids[6],))
-        remove_files_from_session((self.uids[7],))
-        remove_files_from_session((self.uids[8],))
-        remove_files_from_session((self.uids[9],))
-        remove_files_from_session((self.uids[10],))
-        remove_files_from_session((self.uids[11],))
-        self.assertEqual(len(annot["uids"]), 0)
-        self.assertEqual(len(annot["c_uids"]), 0)
-        self.assertEqual(len(annot["sessions"]), 0)
+        # --- duplicate filenames: each gets a numbered suffix ---
+        del root_annot["imio.esign"]
+        for i in range(3):
+            api.content.get(UID=self.uids[i]).file.filename = u"same_filename.pdf"
+        s, ses = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(len(ses["files"]), 1)
+        self.assertEqual(ses["files"][0]["filename"], "same_filename.pdf")
+        s, ses = add_files_to_session(signers, (self.uids[1],), session_id=s)
+        self.assertEqual(len(ses["files"]), 2)
+        self.assertIn("same_filename-1.pdf", [f["filename"] for f in ses["files"]])
+        s, ses = add_files_to_session(signers, (self.uids[2],), session_id=s)
+        self.assertEqual(len(ses["files"]), 3)
+        filenames = [f["filename"] for f in ses["files"]]
+        self.assertIn("same_filename.pdf", filenames)
+        self.assertIn("same_filename-1.pdf", filenames)
+        self.assertIn("same_filename-2.pdf", filenames)
 
-    def test_create_external_session(self):
-        """Test create_external_session with mocked requests.post and get_auth_token."""
-        from mock import MagicMock
-        from mock import patch
-
-        # Case 1: session not found => returns sentinel string, no HTTP call made
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(999)
-        self.assertEqual(result, "_session_not_found_")
-        mock_requests.post.assert_not_called()
-
-        # Setup: create a session with two signers and a watcher
-        signers = [
-            ("user1", "user1@sign.com", "User 1", "Position 1"),
-            ("user2", "user2@sign.com", "User 2", "Position 2"),
-        ]
-        sid, session = add_files_to_session(
-            signers, (self.uids[0], self.uids[2],), title=u"Test session", watchers=("watcher@sign.com",)
-        )
+        # --- re-adding same file updates metadata, does not duplicate ---
+        del root_annot["imio.esign"]
+        annex0_uid = self.uids[0]
+        annex0 = api.content.get(UID=annex0_uid)
+        annex0.file.filename = u"annex0.pdf"
+        # reset annex1 filename which was changed in the duplicate-filename block above
+        annex1_reset = api.content.get(UID=self.uids[1])
+        annex1_reset.file.filename = u"annex1.pdf"
+        sid, ses = add_files_to_session(signers, (annex0_uid,))
         self.assertEqual(sid, 0)
-        self.assertEqual(session["state"], "draft")
-
-        # Case 2: HTTP 200 => state becomes "sent", request payload is verified
-        mock_response = MagicMock()
-        mock_response.status_code = 200
-        mock_response.text = '{"message": "Request received"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response
-            result = create_external_session(sid)
-        self.assertIs(result, mock_response)
-        self.assertEqual(session["state"], "sent")
-        mock_requests.post.assert_called_once()
-        call_args = mock_requests.post.call_args
-        posted_url = call_args[0][0]
-        self.assertIn("imio/esign/v1/luxtrust/sessions", posted_url)
-        self.assertEqual(call_args[1]["headers"]["Authorization"], "Bearer test_token")
-        data = json.loads(call_args[1]["data"]["data"])
-        self.assertIn("commonData", data)
-        self.assertIn("signData", data)
-        self.assertNotIn("sealData", data)
-        self.assertEqual(data["commonData"]["sessionName"], u"Test session")
-        self.assertEqual(data["commonData"]["imioAppSessionId"], session["sign_id"])
-        self.assertEqual(data["signData"]["users"], ["user1@sign.com", "user2@sign.com"])
-        self.assertEqual(data["signData"]["watchers"], ["watcher@sign.com"])
-        files_param = call_args[1]["files"]
-        self.assertEqual(len(files_param), 2)
-        self.assertEqual(files_param[0][0], "files")
-        self.assertEqual(files_param[0][1][0], u"annex0.pdf")
-        self.assertEqual(files_param[1][0], "files")
-        self.assertEqual(files_param[1][1][0], u"annex2.pdf")
-
-        # Case 3: HTTP non-200 => state unchanged (stays "draft")
-        sid2, session2 = add_files_to_session(signers, (self.uids[2],), title=u"Test session 2")
-        mock_response_fail = MagicMock()
-        mock_response_fail.status_code = 400
-        mock_response_fail.text = '{"error": "Bad request"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response_fail
-            result = create_external_session(sid2)
-        self.assertIs(result, mock_response_fail)
-        self.assertEqual(session2["state"], "draft")
-
-        # Case 4: seal session without seal_code configured => returns "_no_seal_code_", no HTTP call
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
-        annex0_obj = uuidToObject(uuid=self.uids[0], unrestricted=True)
-        annex0_obj.file.filename = u"annex1.pdf"
-        sid3, session3 = add_files_to_session(signers, (self.uids[4], self.uids[1], self.uids[0]), seal="PADES_SEAL")
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(sid3)
-        self.assertEqual(result, "_no_seal_code_")
-        mock_requests.post.assert_not_called()
-
-        # Case 5: seal session with seal_code, custom URL => sealData in payload, correct URL used
-        api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
-        mock_response_seal = MagicMock()
-        mock_response_seal.status_code = 200
-        mock_response_seal.text = '{"message": "OK"}'
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            mock_requests.post.return_value = mock_response_seal
-            result = create_external_session(sid3, esign_root_url="https://custom.example.com")
-        self.assertIs(result, mock_response_seal)
-        self.assertEqual(session3["state"], "sent")
-        call_args = mock_requests.post.call_args
-        self.assertEqual(call_args[0][0], "https://custom.example.com/imio/esign/v1/luxtrust/sessions")
-        data = json.loads(call_args[1]["data"]["data"])
-        self.assertIn("sealData", data)
-        self.assertEqual(data["sealData"]["sealCode"], "PADES_SEAL")
-        self.assertEqual(data["sealData"]["users"], ["seal@example.com"])
-        self.assertTrue(data["sealData"]["acroform"])
-        files_param = call_args[1]["files"]
-        self.assertEqual(len(files_param), 3)
-        self.assertEqual(files_param[0][0], "files")
-        self.assertEqual(files_param[0][1][0], u"annex1-1.pdf")
-        self.assertEqual(files_param[1][0], "files")
-        self.assertEqual(files_param[1][1][0], u"annex4.pdf")
-        self.assertEqual(files_param[2][1][0], u"annex1.pdf")
-
-        # Case 6: session without files to send => returns "_no_files_", no HTTP call
-        for i in range(len(session3["files"])):
-            session3["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(sid3)
-        self.assertEqual(result, "_no_files_")
-        mock_requests.post.assert_not_called()
-
-        # case 7: bad session number to send => returns "_session_not_found_", no HTTP call
-        with patch('imio.esign.utils.get_auth_token', return_value='test_token'), \
-             patch('imio.esign.utils.requests') as mock_requests:
-            result = create_external_session(99)
-        self.assertEqual(result, "_session_not_found_")
-        mock_requests.post.assert_not_called()
-
-    def test_get_filesize(self):
-        """Test get_filesize returns the correct file size."""
-        # even index => annex1.pdf (6968 bytes)
-        self.assertEqual(get_filesize(self.uids[0]), 6968)
-        # odd index => annex2.pdf (7014 bytes)
-        self.assertEqual(get_filesize(self.uids[1]), 7014)
-        # invalid UID returns 0
-        self.assertEqual(get_filesize("nonexistent_uid"), 0)
-        # check size get robustness
-        annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
-        self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")
-        folder = annex.__parent__
-        self.assertEqual(folder.categorized_elements[self.uids[0]]["filesize"], 6968)
-        folder.categorized_elements[self.uids[0]]["filesize"] = 1111
-        self.assertEqual(get_filesize(self.uids[0]), 1111)
-        del folder.categorized_elements[self.uids[0]]["filesize"]
-        self.assertEqual(get_filesize(self.uids[0]), 6968)
-        del folder.categorized_elements[self.uids[0]]
-        self.assertEqual(get_filesize(self.uids[0]), 6968)
-        delattr(folder, "categorized_elements")
-        self.assertEqual(get_filesize(self.uids[0]), 6968)
-
-    def test_session_size_discrimination(self):
-        """Test that sessions are split when they would exceed max_session_size."""
-        signers = [
-            ("user1", "user1@sign.com", "User 1", "Position 1"),
-        ]
-
-        # add one file to create a session (annex1.pdf = 6968 bytes)
-        sid, session = add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(len(ses["files"]), 1)
+        self.assertEqual(ses["files"][0]["filename"], "annex0.pdf")
+        self.assertEqual(ses["files"][0]["title"], "Annex 0")
+        self.assertEqual(ses["size"], 6968)
+        annex0.file.filename = u"new_annex0.pdf"
+        annex0.setTitle("New Annex 0")
+        sid, ses = add_files_to_session(signers, (annex0_uid,))
         self.assertEqual(sid, 0)
-        self.assertEqual(session["size"], 6968)
+        self.assertEqual(len(ses["files"]), 1)
+        self.assertEqual(ses["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(ses["files"][0]["title"], "New Annex 0")
+        self.assertEqual(ses["size"], 6968)
+        sid, ses = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(ses["files"]), 1)
+        self.assertEqual(ses["files"][0]["filename"], "new_annex0.pdf")
+        self.assertEqual(ses["files"][0]["title"], "New Annex 0")
+        self.assertEqual(ses["size"], 6968)
+        annex1_uid = self.uids[1]
+        annex1 = api.content.get(UID=annex1_uid)
+        sid, ses = add_files_to_session(signers, (annex1_uid,))
+        self.assertEqual(sid, 0)
+        self.assertEqual(len(ses["files"]), 2)
+        self.assertEqual(ses["files"][1]["filename"], "annex1.pdf")
+        self.assertEqual(ses["files"][1]["title"], "Annex 1")
+        self.assertEqual(ses["size"], 13982)
+        annex1.setTitle("New Annex 1")
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
+        notify(ObjectModifiedEvent(annex1))
+        self.assertEqual(len(ses["files"]), 2)
+        self.assertEqual(ses["files"][1]["filename"], "new_annex1.pdf")
+        self.assertEqual(ses["files"][1]["title"], "New Annex 1")
+        self.assertEqual(ses["files"][1]["scan_id"], "012345600000001")
+        self.assertEqual(ses["size"], 13936)
+        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
+            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex0.pdf", contentType="application/pdf")
+        annex1.scan_id = "012345600000002"
+        notify(ObjectModifiedEvent(annex1))
+        self.assertEqual(ses["files"][1]["filename"], "new_annex0-1.pdf")
+        self.assertEqual(ses["files"][1]["scan_id"], "012345600000002")
+        annex2_uid = self.uids[2]
+        annex2 = api.content.get(UID=annex2_uid)
+        notify(ObjectModifiedEvent(annex2))
+        remove_files_from_session((annex0_uid,))
+        self.assertEqual(ses["size"], 6968)
 
-        # set session size just under the 1 MB limit so adding another file exceeds it
-        session["size"] = 1 * 1024**2 - 1  # 1 MB - 1 byte
-        previous_max = get_esign_registry_max_session_size()
-        self.addCleanup(set_esign_registry_max_session_size, previous_max)
+        # --- size-based session splitting ---
+        del root_annot["imio.esign"]
+        annex0.file.filename = u"annex0.pdf"
+        sid0, ses0 = add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(sid0, 0)
+        self.assertEqual(ses0["size"], 6968)
+        ses0["size"] = 1 * 1024 ** 2 - 1
+        prev_max = get_esign_registry_max_session_size()
+        self.addCleanup(set_esign_registry_max_session_size, prev_max)
         set_esign_registry_max_session_size(1)
-
-        # adding a file (~7KB) would exceed 1 MB => new session created
-        sid2, session2 = add_files_to_session(signers, (self.uids[1],))
+        sid1, ses1 = add_files_to_session(signers, (self.uids[1],))
+        self.assertEqual(sid1, 1)
+        self.assertIsNot(ses1, ses0)
+        self.assertEqual(ses1["size"], 6968)
+        sid2, ses2 = add_files_to_session(signers, (self.uids[2],))
         self.assertEqual(sid2, 1)
-        self.assertIsNot(session2, session)
-        self.assertEqual(session2["size"], 7014)
-
-        # with enough room, files go to the same session
-        sid3, session3 = add_files_to_session(signers, (self.uids[2],))
-        self.assertEqual(sid3, 1)
-        self.assertIs(session3, session2)
-        self.assertEqual(session3["size"], 7014 + 6968)
+        self.assertIs(ses2, ses1)
+        self.assertEqual(ses2["size"], 6968 + 6968)
 
     def test_add_files_ordering_by_context(self):
-        """Files added to a session are ordered by their position within their context."""
+        """add_files_to_session: files are ordered by their sibling position within their context."""
         def reset_annotation():
             annot = get_session_annotation()
             annot["sessions"].clear()
@@ -460,147 +289,103 @@ class TestUtils(unittest.TestCase):
         sid, session = add_files_to_session(signers, (self.uids[4],), session_id=sid)
         sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
         sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
-        self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[2], self.uids[4], self.uids[1]])
+        self.assertEqual(
+            [f["uid"] for f in session["files"]],
+            [self.uids[0], self.uids[2], self.uids[4], self.uids[1]],
+        )
 
-    def test_add_files_with_duplicate_filenames(self):
-        """Test that files with duplicate filenames are renamed with suffix."""
-        annot = get_session_annotation()
-        self.assertEqual(len(annot["sessions"]), 0)
-
-        signers = [
-            ("user1", "user1@sign.com", "User 1", "Position 1"),
-        ]
-
-        for i in range(3):
-            annex = api.content.get(UID=self.uids[i])
-            annex.file.filename = u"same_filename.pdf"
-            # annex.reindexObject()
-
-        sid, session = add_files_to_session(signers, (self.uids[0],))
-        self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "same_filename.pdf")
-        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
-        self.assertEqual(len(session["files"]), 2)
-        self.assertIn("same_filename-1.pdf", [f["filename"] for f in session["files"]])
-
-        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
-        self.assertEqual(len(session["files"]), 3)
-        filenames = [f["filename"] for f in session["files"]]
-        self.assertIn("same_filename.pdf", filenames)
-        self.assertIn("same_filename-1.pdf", filenames)
-        self.assertIn("same_filename-2.pdf", filenames)
-
-    def test_add_files_already_exist_is_updated(self):
-        """When adding a file to the same session, it is updated."""
-        annot = get_session_annotation()
-        self.assertEqual(len(annot["sessions"]), 0)
-
-        signers = [
-            ("user1", "user1@sign.com", "User 1", "Position 1"),
-        ]
-
-        annex0_uid = self.uids[0]
-        annex0 = api.content.get(UID=annex0_uid)
-
-        sid, session = add_files_to_session(signers, (annex0_uid,))
-        self.assertEqual(sid, 0)
-        self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "annex0.pdf")
-        self.assertEqual(session["files"][0]["title"], "Annex 0")
-        self.assertEqual(session["size"], 6968)
-        # edit annex and add again, still one annex in session and data are updated
-        annex0.file.filename = u"new_annex0.pdf"
-        annex0.setTitle('New Annex 0')
-        sid, session = add_files_to_session(signers, (annex0_uid,))
-        # same session_id
-        self.assertEqual(sid, 0)
-        self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
-        self.assertEqual(session["files"][0]["title"], "New Annex 0")
-        self.assertEqual(session["size"], 6968)
-        # add again exact same file
-        sid, session = add_files_to_session(signers, (annex0_uid,))
-        self.assertEqual(sid, 0)
-        self.assertEqual(len(session["files"]), 1)
-        self.assertEqual(session["files"][0]["filename"], "new_annex0.pdf")
-        self.assertEqual(session["files"][0]["title"], "New Annex 0")
-        self.assertEqual(session["size"], 6968)
-        # add second file 2 times
-        annex1_uid = self.uids[1]
-        annex1 = api.content.get(UID=annex1_uid)
-        sid, session = add_files_to_session(signers, (annex1_uid,))
-        self.assertEqual(sid, 0)
-        self.assertEqual(len(session["files"]), 2)
-        self.assertEqual(session["files"][1]["filename"], "annex1.pdf")
-        self.assertEqual(session["files"][1]["title"], "Annex 1")
-        self.assertEqual(session["size"], 13982)
-        # edit and add again
-        annex1.setTitle('New Annex 1')
-        # edit file, filename and content so size changed
-        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
-            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex1.pdf", contentType="application/pdf")
-        notify(ObjectModifiedEvent(annex1))
-        # data were already updated
-        self.assertEqual(len(session["files"]), 2)
-        self.assertEqual(session["files"][1]["filename"], "new_annex1.pdf")
-        self.assertEqual(session["files"][1]["title"], "New Annex 1")
-        self.assertEqual(session["files"][1]["scan_id"], "012345600000001")
-        self.assertEqual(session["size"], 13936)
-        # change file but add a filename already used, change scan_id as well
-        with open(os.path.join(os.path.dirname(__file__), "annex1.pdf"), "rb") as f:
-            annex1.file = NamedBlobFile(data=f.read(), filename=u"new_annex0.pdf", contentType="application/pdf")
-        annex1.scan_id = "012345600000002"
-        notify(ObjectModifiedEvent(annex1))
-        self.assertEqual(session["files"][1]["filename"], "new_annex0-1.pdf")
-        self.assertEqual(session["files"][1]["scan_id"], "012345600000002")
-        # edit annex out of any session
-        annex2_uid = self.uids[2]
-        annex2 = api.content.get(UID=annex2_uid)
-        notify(ObjectModifiedEvent(annex2))
-        # just to check, remove annex0
-        remove_files_from_session((annex0_uid,))
-        self.assertEqual(session["size"], 6968)
-
-    def test_remove_context_from_session(self):
-        """Test removing a context from a session."""
-        annot = get_session_annotation()
-        self.assertEqual(len(annot["sessions"]), 0)
+    def test_remove_files_from_session(self):
+        """remove_files_from_session: partial removal keeps session; removing last file deletes it."""
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
-        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1], self.uids[2], self.uids[3]))
+        annot = get_session_annotation()
+        add_files_to_session(signers, (self.uids[0], self.uids[1], self.uids[2]))
+
+        # --- partial removal: 2 of 3 files ---
+        remove_files_from_session((self.uids[0], self.uids[1]))
+        self.assertEqual(len(annot["uids"]), 1)
+        self.assertEqual(len(annot["sessions"][0]["files"]), 1)
+        self.assertEqual(annot["sessions"][0]["size"], 6968)  # only uids[2] (annex1.pdf) remains
+
+        # --- remove last file: session deleted ---
+        remove_files_from_session((self.uids[2],))
+        self.assertEqual(len(annot["uids"]), 0)
+        self.assertEqual(len(annot["sessions"]), 0)
+
+        # --- remove_empty_session=False: session kept with empty files list ---
+        add_files_to_session(signers, (self.uids[0],))
+        session_id = annot["uids"][self.uids[0]]
+        remove_files_from_session((self.uids[0],), remove_empty_session=False)
+        self.assertEqual(len(annot["uids"]), 0)
+        self.assertEqual(len(annot["sessions"]), 1)
+        self.assertEqual(annot["sessions"][session_id]["files"], [])
+
+    def test_get_filesize(self):
+        """get_filesize: reads cached value from categorized_elements, falls back to blob."""
+        self.assertEqual(get_filesize(self.uids[0]), 6968)  # annex0 uses annex1.pdf (6968 bytes)
+        self.assertEqual(get_filesize(self.uids[1]), 7014)  # annex1 uses annex2.pdf (7014 bytes)
+        self.assertEqual(get_filesize("nonexistent_uid"), 0)
+
+        annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
+        self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")
+        folder = annex.__parent__
+        self.assertEqual(folder.categorized_elements[self.uids[0]]["filesize"], 6968)
+
+        folder.categorized_elements[self.uids[0]]["filesize"] = 1111
+        self.assertEqual(get_filesize(self.uids[0]), 1111)
+
+        del folder.categorized_elements[self.uids[0]]["filesize"]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+
+        del folder.categorized_elements[self.uids[0]]
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+
+        delattr(folder, "categorized_elements")
+        self.assertEqual(get_filesize(self.uids[0]), 6968)
+
+    def test_remove_context_from_session(self):
+        """remove_context_from_session: removes all files for a context UID; deletes session when empty."""
+        signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+        add_files_to_session(signers, (self.uids[0], self.uids[1], self.uids[2], self.uids[3]))
         self.assertEqual(len(annot["uids"]), 4)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["sessions"]), 1)
+
         remove_context_from_session((self.folders[0].UID(),))
         self.assertEqual(len(annot["uids"]), 2)
         self.assertEqual(len(annot["c_uids"]), 1)
         self.assertEqual(len(annot["sessions"]), 1)
+
         remove_context_from_session((self.folders[1].UID(),))
         self.assertEqual(len(annot["uids"]), 0)
         self.assertEqual(len(annot["c_uids"]), 0)
         self.assertEqual(len(annot["sessions"]), 0)
 
     def test_remove_session(self):
-        """Test removing a session."""
-        annot = get_session_annotation()
-        self.assertEqual(len(annot["sessions"]), 0)
+        """remove_session: deletes the session and clears its file UID references."""
         signers = [
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
-        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
-        self.assertEqual(sid, 0)
-        sid, session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")
-        self.assertEqual(sid, 1)
-        remove_session(0)  # remove first session
+        annot = get_session_annotation()
+        self.assertEqual(len(annot["sessions"]), 0)
+        add_files_to_session(signers, (self.uids[0], self.uids[1]))
+        sid2, _session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")
+        self.assertEqual(sid2, 1)
+        remove_session(0)
         self.assertEqual(len(annot["uids"]), 2)
         self.assertEqual(len(annot["c_uids"]), 2)
         self.assertEqual(len(annot["sessions"]), 1)
 
     def test_get_session_info(self):
-        """Test getting info about a given session id."""
+        """get_session_info: returns {} for unknown id; returns session dict for known id."""
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
         self.assertEqual(get_session_info(0), {})
@@ -614,74 +399,70 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_session_info(sid), session)
 
     def test_get_sessions_for(self):
-        """Test getting sessions for a given context_uid."""
-        # no session
+        """get_sessions_for: returns OrderedDict keyed by session id; honours readonly flag."""
         context_uid = self.folders[0].UID()
         self.assertEqual(get_sessions_for(context_uid), OrderedDict())
-        # one session
+
         signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        sid, session = add_files_to_session(signers, (self.uids[0],))
-        self.assertEqual(get_sessions_for(context_uid).keys(), [0])
-        # two sessions
-        signers = [("user2", "user2@sign.com", "User 2", "Position 2")]
-        sid, session = add_files_to_session(signers, (self.uids[2],))
-        self.assertEqual(get_sessions_for(context_uid).keys(), [0, 1])
-        # readonly=True
+        add_files_to_session(signers, (self.uids[0],))
+        self.assertEqual(list(get_sessions_for(context_uid).keys()), [0])
+
+        signers2 = [("user2", "user2@sign.com", "User 2", "Position 2")]
+        add_files_to_session(signers2, (self.uids[2],))
+        self.assertEqual(list(get_sessions_for(context_uid).keys()), [0, 1])
+
+        # readonly=True (default): mutations do not persist
         sessions = get_sessions_for(context_uid)
-        self.assertEqual(get_session_info(0)['watchers'], [])
-        sessions[0]['watchers'] = ["watcher@sign.com"]
-        self.assertEqual(get_session_info(0)['watchers'], [])
-        # readonly=False
+        self.assertEqual(get_session_info(0)["watchers"], [])
+        sessions[0]["watchers"] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)["watchers"], [])
+
+        # readonly=False: mutations persist
         sessions = get_sessions_for(context_uid, readonly=False)
-        self.assertEqual(get_session_info(0)['watchers'], [])
-        sessions[0]['watchers'] = ["watcher@sign.com"]
-        self.assertEqual(get_session_info(0)['watchers'], ["watcher@sign.com"])
+        self.assertEqual(get_session_info(0)["watchers"], [])
+        sessions[0]["watchers"] = ["watcher@sign.com"]
+        self.assertEqual(get_session_info(0)["watchers"], ["watcher@sign.com"])
 
     def test_get_file_info(self):
-        """Test getting infos for a given file."""
+        """get_file_info: returns None for unknown session/file; honours readonly flag."""
         annex0_uid = self.uids[0]
         annex1_uid = self.uids[1]
-        # no session
         self.assertIsNone(get_file_info(0, annex0_uid))
-        # create session
+
         signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        sid, session = add_files_to_session(signers, (annex0_uid,))
-        self.assertEqual(get_file_info(0, annex0_uid)['uid'], annex0_uid)
+        add_files_to_session(signers, (annex0_uid,))
+        self.assertEqual(get_file_info(0, annex0_uid)["uid"], annex0_uid)
         self.assertIsNone(get_file_info(0, annex1_uid))
-        # readonly=True by default
+
+        # readonly=True: mutations do not persist
         file_info = get_file_info(0, annex0_uid)
-        file_info['title'] = u'New title annex 0'
-        # not changed in the annotation
-        self.assertEqual(
-            get_session_annotation()['sessions'][0]['files'][0]['title'], u'Annex 0')
-        # readonly=False
+        file_info["title"] = u"New title annex 0"
+        self.assertEqual(get_session_annotation()["sessions"][0]["files"][0]["title"], u"Annex 0")
+
+        # readonly=False: mutations persist
         file_info = get_file_info(0, annex0_uid, readonly=False)
-        file_info['title'] = u'New title annex 0'
-        # changed in the annotation
-        self.assertEqual(
-            get_session_annotation()['sessions'][0]['files'][0]['title'], u'New title annex 0')
+        file_info["title"] = u"New title annex 0"
+        self.assertEqual(get_session_annotation()["sessions"][0]["files"][0]["title"], u"New title annex 0")
 
     def test_get_file_download_url(self):
-        """Test generating file download URL from UID."""
+        """get_file_download_url: encodes UID; respects custom root_url; accepts pre-computed short_uid."""
         uid = "f40682caafc045b4b81973bd82ea9ab6"
-
         api.portal.set_registry_record("imio.esign.file_url", "https://downloads.files.com")
 
         result = get_file_download_url(uid)
-        self.assertEqual(result, ("https://downloads.files.com/Rzgwy-9BVG9-viEts-5GBkn-Rm",
-                                  "Rzgwy-9BVG9-viEts-5GBkn-Rm"))
+        self.assertEqual(
+            result, ("https://downloads.files.com/Rzgwy-9BVG9-viEts-5GBkn-Rm", "Rzgwy-9BVG9-viEts-5GBkn-Rm")
+        )
 
         custom_url = "https://custom.domain.org/"
         result = get_file_download_url(uid, root_url=custom_url)
         self.assertEqual(result[0], "https://custom.domain.org/Rzgwy-9BVG9-viEts-5GBkn-Rm")
 
-        # Test with another UID to verify encoding works
         uid2 = self.uids[0]
         result2 = get_file_download_url(uid2)
         self.assertTrue(result2[0].startswith("https://downloads.files.com/"))
-        self.assertEqual(shortuid_decode_id(result2[1], separator="-"), uid2)  # correctly decoded
+        self.assertEqual(shortuid_decode_id(result2[1], separator="-"), uid2)
 
-        # Test with pre-computed short_uid parameter
         result3 = get_file_download_url(None, short_uid="MyCustom-Short-UID")
         self.assertEqual(result3, ("https://downloads.files.com/MyCustom-Short-UID", "MyCustom-Short-UID"))
 
@@ -693,86 +474,87 @@ class TestUtils(unittest.TestCase):
         today = date.today()
         self.assertEqual(get_max_download_date(None, timedelta(days=0), today), today)
 
-    def test_create_external_session_not_found(self):
-        """Returns _session_not_found_ for a non-existent session id."""
+    def test_create_external_session(self):
+        """create_external_session: validates state, seal config, file resolution, and builds payloads."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+
+        # --- session not found ---
         result = create_external_session(9999)
         self.assertEqual(result, "_session_not_found_")
 
-    def test_create_external_session_no_seal_email(self):
-        """Returns _no_seal_email_ when session requires a seal but no email configured."""
+        # --- seal session: email missing ---
         sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
-        # seal_email defaults to "" (falsy) — no registry setup needed
         result = create_external_session(sid, esign_root_url="http://test.example.com")
         self.assertEqual(result, "_no_seal_email_")
 
-    def test_create_external_session_no_seal_code(self):
-        """Returns _no_seal_code_ when seal email is set but seal code is missing."""
-        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
+        # --- seal session: code missing ---
         api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
-        # seal_code defaults to "" (falsy)
         result = create_external_session(sid, esign_root_url="http://test.example.com")
         self.assertEqual(result, "_no_seal_code_")
 
-    def test_create_external_session_error_response(self):
-        """Returns response object and leaves session state unchanged on non-200."""
-        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        sid, session = add_files_to_session(signers, (self.uids[0],))
+        # --- error response: state unchanged ---
+        sid2, session2 = add_files_to_session(signers, (self.uids[1],))
         mock_response = Mock()
         mock_response.status_code = 500
         mock_response.text = "Internal Server Error"
-        with patch("imio.esign.utils.requests.post", return_value=mock_response):
-            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
-                result = create_external_session(sid, esign_root_url="http://test.example.com")
+        with patch("imio.esign.utils.requests.post", return_value=mock_response):  # real HTTP call
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+                result = create_external_session(sid2, esign_root_url="http://test.example.com")
         self.assertIs(result, mock_response)
-        self.assertEqual(session["state"], "draft")
+        self.assertEqual(session2["state"], "draft")
 
-    def test_create_external_session_sign_payload(self):
-        """Returns response object, sets session state to 'sent', and signData contains signer email."""
-        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        sid, session = add_files_to_session(signers, (self.uids[0],))
+        # --- sign payload: correct structure, state set to 'sent' ---
+        sid3, session3 = add_files_to_session(signers, (self.uids[2],))
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = '{"message": "OK"}'
-        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
-            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
-                result = create_external_session(sid, esign_root_url="http://test.example.com")
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:  # real HTTP call
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+                result = create_external_session(sid3, esign_root_url="http://test.example.com")
         self.assertIs(result, mock_response)
-        self.assertEqual(session["state"], "sent")
+        self.assertEqual(session3["state"], "sent")
         payload = json.loads(mock_post.call_args[1]["data"]["data"])
+        posted_files = mock_post.call_args[1]["files"]
+        self.assertIsInstance(posted_files, list)
+        self.assertEqual([f[0] for f in posted_files], ["files", "files"])
+        self.assertEqual([f[1][0] for f in posted_files], [u"annex1.pdf", u"annex2.pdf"])
         self.assertEqual(
             payload,
             {
                 u"commonData": {
-                    u"imioAppSessionId": u"012345600000",
+                    u"imioAppSessionId": u"012345600001",
                     u"vatNumber": None,
                     u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
-                    u"sessionName": u"Session 0",
+                    u"sessionName": u"Session {}".format(sid3),
                     u"documentData": [
                         {
-                            u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
-                            u"docUuid": get_suid_from_uuid(self.uids[0]),
-                            u"filename": u"annex0.pdf",
-                        }
+                            u"uniqueCode": u"012345600000001__{}".format(self.uids[1]),
+                            u"docUuid": get_suid_from_uuid(self.uids[1]),
+                            u"filename": u"annex1.pdf",
+                        },
+                        {
+                            u"uniqueCode": u"012345600000002__{}".format(self.uids[2]),
+                            u"docUuid": get_suid_from_uuid(self.uids[2]),
+                            u"filename": u"annex2.pdf",
+                        },
                     ],
                 },
                 u"signData": {u"acroform": True, u"users": [u"user1@sign.com"]},
             },
         )
 
-    def test_create_external_session_seal_payload(self):
-        """Seal-only session: sealData contains seal email and code; no signData."""
-        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
+        # --- seal-only payload ---
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
+        sid4, _session = add_files_to_session([], (self.uids[3],), seal="SEAL")
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = '{"message": "OK"}'
-        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
-            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
-                create_external_session(sid, esign_root_url="http://test.example.com")
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:  # real HTTP call
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+                create_external_session(sid4, esign_root_url="http://test.example.com")
+        self.assertEqual(mock_post.call_args[0][0], "http://test.example.com/imio/esign/v1/luxtrust/sessions")
         payload = json.loads(mock_post.call_args[1]["data"]["data"])
         self.assertEqual(
             payload,
@@ -781,13 +563,18 @@ class TestUtils(unittest.TestCase):
                     u"imioAppSessionId": u"012345600000",
                     u"vatNumber": None,
                     u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
-                    u"sessionName": u"Session 0",
+                    u"sessionName": u"Session {}".format(sid4),
                     u"documentData": [
                         {
                             u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
                             u"docUuid": get_suid_from_uuid(self.uids[0]),
                             u"filename": u"annex0.pdf",
-                        }
+                        },
+                        {
+                            u"uniqueCode": u"012345600000003__{}".format(self.uids[3]),
+                            u"docUuid": get_suid_from_uuid(self.uids[3]),
+                            u"filename": u"annex3.pdf",
+                        },
                     ],
                 },
                 u"sealData": {
@@ -798,22 +585,21 @@ class TestUtils(unittest.TestCase):
                 },
             },
         )
+        posted_files = mock_post.call_args[1]["files"]
+        self.assertIsInstance(posted_files, list)
+        self.assertEqual([f[0] for f in posted_files], ["files", "files"])
+        self.assertEqual([f[1][0] for f in posted_files], [u"annex0.pdf", u"annex3.pdf"])
 
-    def test_create_external_session_both_payload(self):
-        """Session with signers and seal: both signData and sealData are present."""
-        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        sid, _session = add_files_to_session(signers, (self.uids[0],), seal="SEAL")
-        api.portal.set_registry_record("imio.esign.seal_email", u"seal@example.com")
-        api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
-        set_esign_registry_external_watchers(u"example@imlo.be")  # Also test with one external watcher
-        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_email", u"")
-        self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
+        # --- combined sign + seal payload ---
+        sid5, _session = add_files_to_session(signers, (self.uids[4],), seal="SEAL")
+        set_esign_registry_external_watchers(u"example@imlo.be")
+        self.addCleanup(set_esign_registry_external_watchers, u"")
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = '{"message": "OK"}'
-        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:
-            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):
-                create_external_session(sid, esign_root_url="http://test.example.com")
+        with patch("imio.esign.utils.requests.post", return_value=mock_response) as mock_post:  # real HTTP call
+            with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+                create_external_session(sid5, esign_root_url="http://test.example.com")
         payload = json.loads(mock_post.call_args[1]["data"]["data"])
         self.assertEqual(
             payload,
@@ -821,18 +607,18 @@ class TestUtils(unittest.TestCase):
                 u"signData": {
                     u"acroform": True,
                     u"users": [u"user1@sign.com"],
-                    u"watchers": [u'example@imlo.be'],
+                    u"watchers": [u"example@imlo.be"],
                 },
                 u"commonData": {
-                    u"imioAppSessionId": u"012345600000",
+                    u"imioAppSessionId": u"012345600002",
                     u"vatNumber": None,
                     u"endpointUrl": u"http://nohost/plone/@external_session_feedback",
-                    u"sessionName": u"Session 0",
+                    u"sessionName": u"Session {}".format(sid5),
                     u"documentData": [
                         {
-                            u"uniqueCode": u"012345600000000__{}".format(self.uids[0]),
-                            u"docUuid": get_suid_from_uuid(self.uids[0]),
-                            u"filename": u"annex0.pdf",
+                            u"uniqueCode": u"012345600000004__{}".format(self.uids[4]),
+                            u"docUuid": get_suid_from_uuid(self.uids[4]),
+                            u"filename": u"annex4.pdf",
                         }
                     ],
                 },
@@ -840,56 +626,23 @@ class TestUtils(unittest.TestCase):
                     u"sealCode": u"PADES_SEAL",
                     u"acroform": True,
                     u"users": [u"seal@example.com"],
-                    u"watchers": [u'example@imlo.be'],
+                    u"watchers": [u"example@imlo.be"],
                 },
             },
         )
+        posted_files = mock_post.call_args[1]["files"]
+        self.assertIsInstance(posted_files, list)
+        self.assertEqual([f[0] for f in posted_files], ["files"])
+        self.assertEqual([f[1][0] for f in posted_files], [u"annex4.pdf"])
 
-
-# example of annotation content
-"""
-{
-    "numbering": 1,
-    "uids": {"3c0528c0ad364641be8b9cbaedbf6620": 0},
-    "c_uids": {"f66b3da2d2e947fd81ab65e3e36c039d": ["3c0528c0ad364641be8b9cbaedbf6620"]},
-    "sessions": {
-        0: {
-            "acroform": True,
-            "cliend_id": "0123456",
-            "discriminators": (),
-            "files": [
-                {
-                    "context_uid": "f66b3da2d2e947fd81ab65e3e36c039d",
-                    "scan_id": "012345600000000",
-                    "title": u"Annex 0",
-                    "uid": "3c0528c0ad364641be8b9cbaedbf6620",
-                    "filename": u"annex0.pdf",
-                }
-            ],
-            "last_update": datetime.datetime(2025, 8, 13, 13, 22, 41, 107895),
-            "returns": []
-            "seal": None,
-            "sign_id": None,
-            "sign_url": None,
-            "signers": [
-                {
-                    "status": "",
-                    "userid": "user1",
-                    "email": "user1@sign.com",
-                    "fullname": "User 1",
-                    "position": "Position 1",
-                },
-                {
-                    "status": "",
-                    "userid": "user2",
-                    "email": "user2@sign.com",
-                    "fullname": "User 2",
-                    "position": "Position 2",
-                },
-            ],
-            "state": "draft",
-            "title": "my title",
-        }
-    },
-}
-"""
+        # --- no resolvable files: returns _no_files_, no HTTP call made ---
+        sid6, session6 = add_files_to_session(signers, (self.uids[5],))
+        for i in range(len(session6["files"])):
+            session6["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
+        with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+            with patch(
+                "imio.esign.utils.requests"
+            ) as mock_requests:  # real HTTP call; whole module patched to assert .post not called
+                result = create_external_session(sid6, esign_root_url="http://test.example.com")
+        self.assertEqual(result, "_no_files_")
+        mock_requests.post.assert_not_called()

@@ -39,8 +39,7 @@ def on_categorized_annex_updated(annex, event):
     # check scan_id and filename
     if update is False:
         for file_info in file_infos:
-            if file_info and (annex.scan_id != file_info['scan_id'] or \
-               annex.file.filename != file_info['filename']):
+            if file_info and (annex.scan_id != file_info['scan_id'] or annex.file.filename != file_info['filename']):
                 update = True
                 break
 

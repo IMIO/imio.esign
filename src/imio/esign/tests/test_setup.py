@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Setup tests for this package."""
 from imio.esign import PLONE_VERSION
-from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING  # noqa: E501
+from imio.esign.testing import IMIO_ESIGN_INTEGRATION_TESTING
 from plone import api
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
@@ -19,7 +19,6 @@ class TestSetup(unittest.TestCase):
     layer = IMIO_ESIGN_INTEGRATION_TESTING
 
     def setUp(self):
-        """Custom shared utility setup for tests."""
         self.portal = self.layer["portal"]
         if PLONE_VERSION < 5:
             self.installer = api.portal.get_tool("portal_quickinstaller")
@@ -27,14 +26,14 @@ class TestSetup(unittest.TestCase):
             self.installer = get_installer(self.portal, self.layer["request"])
 
     def test_product_installed(self):
-        """Test if imio.esign is installed."""
+        """Product is installed and IImioEsignLayer browser layer is registered."""
+        # --- install state ---
         if PLONE_VERSION < 5:
             self.assertTrue(self.installer.isProductInstalled("imio.esign"))
         else:
             self.assertTrue(self.installer.is_product_installed("imio.esign"))
 
-    def test_browserlayer(self):
-        """Test that IImioEsignLayer is registered."""
+        # --- browser layer ---
         from imio.esign.interfaces import IImioEsignLayer
         from plone.browserlayer import utils
 
@@ -42,6 +41,7 @@ class TestSetup(unittest.TestCase):
 
 
 class TestUninstall(unittest.TestCase):
+    """Test that imio.esign uninstalls cleanly."""
 
     layer = IMIO_ESIGN_INTEGRATION_TESTING
 
@@ -58,14 +58,14 @@ class TestUninstall(unittest.TestCase):
         setRoles(self.portal, TEST_USER_ID, roles_before)
 
     def test_product_uninstalled(self):
-        """Test if imio.esign is cleanly uninstalled."""
+        """Product is uninstalled and IImioEsignLayer browser layer is removed."""
+        # --- uninstall state ---
         if PLONE_VERSION < 5:
             self.assertFalse(self.installer.isProductInstalled("imio.esign"))
         else:
             self.assertFalse(self.installer.is_product_installed("imio.esign"))
 
-    def test_browserlayer_removed(self):
-        """Test that IImioEsignLayer is removed."""
+        # --- browser layer removed ---
         from imio.esign.interfaces import IImioEsignLayer
         from plone.browserlayer import utils
 

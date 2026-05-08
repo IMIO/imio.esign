@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b8 (unreleased)
+1.0b8 (2026-05-08)
 ------------------
 
 - Set registry parapheo_url following is_test_url.

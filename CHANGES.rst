@@ -5,7 +5,8 @@ Changelog
 1.0b9 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Improved ExternalSessionFeedback audit.
+  [chris-adam]
 
 
 1.0b8 (2026-05-08)

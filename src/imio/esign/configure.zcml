@@ -10,33 +10,12 @@
 
   <include file="events.zcml" />
   <include file="permissions.zcml" />
+  <include file="profiles.zcml" />
+  <include file="upgrades.zcml" />
 
   <include package="imio.fpaudit"/>
   <include package=".browser" />
   <include package=".services" />
-
-  <genericsetup:registerProfile
-      name="default"
-      title="imio.esign"
-      directory="profiles/default"
-      description="Installs the imio.esign add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.post_install"
-      />
-
-  <genericsetup:registerProfile
-      name="uninstall"
-      title="imio.esign (uninstall)"
-      directory="profiles/uninstall"
-      description="Uninstalls the imio.esign add-on."
-      provides="Products.GenericSetup.interfaces.EXTENSION"
-      post_handler=".setuphandlers.uninstall"
-      />
-
-  <utility
-      factory=".setuphandlers.HiddenProfiles"
-      name="imio.esign-hiddenprofiles"
-      />
 
   <adapter
     factory=".adapters.DefaultContextUidProvider"
@@ -47,17 +26,5 @@
     factory=".adapters.FilesBelongingToAGivenSession"
     provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"
     name="files-belonging-to-a-given-session" />
-
-  <genericsetup:upgradeSteps
-      profile="imio.esign:default"
-      source="1000"
-      destination="1001"
-      >
-    <genericsetup:upgradeDepends
-        title="Apply rolemap"
-        description=""
-        import_steps="rolemap"
-        />
-  </genericsetup:upgradeSteps>
 
 </configure>

@@ -52,7 +52,7 @@ class AddToSessionView(BrowserView):
             title=self.get_session_title(),
             watchers=self.get_watchers(),
             discriminators=self.get_discriminators(),
-        )
+        )[-1]
         # audit("add_to_session", "session={} context={} files={} signers={}".format(
         #     session_id, self.context.UID(), ",".join(files_uids), len(signers)))
         self._finished()

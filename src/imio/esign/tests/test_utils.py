@@ -3,8 +3,10 @@
 from collections import OrderedDict
 from datetime import date
 from datetime import timedelta
+from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import set_esign_registry_external_watchers
+from imio.esign.config import set_esign_registry_max_session_files
 from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
@@ -44,7 +46,8 @@ class TestUtils(BaseEsignTest):
 
     def test_add_files_to_session(self):
         """add_files_to_session: session creation, discrimination, reuse, size splitting,
-        duplicate filenames, and idempotent metadata update."""
+        count splitting, completed sessions not reused, duplicate filenames, and idempotent
+        metadata update."""
         root_annot = IAnnotations(self.portal)
         self.assertNotIn("imio.esign", root_annot)
         signers = [
@@ -53,7 +56,8 @@ class TestUtils(BaseEsignTest):
         ]
 
         # --- create first session ---
-        sid, session = add_files_to_session(signers, (self.uids[0],), title="my title", watchers=("stalker@sign.com",))
+        sid, session = add_files_to_session(signers, (self.uids[0],), title="my title",
+                                            watchers=("stalker@sign.com",))[-1]
         self.assertEqual(sid, 0)
         annot = root_annot["imio.esign"]
         self.assertEqual(annot["numbering"], 1)
@@ -89,7 +93,7 @@ class TestUtils(BaseEsignTest):
         signers[1] = ("user2", "user2@sign.com", "User 2", "Position 2b")  # position change is non-discriminant
         annex1_obj = uuidToObject(uuid=self.uids[1], unrestricted=True)
         annex1_obj.file.filename = u"annex0.pdf"
-        sid, session = add_files_to_session(signers, (self.uids[1],))
+        sid, session = add_files_to_session(signers, (self.uids[1],))[-1]
         self.assertEqual(sid, 0)
         self.assertEqual(annot["numbering"], 1)
         self.assertEqual(len(annot["sessions"]), 1)
@@ -103,7 +107,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(session["size"], 6968 + 7014)  # annex1 + annex2
 
         # --- new discriminator → new session ---
-        sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))
+        sid, session = add_files_to_session(signers, (self.uids[2],), discriminators=("council1",))[-1]
         self.assertEqual(sid, 1)
         self.assertEqual(annot["numbering"], 2)
         self.assertEqual(len(annot["sessions"]), 2)
@@ -113,7 +117,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(len(session["watchers"]), 0)
 
         # --- same discriminator → reuse session ---
-        sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))
+        sid, session = add_files_to_session(signers, (self.uids[3],), discriminators=("council1",))[-1]
         self.assertEqual(sid, 1)
         self.assertEqual(annot["numbering"], 2)
         self.assertEqual(len(annot["sessions"]), 2)
@@ -122,27 +126,27 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(len(session["files"]), 2)
 
         # --- different discriminator → new session ---
-        sid, _session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))
+        sid, _session = add_files_to_session(signers, (self.uids[4],), discriminators=("council2",))[-1]
         self.assertEqual(sid, 2)
 
         # --- explicit session_id overrides discrimination ---
-        sid, _session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))
+        sid, _session = add_files_to_session(signers, (self.uids[5],), session_id=0, discriminators=("council3",))[-1]
         self.assertEqual(sid, 0)
 
         # --- unfound session_id → new session ---
-        sid, _session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))
+        sid, _session = add_files_to_session(signers, (self.uids[6],), session_id=999, discriminators=("council3",))[-1]
         self.assertEqual(sid, 3)
 
         # --- different signers → new session ---
-        sid, _session = add_files_to_session([signers[0]], (self.uids[7],))
+        sid, _session = add_files_to_session([signers[0]], (self.uids[7],))[-1]
         self.assertEqual(sid, 4)
 
         # --- different seal → new session ---
-        sid, _session = add_files_to_session(signers, (self.uids[8],), seal="seal1")
+        sid, _session = add_files_to_session(signers, (self.uids[8],), seal="seal1")[-1]
         self.assertEqual(sid, 5)
 
         # --- different acroform → new session ---
-        sid, _session = add_files_to_session(signers, (self.uids[9],), acroform=False)
+        sid, _session = add_files_to_session(signers, (self.uids[9],), acroform=False)[-1]
         self.assertEqual(sid, 6)
         self.assertEqual(len(annot["uids"]), 10)
         self.assertEqual(len(annot["c_uids"]), 2)
@@ -151,7 +155,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(len(annot["sessions"]), 7)
 
         # --- no signers → new session ---
-        sid, session = add_files_to_session([], (self.uids[10],), seal="seal2")
+        sid, session = add_files_to_session([], (self.uids[10],), seal="seal2")[-1]
         self.assertEqual(sid, 7)
         self.assertEqual(len(annot["sessions"]), 8)
         self.assertEqual(session["signers"], [])
@@ -159,7 +163,7 @@ class TestUtils(BaseEsignTest):
 
         # --- same seal but session already sent → new session ---
         session["state"] = "sent"
-        sid, _session = add_files_to_session([], (self.uids[11],), seal="seal2")
+        sid, _session = add_files_to_session([], (self.uids[11],), seal="seal2")[-1]
         self.assertEqual(sid, 8)
         self.assertEqual(len(annot["sessions"]), 9)
 
@@ -167,13 +171,13 @@ class TestUtils(BaseEsignTest):
         del root_annot["imio.esign"]
         for i in range(3):
             api.content.get(UID=self.uids[i]).file.filename = u"same_filename.pdf"
-        s, ses = add_files_to_session(signers, (self.uids[0],))
+        s, ses = add_files_to_session(signers, (self.uids[0],))[-1]
         self.assertEqual(len(ses["files"]), 1)
         self.assertEqual(ses["files"][0]["filename"], "same_filename.pdf")
-        s, ses = add_files_to_session(signers, (self.uids[1],), session_id=s)
+        s, ses = add_files_to_session(signers, (self.uids[1],), session_id=s)[-1]
         self.assertEqual(len(ses["files"]), 2)
         self.assertIn("same_filename-1.pdf", [f["filename"] for f in ses["files"]])
-        s, ses = add_files_to_session(signers, (self.uids[2],), session_id=s)
+        s, ses = add_files_to_session(signers, (self.uids[2],), session_id=s)[-1]
         self.assertEqual(len(ses["files"]), 3)
         filenames = [f["filename"] for f in ses["files"]]
         self.assertIn("same_filename.pdf", filenames)
@@ -188,7 +192,7 @@ class TestUtils(BaseEsignTest):
         # reset annex1 filename which was changed in the duplicate-filename block above
         annex1_reset = api.content.get(UID=self.uids[1])
         annex1_reset.file.filename = u"annex1.pdf"
-        sid, ses = add_files_to_session(signers, (annex0_uid,))
+        sid, ses = add_files_to_session(signers, (annex0_uid,))[-1]
         self.assertEqual(sid, 0)
         self.assertEqual(len(ses["files"]), 1)
         self.assertEqual(ses["files"][0]["filename"], "annex0.pdf")
@@ -196,13 +200,13 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(ses["size"], 6968)
         annex0.file.filename = u"new_annex0.pdf"
         annex0.setTitle("New Annex 0")
-        sid, ses = add_files_to_session(signers, (annex0_uid,))
+        sid, ses = add_files_to_session(signers, (annex0_uid,))[-1]
         self.assertEqual(sid, 0)
         self.assertEqual(len(ses["files"]), 1)
         self.assertEqual(ses["files"][0]["filename"], "new_annex0.pdf")
         self.assertEqual(ses["files"][0]["title"], "New Annex 0")
         self.assertEqual(ses["size"], 6968)
-        sid, ses = add_files_to_session(signers, (annex0_uid,))
+        sid, ses = add_files_to_session(signers, (annex0_uid,))[-1]
         self.assertEqual(sid, 0)
         self.assertEqual(len(ses["files"]), 1)
         self.assertEqual(ses["files"][0]["filename"], "new_annex0.pdf")
@@ -210,7 +214,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(ses["size"], 6968)
         annex1_uid = self.uids[1]
         annex1 = api.content.get(UID=annex1_uid)
-        sid, ses = add_files_to_session(signers, (annex1_uid,))
+        sid, ses = add_files_to_session(signers, (annex1_uid,))[-1]
         self.assertEqual(sid, 0)
         self.assertEqual(len(ses["files"]), 2)
         self.assertEqual(ses["files"][1]["filename"], "annex1.pdf")
@@ -240,21 +244,55 @@ class TestUtils(BaseEsignTest):
         # --- size-based session splitting ---
         del root_annot["imio.esign"]
         annex0.file.filename = u"annex0.pdf"
-        sid0, ses0 = add_files_to_session(signers, (annex0_uid,))
+        sid0, ses0 = add_files_to_session(signers, (annex0_uid,))[-1]
         self.assertEqual(sid0, 0)
         self.assertEqual(ses0["size"], 6968)
         ses0["size"] = 1 * 1024 ** 2 - 1
         prev_max = get_esign_registry_max_session_size()
         self.addCleanup(set_esign_registry_max_session_size, prev_max)
         set_esign_registry_max_session_size(1)
-        sid1, ses1 = add_files_to_session(signers, (self.uids[1],))
+        sid1, ses1 = add_files_to_session(signers, (self.uids[1],))[-1]
         self.assertEqual(sid1, 1)
         self.assertIsNot(ses1, ses0)
         self.assertEqual(ses1["size"], 6968)
-        sid2, ses2 = add_files_to_session(signers, (self.uids[2],))
+        sid2, ses2 = add_files_to_session(signers, (self.uids[2],))[-1]
         self.assertEqual(sid2, 1)
         self.assertIs(ses2, ses1)
         self.assertEqual(ses2["size"], 6968 + 6968)
+
+        # --- count-based session splitting: a single batch dispatched across several sessions ---
+        del root_annot["imio.esign"]
+        prev_max_files = get_esign_registry_max_session_files()
+        self.addCleanup(set_esign_registry_max_session_files, prev_max_files)
+        set_esign_registry_max_session_files(2)
+        signers = [("user1", "user1@sign.com", "User 1", "P1")]
+        sid, session = add_files_to_session(signers, tuple(self.uids[:5]))[-1]
+        annot = get_session_annotation()
+        sessions = annot["sessions"]
+        self.assertEqual(len(sessions), 3)
+        self.assertEqual([len(sessions[i]["files"]) for i in (0, 1, 2)], [2, 2, 1])
+        self.assertEqual(sessions[0]["state"], "complete")
+        self.assertEqual(sessions[1]["state"], "complete")
+        self.assertEqual(sessions[2]["state"], "draft")
+        # return value is for the last file added
+        self.assertEqual(sid, 2)
+        self.assertIs(session, sessions[2])
+
+        # --- a session marked 'complete' is never reused, even if the limit is later raised ---
+        del root_annot["imio.esign"]
+        set_esign_registry_max_session_files(2)
+        # First batch: 3 files → session 0 gets 2 (and is closed), session 1 gets 1 (draft)
+        add_files_to_session(signers, tuple(self.uids[:3]))
+        annot = get_session_annotation()
+        self.assertEqual(annot["sessions"][0]["state"], "complete")
+        self.assertEqual(annot["sessions"][1]["state"], "draft")
+        # Raise the max back to a value that would mathematically allow reusing session 0
+        set_esign_registry_max_session_files(10)
+        sid, session = add_files_to_session(signers, (self.uids[3],))[-1]
+        # Session 0 stays complete; new file lands in the existing draft (session 1), not in 0
+        self.assertEqual(annot["sessions"][0]["state"], "complete")
+        self.assertEqual(sid, 1)
+        self.assertEqual(len(annot["sessions"][1]["files"]), 2)
 
     def test_add_files_ordering_by_context(self):
         """add_files_to_session: files are ordered by their sibling position within their context."""
@@ -270,25 +308,25 @@ class TestUtils(BaseEsignTest):
         # Case 1: uid[0] then uid[1] (different context) then uid[2] (same context as uid[0])
         # uid[2] must land immediately after uid[0], not after uid[1]
         reset_annotation()
-        sid, session = add_files_to_session(signers, (self.uids[0],))
-        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
-        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[0],))[-1]
+        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)[-1]
+        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)[-1]
         self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[2], self.uids[1]])
 
         # Case 2: uid[4] (3rd in folder0) added before uid[0] (1st in folder0)
         # uid[0] must land before uid[4]
         reset_annotation()
-        sid, session = add_files_to_session(signers, (self.uids[4],))
-        sid, session = add_files_to_session(signers, (self.uids[0],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[4],))[-1]
+        sid, session = add_files_to_session(signers, (self.uids[0],), session_id=sid)[-1]
         self.assertEqual([f["uid"] for f in session["files"]], [self.uids[0], self.uids[4]])
 
         # Case 3: uid[0], uid[4] in session, then uid[1] (different context), then uid[2]
         # uid[2] must be inserted between uid[0] and uid[4]
         reset_annotation()
-        sid, session = add_files_to_session(signers, (self.uids[0],))
-        sid, session = add_files_to_session(signers, (self.uids[4],), session_id=sid)
-        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)
-        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)
+        sid, session = add_files_to_session(signers, (self.uids[0],))[-1]
+        sid, session = add_files_to_session(signers, (self.uids[4],), session_id=sid)[-1]
+        sid, session = add_files_to_session(signers, (self.uids[1],), session_id=sid)[-1]
+        sid, session = add_files_to_session(signers, (self.uids[2],), session_id=sid)[-1]
         self.assertEqual(
             [f["uid"] for f in session["files"]],
             [self.uids[0], self.uids[2], self.uids[4], self.uids[1]],
@@ -377,7 +415,7 @@ class TestUtils(BaseEsignTest):
         annot = get_session_annotation()
         self.assertEqual(len(annot["sessions"]), 0)
         add_files_to_session(signers, (self.uids[0], self.uids[1]))
-        sid2, _session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")
+        sid2, _session = add_files_to_session(signers, (self.uids[2], self.uids[3]), seal="seal1")[-1]
         self.assertEqual(sid2, 1)
         remove_session(0)
         self.assertEqual(len(annot["uids"]), 2)
@@ -395,7 +433,7 @@ class TestUtils(BaseEsignTest):
             ("user1", "user1@sign.com", "User 1", "Position 1"),
             ("user2", "user2@sign.com", "User 2", "Position 2"),
         ]
-        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))
+        sid, session = add_files_to_session(signers, (self.uids[0], self.uids[1]))[-1]
         self.assertEqual(get_session_info(sid), session)
 
     def test_get_sessions_for(self):
@@ -483,7 +521,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(result, "_session_not_found_")
 
         # --- seal session: email missing ---
-        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")
+        sid, _session = add_files_to_session([], (self.uids[0],), seal="SEAL")[-1]
         result = create_external_session(sid, esign_root_url="http://test.example.com")
         self.assertEqual(result, "_no_seal_email_")
 
@@ -494,7 +532,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(result, "_no_seal_code_")
 
         # --- error response: state unchanged ---
-        sid2, session2 = add_files_to_session(signers, (self.uids[1],))
+        sid2, session2 = add_files_to_session(signers, (self.uids[1],))[-1]
         mock_response = Mock()
         mock_response.status_code = 500
         mock_response.text = "Internal Server Error"
@@ -505,7 +543,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(session2["state"], "draft")
 
         # --- sign payload: correct structure, state set to 'sent' ---
-        sid3, session3 = add_files_to_session(signers, (self.uids[2],))
+        sid3, session3 = add_files_to_session(signers, (self.uids[2],))[-1]
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = '{"message": "OK"}'
@@ -547,7 +585,7 @@ class TestUtils(BaseEsignTest):
         # --- seal-only payload ---
         api.portal.set_registry_record("imio.esign.seal_code", u"PADES_SEAL")
         self.addCleanup(api.portal.set_registry_record, "imio.esign.seal_code", u"")
-        sid4, _session = add_files_to_session([], (self.uids[3],), seal="SEAL")
+        sid4, _session = add_files_to_session([], (self.uids[3],), seal="SEAL")[-1]
         mock_response = Mock()
         mock_response.status_code = 200
         mock_response.text = '{"message": "OK"}'
@@ -591,7 +629,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual([f[1][0] for f in posted_files], [u"annex0.pdf", u"annex3.pdf"])
 
         # --- combined sign + seal payload ---
-        sid5, _session = add_files_to_session(signers, (self.uids[4],), seal="SEAL")
+        sid5, _session = add_files_to_session(signers, (self.uids[4],), seal="SEAL")[-1]
         set_esign_registry_external_watchers(u"example@imlo.be")
         self.addCleanup(set_esign_registry_external_watchers, u"")
         mock_response = Mock()
@@ -636,7 +674,7 @@ class TestUtils(BaseEsignTest):
         self.assertEqual([f[1][0] for f in posted_files], [u"annex4.pdf"])
 
         # --- no resolvable files: returns _no_files_, no HTTP call made ---
-        sid6, session6 = add_files_to_session(signers, (self.uids[5],))
+        sid6, session6 = add_files_to_session(signers, (self.uids[5],))[-1]
         for i in range(len(session6["files"])):
             session6["files"][i]["uid"] = "nonexistent_uid_{}".format(i)
         with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth

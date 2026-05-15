@@ -50,8 +50,15 @@ def get_filesize(uid):
 
 
 def add_files_to_session(  # noqa C901
-    signers, files_uids, seal=None, acroform=True, session_id=None, title="", discriminators=(), watchers=(),
-    create_session_custom_data=None
+    signers,
+    files_uids,
+    seal=None,
+    acroform=True,
+    session_id=None,
+    title="",
+    discriminators=(),
+    watchers=(),
+    create_session_custom_data=None,
 ):
     """Add files to a session with the given signers.
 
@@ -88,38 +95,47 @@ def add_files_to_session(  # noqa C901
 
         if dispatch:
             session_id, session = discriminate_sessions(
-                signers, seal, acroform, discriminators=discriminators, size=file_size, files_count=1,
+                signers,
+                seal,
+                acroform,
+                discriminators=discriminators,
+                size=file_size,
+                files_count=1,
             )
             if not session:
                 session_id, session = create_session(
-                    signers, seal, acroform=acroform, title=title, annot=annot,
-                    discriminators=discriminators, watchers=watchers,
+                    signers,
+                    seal,
+                    acroform=acroform,
+                    title=title,
+                    annot=annot,
+                    discriminators=discriminators,
+                    watchers=watchers,
                     create_session_custom_data=create_session_custom_data,
                 )
-                audit(
-                    "create_session",
-                    "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers]))
-                )
+                audit("create_session", "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers])))
 
         annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
         # update data if adding same file to same session
-        if annot['uids'].get(uid, -1) == session_id:
-            logger.info('File with UID %s is already in session_id %s and data were updated!', uid, session_id)
+        if annot["uids"].get(uid, -1) == session_id:
+            logger.info("File with UID %s is already in session_id %s and data were updated!", uid, session_id)
             remove_files_from_session([uid], remove_empty_session=False)
 
         existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
         filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
         new_filename = get_correct_id(existing_files, filename)
-        file_dict = PersistentMapping({
-            "scan_id": annex.scan_id,
-            "filename": new_filename + ext,
-            "title": annex.title or "no_title",
-            "uid": uid,
-            "context_uid": context_uid,
-            "status": "",
-        })
+        file_dict = PersistentMapping(
+            {
+                "scan_id": annex.scan_id,
+                "filename": new_filename + ext,
+                "title": annex.title or "no_title",
+                "uid": uid,
+                "context_uid": context_uid,
+                "status": "",
+            }
+        )
         # Find the range of files already belonging to this context (if any)
         context_start_idx, context_end_idx = None, None
         for i, f in enumerate(session["files"]):
@@ -139,18 +155,15 @@ def add_files_to_session(  # noqa C901
                 uid_order = {a.UID(): idx for idx, a in enumerate(context.values())}
             else:
                 uid_order = {}
-            files = session["files"][context_start_idx:context_end_idx + 1]
+            files = session["files"][context_start_idx : context_end_idx + 1]
             files.append(file_dict)
-            session["files"][context_start_idx:context_end_idx + 1] = sorted(
+            session["files"][context_start_idx : context_end_idx + 1] = sorted(
                 files, key=lambda f: uid_order.get(f["uid"], -1)
             )
         session["size"] = session.get("size", 0) + file_size
         annot["uids"][uid] = session_id
         annot["c_uids"].setdefault(context_uid, PersistentList()).append(uid)
-        audit(
-            "add_files_to_session",
-            "session={} context={} file={}".format(session_id, context_uid, uid)
-        )
+        audit("add_files_to_session", "session={} context={} file={}".format(session_id, context_uid, uid))
         if session["client_id"] is None:
             # FIXME what if scan_id is None ?
             session["client_id"] = session["files"][0]["scan_id"][0:7]
@@ -195,9 +208,14 @@ def create_external_session(session_id, esign_root_url=None):
     data_payload = {
         "commonData": {
             "endpointUrl": portal.absolute_url() + "/@external_session_feedback",
-            "documentData": [{"filename": filename, "uniqueCode": "{}__{}".format(unique_code, fuid),
-                              "docUuid": get_suid_from_uuid(fuid)}
-                             for unique_code, filename, z, fuid in files],
+            "documentData": [
+                {
+                    "filename": filename,
+                    "uniqueCode": "{}__{}".format(unique_code, fuid),
+                    "docUuid": get_suid_from_uuid(fuid),
+                }
+                for unique_code, filename, z, fuid in files
+            ],
             "imioAppSessionId": session["sign_id"],
             "sessionName": session["title"],
         }
@@ -270,8 +288,16 @@ def create_external_session(session_id, esign_root_url=None):
     return ret
 
 
-def create_session(signers, seal=False, acroform=True, title=None, annot=None, discriminators=(), watchers=(),
-                   create_session_custom_data=None):
+def create_session(
+    signers,
+    seal=False,
+    acroform=True,
+    title=None,
+    annot=None,
+    discriminators=(),
+    watchers=(),
+    create_session_custom_data=None,
+):
     """Create a session with the given signers and seal.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
@@ -290,27 +316,30 @@ def create_session(signers, seal=False, acroform=True, title=None, annot=None, d
     session_id = annot["numbering"]
     annot["numbering"] += 1
 
-    sessions[session_id] = PersistentMapping({
-        "acroform": acroform,
-        "client_id": None,
-        "discriminators": discriminators,
-        "files": PersistentList(),
-        "last_update": datetime.now(),
-        "seal": seal,
-        "sign_id": None,
-        "sign_url": None,
-        "signers": PersistentList(
-            [
-                PersistentMapping({"userid": userid, "email": email, "fullname": fullname, "position": position,
-                                   "status": ""})
-                for userid, email, fullname, position in signers
-            ]
-        ),
-        "watchers": PersistentList(watchers),
-        "state": "draft",
-        "title": title,
-        "returns": PersistentList(),
-    })
+    sessions[session_id] = PersistentMapping(
+        {
+            "acroform": acroform,
+            "client_id": None,
+            "discriminators": discriminators,
+            "files": PersistentList(),
+            "last_update": datetime.now(),
+            "seal": seal,
+            "sign_id": None,
+            "sign_url": None,
+            "signers": PersistentList(
+                [
+                    PersistentMapping(
+                        {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
+                    )
+                    for userid, email, fullname, position in signers
+                ]
+            ),
+            "watchers": PersistentList(watchers),
+            "state": "draft",
+            "title": title,
+            "returns": PersistentList(),
+        }
+    )
     if create_session_custom_data:
         for k, v in create_session_custom_data.items():
             sessions[session_id][k] = v
@@ -332,7 +361,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
-    max_session_size = get_esign_registry_max_session_size() * 1024**2
+    max_session_size = get_esign_registry_max_session_size() * 1024 ** 2
     max_session_files = get_esign_registry_max_session_files()
 
     for session_id, session in sessions.items():
@@ -400,8 +429,8 @@ def get_file_info(session_id, file_uid, portal=None, readonly=True):
     """
     session = get_session_info(session_id, portal=portal, readonly=readonly)
     if session:
-        for file_info in session['files']:
-            if file_info['uid'] == file_uid:
+        for file_info in session["files"]:
+            if file_info["uid"] == file_uid:
                 if readonly:
                     file_info = deepcopy(file_info)
                 return file_info
@@ -416,8 +445,8 @@ def get_session_info(session_id, portal=None, readonly=True):
     """
     annot = get_session_annotation(portal=portal)
     session = {}
-    if session_id in annot['sessions']:
-        session = annot['sessions'][session_id]
+    if session_id in annot["sessions"]:
+        session = annot["sessions"][session_id]
         if readonly:
             session = deepcopy(session)
     return session
@@ -527,7 +556,7 @@ def get_file_download_url(uid, root_url=None, short_uid=None):
         raise Exception("No root URL provided for file download url.")
     if not short_uid:
         short_uid = get_suid_from_uuid(uid)
-    return "{}/{}".format(root_url.strip('/'), short_uid), short_uid
+    return "{}/{}".format(root_url.strip("/"), short_uid), short_uid
 
 
 def get_max_download_date(obj, delta=timedelta(days=90), adate=None):
@@ -565,51 +594,54 @@ def get_state_description(state):
     """
     Get a human readable description for a given session state.
 
-                       ┌─────────┐
-                       │  draft  │
-                       └────┬────┘
-                            │
-                 (session sent to Paraphéo)
-                            │
-                            ▼
-                       ┌─────────┐
-             ┌─────────│  sent   │─────────┐
-             │         └────┬────┘         │
-             │              │              │
-    (error occurred)     (ready)   (signer refused)
-             │              │              │
-             ▼              ▼              ▼
-        ┌─────────┐    ┌─────────┐    ┌─────────┐
-        │ errored │    │ to_sign │    │ refused │
-        └─────────┘    └────┬────┘    └─────────┘
-                            │
-                   (documents signed)
-                            │
-                            ├──────────────┐
-                            │              │
-            (sent back successfully)  (send back failed)
-                            │              │
-                            ▼              │
-                      ┌──────────┐         │
-                      │ returned │         │
-                      └─────┬────┘         │
-                            │              │
-                 (documents received)      │
-                            │              │
-                            ▼              ▼
-                      ┌───────────┐   ┌─────────┐
-                      │ finalized │   │ signed  │
-                      └───────────┘   └─────────┘
+                  ┌─────────┐  (full)  ┌──────────┐
+                  │  draft  │─────────▶│ complete │
+                  └────┬────┘          └─────┬────┘
+                       │                     │
+             (sent to Paraphéo)     (sent to Paraphéo)
+                       │                     │
+                       └──────────┬──────────┘
+                                  ▼
+                             ┌─────────┐
+                   ┌─────────│  sent   │─────────┐
+                   │         └────┬────┘         │
+                   │              │              │
+          (error occurred)     (ready)   (signer refused)
+                   │              │              │
+                   ▼              ▼              ▼
+              ┌─────────┐    ┌─────────┐    ┌─────────┐
+              │ errored │    │ to_sign │    │ refused │
+              └─────────┘    └────┬────┘    └─────────┘
+                                  │
+                         (documents signed)
+                                  │
+                                  ├──────────────┐
+                                  │              │
+                  (sent back successfully)  (send back failed)
+                                  │              │
+                                  ▼              │
+                            ┌──────────┐         │
+                            │ returned │         │
+                            └─────┬────┘         │
+                                  │              │
+                       (documents received)      │
+                                  │              │
+                                  ▼              ▼
+                            ┌───────────┐   ┌─────────┐
+                            │ finalized │   │ signed  │
+                            └───────────┘   └─────────┘
     """
     return {
-        'draft': u'The session is getting ready to be sent to Paraphéo by a signing manager.',
-        'sent': u'The session has been sent to Paraphéo.',
-        'errored': u'The session encountered an error during its processing.',
-        'to_sign': u'The session is ready to be signed in Paraphéo.',
-        'signed': u'The session is finished but signed documents couldn\'t be sent back to the application.',
-        'refused': u'The session has been cancelled because a signer refused a document.',
-        'returned': u'The session is finished and signed documents are on the way back to the application.',
-        'finalized': u'The session is finished and signed documents have been sent back to the application.',
+        "draft": u"The session is getting ready to be sent to Paraphéo by a signing manager.",
+        "complete": u"The session is full (max size or max files reached) and will not accept any more batches; "
+        u"it is awaiting being sent to Paraphéo.",
+        "sent": u"The session has been sent to Paraphéo.",
+        "errored": u"The session encountered an error during its processing.",
+        "to_sign": u"The session is ready to be signed in Paraphéo.",
+        "signed": u"The session is finished but signed documents couldn't be sent back to the application.",
+        "refused": u"The session has been cancelled because a signer refused a document.",
+        "returned": u"The session is finished and signed documents are on the way back to the application.",
+        "finalized": u"The session is finished and signed documents have been sent back to the application.",
     }.get(state, "")
 
 

@@ -383,11 +383,13 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
             continue
         session_size = session.get("size", 0)
         session_files_count = len(session.get("files", []))
-        if session_files_count + files_count > max_session_files or size + session_size > max_session_size:
-            # Session can't accept this batch. Mark it complete, so it will never be reconsidered for any future batch.
+        if session_files_count + files_count >= max_session_files or size + session_size >= max_session_size:
+            #  Mark it complete, so it will never be reconsidered for any future batch.
             session["state"] = "complete"
             session["last_update"] = datetime.now()
-            continue
+            if session_files_count + files_count > max_session_files or size + session_size > max_session_size:
+                # Session can't accept this batch.
+                continue
 
         return session_id, session
 

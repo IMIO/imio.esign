@@ -40,6 +40,10 @@ Changelog
 - Avoid `UnicodeDecodeError` in `SignersColumn` if signers
   contain mixed encoding values.
   [gbastien]
+- Added session info size on quick look.
+  [chris-adam]
+- Added "Open Paraphéo" button on sessions listing view.
+  [chris-adam]
 
 1.0b4 (2026-03-27)
 ------------------

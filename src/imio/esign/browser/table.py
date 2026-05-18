@@ -3,6 +3,7 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.utils import get_state_description
@@ -113,16 +114,41 @@ class SignersColumn(Column):
 
 
 class FilesColumn(Column):
+    SESSION_SIZE_WARNING_THRESHOLD = 0.8  # Warn when size reaches 80% of max
     header = _("Files")
     weight = 60
     cssClasses = {"th": "th_header_sessions_documents nosort",
                   "td": "documents-column"}
 
+    def renderQuickLook(self, item):
+        """Renders collapsible label with file count and session size info"""
+        count = len(item.get("files", []))
+        max_size_mb = get_esign_registry_max_session_size()
+        max_size_bytes = max_size_mb * 1024 * 1024
+        size_bytes = item.get("size", 0)
+        size_mb = -(-size_bytes // (1024.0 * 1024.0))  # round size up to int
+        size_style = (
+            u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u""
+        )
+        # size_label = u"%d/%d MB" % (size_mb, max_size_mb)
+        size_label = u"%d MB" % size_mb
+        label = translate(
+            _(
+                "Quick look (${count} element(s), total size: ${size})",
+                mapping={
+                    "count": count,
+                    "size": u"<span%s>%s</span>" % (size_style, size_label),
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
+        return label
+
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""
         # Row identifier (unique per session)
         session_id = item.get("id")
-        details_msg = translate(_("Quick look"), context=self.request)
         base_url = getattr(self.table, "portal_url", None)
         if not base_url:
             try:
@@ -140,7 +166,7 @@ class FilesColumn(Column):
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
             u"</div></div>"
-        ).format(session_id, base_url, details_msg)
+        ).format(session_id, base_url, self.renderQuickLook(item))
 
         return html
 

@@ -86,6 +86,9 @@ class SessionsListingView(BrowserView):
     def get_sessions_url(self):
         return self.portal_url
 
+    def get_parapheo_link(self):
+        return get_esign_registry_parapheo_url()
+
 
 class SessionFilesView(BrowserView):
     """View to display documents of a session."""

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-03-25 20:09+0000\n"
+"POT-Creation-Date: 2026-04-03 11:53+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -187,6 +187,10 @@ msgstr "Non"
 msgid "No files"
 msgstr "Aucun fichier"
 
+#: ../browser/templates/session_files.pt:5
+msgid "Quick look (${count} element(s), total size: ${size})"
+msgstr "${count} élément(s), taille: ${size}"
+
 #: ../browser/views.py:178
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr "Aucun fichier référencé n'a été trouvé ! La session ${id} n'a pas été envoyée."
@@ -211,6 +215,10 @@ msgstr "Aucun utilisateur sélectionné pour le téléchargement du CSV."
 msgid "No users selected for email sending."
 msgstr "Aucun utilisateur sélectionné pour l'envoi d'emails."
 
+#: ../browser/templates/sessions.pt:44
+msgid "Open eSign platform"
+msgstr "Ouvrir la plateforme de signature électronique"
+
 #: ../browser/settings.py:84
 msgid "Parapheo url"
 msgstr "Url de Paraphéo"
@@ -226,10 +234,6 @@ msgstr "Fonction"
 #: ../browser/actions.py:71
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
-
-#: ../browser/table.py:123
-msgid "Quick look"
-msgstr "Aperçu rapide"
 
 #: ../profiles/default/actions.xml
 msgid "Remove from esign session"

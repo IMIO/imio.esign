@@ -189,7 +189,7 @@ msgstr "Aucun fichier"
 
 #: ../browser/templates/session_files.pt:5
 msgid "Quick look (${count} element(s), total size: ${size})"
-msgstr "Aperçu rapide (${count} élément(s), taille totale: ${size})"
+msgstr "${count} élément(s), taille: ${size}"
 
 #: ../browser/views.py:178
 msgid "No files found to be sent ! Session ${id} not sent."

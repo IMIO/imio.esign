@@ -126,11 +126,12 @@ class FilesColumn(Column):
         max_size_mb = get_esign_registry_max_session_size()
         max_size_bytes = max_size_mb * 1024 * 1024
         size_bytes = item.get("size", 0)
-        size_mb = size_bytes / (1024.0 * 1024.0)
+        size_mb = -(-size_bytes // (1024.0 * 1024.0))  # round size up to int
         size_style = (
             u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u""
         )
-        size_label = u"%.2f MB / %d MB" % (size_mb, max_size_mb)
+        # size_label = u"%d/%d MB" % (size_mb, max_size_mb)
+        size_label = u"%d MB" % size_mb
         label = translate(
             _(
                 "Quick look (${count} element(s), total size: ${size})",

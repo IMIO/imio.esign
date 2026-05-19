@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<object name="portal_css">
+  <stylesheet
+      id="++resource++imio.esign/esign.css"
+      cacheable="True"
+      compression="safe"
+      cookable="True"
+      enabled="True"
+      rendering="link" />
+</object>

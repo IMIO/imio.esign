@@ -120,6 +120,14 @@
         />
 
     <browser:page
+            name="create-custom-session"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".forms.CreateCustomSessionFormView"
+            permission="imio.esign.ManageSessions"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:page
             name="signing-users-csv"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.SigningUsersCsv"

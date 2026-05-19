@@ -5,12 +5,21 @@ from plone.app.testing import login
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
+from Products.statusmessages import STATUSMESSAGEKEY
+from zope.annotation.interfaces import IAnnotations
 
 import os
 import unittest
 
 
 TESTS_DIR = os.path.dirname(__file__)
+
+
+def clear_status_messages(request):
+    """Clear status messages from request annotations (needed after redirects since show() skips clearing on 3xx)."""
+    annotations = IAnnotations(request)
+    annotations[STATUSMESSAGEKEY] = None
+    request.response.expireCookie(STATUSMESSAGEKEY, path="/")
 
 
 class BaseEsignTest(unittest.TestCase):

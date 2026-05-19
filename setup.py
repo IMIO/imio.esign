@@ -57,6 +57,7 @@ setup(
         "eea.facetednavigation",
         "imio.fpaudit",
         "imio.helpers>1.3.10",
+        "natsort",
         "imio.prettylink",
         "imio.pyutils",
         "plone.api>=1.8.4",

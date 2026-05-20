@@ -11,6 +11,8 @@ Changelog
   [chris-adam]
 - Added action to create a custom session.
   [chris-adam]
+- Added action to add an item to a specific session.
+  [chris-adam]
 
 1.0b8 (2026-05-08)
 ------------------

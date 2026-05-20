@@ -6,6 +6,7 @@ from imio.esign import _
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
+from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_state_description
 from imio.helpers.security import check_zope_admin
 from imio.pyutils.utils import safe_encode
@@ -272,4 +273,59 @@ class SessionsTable(Table):
         if get_esign_registry_seal_code() and get_esign_registry_seal_email():
             seal_col = SealColumn(ctx, req, tbl)
             columns.insert(4, seal_col)
+        return columns
+
+
+class RadioColumn(Column):
+    header = u""
+    weight = 5
+    cssClasses = {"th": "th_header_sessions_radio nosort",
+                  "td": "radio-column"}
+
+    def renderCell(self, item):
+        sid = item.get("id")
+        return u'<input type="radio" name="session_id" value="{0}" id="session-{0}" />'.format(sid)
+
+
+class FilteredSessionsTable(Table):
+    cssClassEven = "even"
+    cssClassOdd = "odd"
+    cssClasses = {"table": "listing sessions-table width-full"}
+    sortOn = None
+    results = []
+
+    def __init__(self, context, view, request):
+        super(FilteredSessionsTable, self).__init__(context, request)
+        self.view = view
+        self.portal_url = api.portal.get().absolute_url()
+        self._items = None
+
+    def filter_session(self, session):
+        return session.get("state") == "draft"
+
+    @property
+    def values(self):
+        if self._items is not None:
+            return self._items
+        annot = get_session_annotation()
+        result = []
+        for session_id, session in sorted(annot.get("sessions", {}).items(), reverse=True):
+            if not self.filter_session(session):
+                continue
+            s = dict(session)
+            s["id"] = session_id
+            result.append(s)
+        return result
+
+    def setUpColumns(self):
+        ctx, req, tbl = self.context, self.request, self
+        columns = [
+            RadioColumn(ctx, req, tbl),
+            IdColumn(ctx, req, tbl),
+            TitleColumn(ctx, req, tbl),
+            SignersColumn(ctx, req, tbl),
+            FilesColumn(ctx, req, tbl),
+        ]
+        if get_esign_registry_seal_code() and get_esign_registry_seal_email():
+            columns.append(SealColumn(ctx, req, tbl))
         return columns

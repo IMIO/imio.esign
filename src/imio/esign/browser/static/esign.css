@@ -1,3 +1,27 @@
+/* Add-to-custom-esign-session overlay table */
+#add-to-custom-esign-session-form .sessions-table {
+    table-layout: fixed;
+    width: 100%;
+    overflow-wrap: break-word;
+}
+
+#add-to-custom-esign-session-form .th_header_sessions_radio { width: 4%; }
+#add-to-custom-esign-session-form .th_header_sessions_id { width: 6%; }
+#add-to-custom-esign-session-form .th_header_sessions_title { width: 25%; }
+#add-to-custom-esign-session-form .th_header_sessions_signers { width: 30%; }
+#add-to-custom-esign-session-form .th_header_sessions_seal { width: 7%; }
+#add-to-custom-esign-session-form .th_header_sessions_documents { width: 28%; }
+
+#add-to-custom-esign-session-form .signers-column ol {
+    margin: 0;
+    padding-left: 1.2em;
+}
+
+#add-to-custom-esign-session-form .documents-column .collapsible {
+    white-space: normal;
+}
+
+/* Create-custom-session form */
 .create-custom-session .fieldset-level-1 {
     margin-bottom: 0;
 }

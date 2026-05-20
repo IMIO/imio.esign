@@ -187,7 +187,7 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
             )
-        if (item.get("state") in ("draft", "complete")
+        if (item.get("state") in ("draft", "draft_full")
                 and getMultiAdapter((portal, self.request),
                                     name="external-esign-session-create").may_create_external_sessions()):
             admin_buttons += u"""

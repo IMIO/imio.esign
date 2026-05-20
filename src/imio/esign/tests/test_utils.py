@@ -271,26 +271,26 @@ class TestUtils(BaseEsignTest):
         sessions = annot["sessions"]
         self.assertEqual(len(sessions), 3)
         self.assertEqual([len(sessions[i]["files"]) for i in (0, 1, 2)], [2, 2, 1])
-        self.assertEqual(sessions[0]["state"], "complete")
-        self.assertEqual(sessions[1]["state"], "complete")
+        self.assertEqual(sessions[0]["state"], "draft_full")
+        self.assertEqual(sessions[1]["state"], "draft_full")
         self.assertEqual(sessions[2]["state"], "draft")
         # return value is for the last file added
         self.assertEqual(sid, 2)
         self.assertIs(session, sessions[2])
 
-        # --- a session marked 'complete' is never reused, even if the limit is later raised ---
+        # --- a session marked 'draft_full' is never reused, even if the limit is later raised ---
         del root_annot["imio.esign"]
         set_esign_registry_max_session_files(2)
         # First batch: 3 files → session 0 gets 2 (and is closed), session 1 gets 1 (draft)
         add_files_to_session(signers, tuple(self.uids[:3]))
         annot = get_session_annotation()
-        self.assertEqual(annot["sessions"][0]["state"], "complete")
+        self.assertEqual(annot["sessions"][0]["state"], "draft_full")
         self.assertEqual(annot["sessions"][1]["state"], "draft")
         # Raise the max back to a value that would mathematically allow reusing session 0
         set_esign_registry_max_session_files(10)
         sid, session = add_files_to_session(signers, (self.uids[3],))[-1]
-        # Session 0 stays complete; new file lands in the existing draft (session 1), not in 0
-        self.assertEqual(annot["sessions"][0]["state"], "complete")
+        # Session 0 stays draft_full; new file lands in the existing draft (session 1), not in 0
+        self.assertEqual(annot["sessions"][0]["state"], "draft_full")
         self.assertEqual(sid, 1)
         self.assertEqual(len(annot["sessions"][1]["files"]), 2)
 

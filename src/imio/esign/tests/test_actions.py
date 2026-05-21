@@ -309,7 +309,7 @@ class TestRecreateSessionView(BaseEsignTest):
 
     def test_call(self):
         """Guards (unauthorized), missing/unknown/draft session, recreation,
-        no-merge with a matching draft, and old-session preservation."""
+        no-merge with a matching draft, and old-session deletion."""
         annot = get_session_annotation()
 
         # --- Unauthorized: non-Manager ---
@@ -376,26 +376,29 @@ class TestRecreateSessionView(BaseEsignTest):
             )
         self.assertEqual(set(new_session["discriminators"]), {u"disc1"})
         self.assertEqual(list(new_session["watchers"]), [u"watcher@sign.com"])
-        self.assertEqual(new_session["title"], u"Session 1")
+        self.assertEqual(new_session["title"], u"Original title")
         self.assertEqual(new_session.get("recreated_from"), old_id)
-        # Old session preserved and state unchanged
-        self.assertIn(old_id, annot["sessions"])
-        self.assertEqual(annot["sessions"][old_id]["state"], "to_sign")
+        # Old session deleted
+        self.assertNotIn(old_id, annot["sessions"])
+        for uid in old_files_uids:
+            self.assertEqual(annot["uids"][uid], new_id)
         del self.request.form["esign_session_id"]
 
         # --- No merge: recreation always creates a brand-new session even when a
         #     matching draft (same signers + discriminators) already exists ---
+        second_old_id, _ = self._make_non_draft_session()
         matching_draft_id, _ = add_files_to_session(
             self.signers,
             [self.portal["folder1"]["annex1"].UID()],
             discriminators=(u"disc1",),
         )
         sessions_before = set(annot["sessions"].keys())
-        self.request.form["esign_session_id"] = str(old_id)
+        self.request.form["esign_session_id"] = str(second_old_id)
         view = RecreateSessionView(self.portal, self.request)
         view()
         brand_new_id = view._new_session_id
         self.assertIsNotNone(brand_new_id)
         self.assertNotIn(brand_new_id, sessions_before)
         self.assertNotEqual(brand_new_id, matching_draft_id)
+        self.assertNotIn(second_old_id, annot["sessions"])
         del self.request.form["esign_session_id"]

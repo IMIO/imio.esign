@@ -12,6 +12,7 @@ from imio.esign.utils import get_sessions_for
 from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
+from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.security import check_zope_admin
 from plone import api
@@ -257,22 +258,30 @@ class RecreateSessionView(BrowserView):
         if old["state"] == "draft":
             api.portal.show_message(_("Cannot recreate a draft session!"), request=self.request, type="warning")
             return self.context.absolute_url() + "/@@parapheo"
-        # Build signers as tuples expected by create_session
+        # Extract all data from old session before deleting it
         signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
-        # Call create_session directly to guarantee a brand-new session (no merge via discriminate_sessions)
+        files_uids = [f["uid"] for f in old["files"]]
+        seal = old.get("seal")
+        acroform = old.get("acroform", True)
+        discriminators = old.get("discriminators", ())
+        title = old.get("title", u"")
+        watchers = list(old.get("watchers", []))
+        # Delete old session so files are never in two sessions simultaneously
+        remove_session(session_id)
+        # Create new draft session (call create_session directly to bypass discriminate_sessions)
         new_id, _new_session = create_session(
             signers=signers,
-            seal=old.get("seal"),
-            acroform=old.get("acroform", True),
+            seal=seal,
+            acroform=acroform,
+            title=title,
             annot=annot,
-            discriminators=old.get("discriminators", ()),
-            watchers=list(old.get("watchers", [])),
+            discriminators=discriminators,
+            watchers=watchers,
             create_session_custom_data={"recreated_from": session_id},
         )
-        # Copy file entries from old session with reset status
         add_files_to_session(
             signers=signers,
-            files_uids=[f["uid"] for f in old["files"]],
+            files_uids=files_uids,
             session_id=new_id,
         )
         self._new_session_id = new_id

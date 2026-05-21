@@ -262,14 +262,14 @@ class ActionsColumn(Column):
                 and getMultiAdapter((portal, self.request),
                                     name="esign-session-recreate").may_recreate_session()):
             confirm_msg = translate(
-                _("This action will create a new session with the same files and signers. Continue ?"),
+                _("This action will create a new session with the same files and signers. The current session will be lost. Continue ?"),
                 context=self.request,
             )
             recreate_title = translate(_("Recreate session"), context=self.request)
             admin_buttons += u"""
             <a href="javascript:void(0)" title="{recreate_title}"
                onclick="if(confirm('{confirm_msg}')){{callViewAndReload('{sessions_url}','@@esign-session-recreate',{{'esign_session_id': '{session_id}'}});}}">
-                <i class="fa fa-clone" style="cursor:pointer"></i>
+                <i class="fa fa-redo" style="cursor:pointer"></i>
             </a>
             """.format(
                 recreate_title=recreate_title,

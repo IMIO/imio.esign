@@ -12,6 +12,7 @@ from imio.esign.browser.views import SessionDeleteView
 from imio.esign.browser.views import SigningUsersCsv
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import clear_status_messages
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.pyutils.utils import shortuid_encode_id
@@ -22,19 +23,10 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.testing import z2
-from Products.statusmessages import STATUSMESSAGEKEY
 from Products.statusmessages.interfaces import IStatusMessage
-from zope.annotation.interfaces import IAnnotations
 
 import json
 import unittest
-
-
-def _clear_status_messages(request):
-    """Clear status messages from request annotations (needed after redirects since show() skips clearing on 3xx)."""
-    annotations = IAnnotations(request)
-    annotations[STATUSMESSAGEKEY] = None
-    request.response.expireCookie(STATUSMESSAGEKEY, path="/")
 
 
 class TestSessionDeleteView(BaseEsignTest):
@@ -116,12 +108,12 @@ class TestExternalSessionCreateView(BaseEsignTest):
         self.assertIn("No session ID provided!", messages[0].message)
         self.assertEqual(messages[0].type, "error")
         self.assertEqual("http://nohost/plone/folder0/@@parapheo", result)
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         self.request.form["session_id"] = str(self.session_id)
 
         def _run(return_value):
-            _clear_status_messages(self.request)
+            clear_status_messages(self.request)
             with patch("imio.esign.browser.views.create_external_session", return_value=return_value):
                 return ExternalSessionCreateView(self.folder, self.request)()
 
@@ -408,7 +400,7 @@ class TestSigningUsersCsv(BaseEsignTest):
         messages = IStatusMessage(self.request).show()
         self.assertIn("No users selected", messages[0].message)
         self.assertEqual(messages[0].type, "warning")
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         # --- valid selection ---
         # request.get() promotes form values to request.other; clear to prevent stale cache
@@ -428,7 +420,7 @@ class TestSigningUsersCsv(BaseEsignTest):
         messages = IStatusMessage(self.request).show()
         self.assertIn("No users selected", messages[0].message)
         self.assertEqual(messages[0].type, "warning")
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         # request.get() promotes form values to request.other; clear to prevent stale cache
         self.request.other.pop("selected_users", None)
@@ -440,7 +432,7 @@ class TestSigningUsersCsv(BaseEsignTest):
         messages = IStatusMessage(self.request).show()
         self.assertEqual(messages[0].message, u"Email content is not configured in the settings.")
         self.assertEqual(messages[0].type, "error")
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         # --- portal from email not configured ---
         set_esign_registry_signing_users_email_content(u"<p>Hello</p>")
@@ -448,7 +440,7 @@ class TestSigningUsersCsv(BaseEsignTest):
         messages = IStatusMessage(self.request).show()
         self.assertEqual(messages[0].message, u"Portal from email is not configured.")
         self.assertEqual(messages[0].type, "error")
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         # --- success ---
         self.portal.manage_changeProperties({"email_from_address": "from@test.com"})
@@ -458,7 +450,7 @@ class TestSigningUsersCsv(BaseEsignTest):
         success_msgs = [m for m in messages if m.type == "info"]
         self.assertEqual(len(success_msgs), 1)
         self.assertIn("Emails sent successfully", success_msgs[0].message)
-        _clear_status_messages(self.request)
+        clear_status_messages(self.request)
 
         # --- user with no email address ---
         no_email_user = api.user.create(

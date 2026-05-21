@@ -66,6 +66,9 @@ class SessionsListingView(BrowserView):
     def available(self):
         return get_esign_registry_enabled()
 
+    def may_create_custom_session(self):
+        return api.user.has_permission(manage_session_perm, obj=self.context)
+
     def render_table(self):
         table = SessionsTable(self.context, self, self.request, self.get_sessions())
         table.update()

@@ -113,11 +113,28 @@
     />
 
     <browser:page
+            name="add-to-custom-esign-session"
+            for="*"
+            class=".actions.AddToCustomEsignSessionView"
+            permission="imio.esign.ManageSessions"
+            i18n:domain="imio.esign"
+            allowed_attributes="available"
+    />
+
+    <browser:page
         for="*"
         name="session-annotation-info"
         class=".actions.SessionAnnotationInfoView"
         permission="cmf.ManagePortal"
         />
+
+    <browser:page
+            name="create-custom-session"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".forms.CreateCustomSessionFormView"
+            permission="imio.esign.ManageSessions"
+            i18n:domain="imio.esign"
+    />
 
     <browser:page
             name="signing-users-csv"

@@ -48,6 +48,11 @@
     provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"
     name="files-belonging-to-a-given-session" />
 
+  <utility
+      name="imio.esign.ActiveSignersVocabulary"
+      factory=".vocabularies.ActiveSignersVocabulary"
+      provides="zope.schema.interfaces.IVocabularyFactory" />
+
   <genericsetup:upgradeSteps
       profile="imio.esign:default"
       source="1000"

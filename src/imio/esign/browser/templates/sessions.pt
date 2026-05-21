@@ -34,6 +34,11 @@
     </style>
     <div tal:replace="structure view/render_table"></div>
     <div style="text-align: center; margin-top: 8px;">
+        <a class="esign-create-custom-session"
+           tal:attributes="href string:${context/absolute_url}/@@create-custom-session"
+           tal:condition="python: view.may_create_custom_session()"
+           i18n:translate="" i18n:domain="imio.esign">Create custom session</a>
+        <span tal:condition="python: view.may_create_custom_session()"> &#9679; </span>
         <a tal:attributes="href view/get_parapheo_link" target="_blank">
             <span i18n:translate="" i18n:domain="imio.esign">Open eSign platform</span>
             <i class="fas fa-external-link-alt"></i>

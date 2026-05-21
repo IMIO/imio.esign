@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 """actions tests for this package."""
 from AccessControl import Unauthorized
+from imio.esign.browser.actions import AddToCustomEsignSessionView
 from imio.esign.browser.actions import RemoveFromSessionView
 from imio.esign.browser.actions import RemoveItemFromSessionView
 from imio.esign.browser.actions import SessionAnnotationInfoView
 from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import clear_status_messages
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import create_session
 from imio.esign.utils import get_session_annotation
 from plone import api
 from plone.app.testing import login
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
+from Products.statusmessages.interfaces import IStatusMessage
 
 
 try:
@@ -263,3 +267,116 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
                 repr(esign_session[1]["last_update"]),
             ),
         )
+
+
+class TestAddToCustomEsignSessionView(BaseEsignTest):
+    """Tests for AddToCustomEsignSessionView browser view."""
+
+    def setUp(self):
+        super(TestAddToCustomEsignSessionView, self).setUp()
+        api.user.create(email="user1@sign.com", username="user1", password="password1")  # noqa: S106
+        self.annexes = [self.portal["folder0"]["annex{}".format(i)] for i in (0, 2, 4)]
+        self.signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        self.view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+
+    def test_available(self):
+        """True when annex not in any session; False once added."""
+        self.assertTrue(self.view.available())
+        add_files_to_session(self.signers, [self.annexes[0].UID()])
+        self.assertFalse(self.view.available())
+
+    def test_call(self):
+        """POST dispatches to handle_submit."""
+        self.request.form.clear()
+        sid, _session = create_session(self.signers, title="")
+        self.request.method = "POST"
+        self.request.form["form.buttons.submit"] = "Add to session"
+        self.request.form["session_id"] = str(sid)
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        view()
+        annot = get_session_annotation()
+        self.assertEqual(annot["uids"][self.annexes[0].UID()], sid)
+
+    def test_has_sessions(self):
+        """False with no draft sessions; True once a draft session exists."""
+        self.view()
+        self.assertFalse(self.view.has_sessions())
+        create_session(self.signers, title="")
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        view()
+        self.assertTrue(view.has_sessions())
+
+    def test_handle_submit(self):
+        """All handle_submit branches: missing/invalid/not-found/not-draft id; success; move; same session."""
+        annot = get_session_annotation()
+
+        # --- no session_id → warning ---
+        create_session(self.signers, title="")
+        self.request.method = "POST"
+        self.request.form["form.buttons.submit"] = "Add to session"
+        result = self.view()
+        self.assertIn("No session selected!", result)
+        self.assertNotIn(self.annexes[0].UID(), annot["uids"])
+
+        # --- invalid session_id → error ---
+        self.request.form["session_id"] = "abc"
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        result = view()
+        self.assertIn("Invalid session!", result)
+
+        # --- nonexistent session_id → error ---
+        self.request.form["session_id"] = "999"
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        result = view()
+        self.assertIn("Session not found or no longer draft!", result)
+
+        # --- session not draft → error ---
+        sid_sent, session_sent = create_session(self.signers, title="")
+        session_sent["state"] = "sent"
+        self.request.form["session_id"] = str(sid_sent)
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        result = view()
+        self.assertIn("Session not found or no longer draft!", result)
+
+        # --- success: file added, info message, redirect ---
+        sid_draft = [s for s in annot["sessions"] if annot["sessions"][s].get("state") == "draft"][0]
+        self.request.form.clear()
+        self.request.method = "POST"
+        self.request.form["form.buttons.submit"] = "Add to session"
+        self.request.form["session_id"] = str(sid_draft)
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        view()
+        self.assertEqual(annot["uids"][self.annexes[0].UID()], sid_draft)
+        file_uids = [f["uid"] for f in annot["sessions"][sid_draft]["files"]]
+        self.assertIn(self.annexes[0].UID(), file_uids)
+        messages = IStatusMessage(self.request).show()
+        self.assertIn("File added to session!", messages[0].message)
+        self.assertEqual(messages[0].type, u"info")
+        self.assertEqual(
+            self.request.RESPONSE.getHeader("location"),
+            self.annexes[0].absolute_url(),
+        )
+        clear_status_messages(self.request)
+
+        # --- move file from one session to another ---
+        sid_other, _session_other = create_session(self.signers, title="")
+        self.request.form.clear()
+        self.request.method = "POST"
+        self.request.form["form.buttons.submit"] = "Add to session"
+        self.request.form["session_id"] = str(sid_other)
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        view()
+        self.assertEqual(annot["uids"][self.annexes[0].UID()], sid_other)
+        file_uids_other = [f["uid"] for f in annot["sessions"][sid_other]["files"]]
+        self.assertIn(self.annexes[0].UID(), file_uids_other)
+        clear_status_messages(self.request)
+
+        # --- same session: idempotent re-add ---
+        self.request.form.clear()
+        self.request.method = "POST"
+        self.request.form["form.buttons.submit"] = "Add to session"
+        self.request.form["session_id"] = str(sid_other)
+        view = AddToCustomEsignSessionView(self.annexes[0], self.request)
+        view()
+        self.assertEqual(annot["uids"][self.annexes[0].UID()], sid_other)
+        self.assertIn(sid_other, annot["sessions"])

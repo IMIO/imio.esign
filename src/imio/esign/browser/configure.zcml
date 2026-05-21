@@ -113,6 +113,15 @@
     />
 
     <browser:page
+            name="add-to-custom-esign-session"
+            for="*"
+            class=".actions.AddToCustomEsignSessionView"
+            permission="imio.esign.ManageSessions"
+            i18n:domain="imio.esign"
+            allowed_attributes="available"
+    />
+
+    <browser:page
         for="*"
         name="session-annotation-info"
         class=".actions.SessionAnnotationInfoView"

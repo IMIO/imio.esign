@@ -4,6 +4,7 @@ from html import escape
 from imio.esign import _
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
+from imio.esign.browser.table import FilteredSessionsTable
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_sessions_for
@@ -147,6 +148,77 @@ class RemoveItemFromSessionView(BrowserView):
         """Defines if the action is available or not."""
         annot = get_session_annotation()
         return self.context.UID() in annot.get("uids", {})
+
+
+class AddToCustomEsignSessionView(BrowserView):
+    """Overlay form to add an item to a specific session."""
+
+    template = ViewPageTemplateFile("templates/add_to_custom_esign_session.pt")
+    _table = None
+
+    def __call__(self):
+        self._table = FilteredSessionsTable(self.context, self, self.request)
+        self._table.update()
+        if self.request.method == "POST" and "form.buttons.submit" in self.request.form:
+            return self.handle_submit()
+        return self.template()
+
+    def available(self):
+        annot = get_session_annotation()
+        return self.context.UID() not in annot.get("uids", {})
+
+    def render_table(self):
+        return self._table.render()
+
+    def has_sessions(self):
+        return bool(self._table.rows)
+
+    def handle_submit(self):
+        session_id_str = self.request.form.get("session_id")
+        if not session_id_str:
+            api.portal.show_message(
+                _(u"No session selected!"), request=self.request, type="warning"
+            )
+            return self.template()
+        try:
+            session_id = int(session_id_str)
+        except (ValueError, TypeError):
+            api.portal.show_message(
+                _(u"Invalid session!"), request=self.request, type="error"
+            )
+            return self.template()
+        annot = get_session_annotation()
+        session = annot["sessions"].get(session_id)
+        if not session or session.get("state") != "draft":
+            api.portal.show_message(
+                _(u"Session not found or no longer draft!"),
+                request=self.request,
+                type="error",
+            )
+            return self.template()
+        file_uid = self.context.UID()
+        old_session_id = annot.get("uids", {}).get(file_uid)
+        if old_session_id is not None and old_session_id != session_id:
+            remove_files_from_session([file_uid])
+        signers = [
+            (s["userid"], s["email"], s["fullname"], s["position"])
+            for s in session.get("signers", [])
+        ]
+        add_files_to_session(
+            signers=signers,
+            files_uids=[file_uid],
+            session_id=session_id,
+            seal=session.get("seal"),
+            title=session.get("title", ""),
+        )
+        api.portal.show_message(
+            _(u"File added to session!"), request=self.request, type="info"
+        )
+        self.request.RESPONSE.redirect(self.context.absolute_url())
+
+    @property
+    def portal_url(self):
+        return api.portal.get().absolute_url()
 
 
 class SessionAnnotationInfoView(BrowserView):

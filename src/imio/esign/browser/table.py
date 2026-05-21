@@ -258,7 +258,7 @@ class ActionsColumn(Column):
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
             )
-        if (item.get("state") != "draft"
+        if (item.get("state") not in ("draft", "returned", "finalized")
                 and getMultiAdapter((portal, self.request),
                                     name="esign-session-recreate").may_recreate_session()):
             confirm_msg = translate(

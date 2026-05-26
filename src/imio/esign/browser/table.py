@@ -3,6 +3,7 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
@@ -61,7 +62,8 @@ class StateColumn(Column):
         ))
         title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
                                  domain="imio.esign"))
-        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} <span class='far fa-question-circle' />"
+        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} "
+                u"<span class='far fa-question-circle' />"
                 u"</span>".format(state=state, title=title, state_title_value=item.get("state")))
 
 
@@ -106,7 +108,8 @@ class SignersColumn(Column):
             "<li>%s, %s%s (%s)</li>" % (
                 safe_encode(s.get("fullname", "")),
                 safe_encode(s.get("position")),
-                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign", context=self.request)) if s.get("status") else "",
+                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign",
+                                                context=self.request)) if s.get("status") else "",
                 s.get("email"), )
             for s in signers
         ]
@@ -132,12 +135,24 @@ class FilesColumn(Column):
         )
         # size_label = u"%d/%d MB" % (size_mb, max_size_mb)
         size_label = u"%d MB" % size_mb
+        help_title = translate(
+            _(
+                "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB.",
+                mapping={
+                    "max_session_files": get_esign_registry_max_session_files(),
+                    "max_session_size": get_esign_registry_max_session_size()
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
         label = translate(
             _(
-                "Quick look (${count} element(s), total size: ${size})",
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
                 mapping={
                     "count": count,
                     "size": u"<span%s>%s</span>" % (size_style, size_label),
+                    "help_title": help_title,
                 },
             ),
             context=self.request,
@@ -211,7 +226,7 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
             )
-        if (item.get("state") == "draft"
+        if (item.get("state") in ("draft", "draft_full")
                 and getMultiAdapter((portal, self.request),
                                     name="external-esign-session-create").may_create_external_sessions()):
             admin_buttons += u"""
@@ -225,7 +240,8 @@ class ActionsColumn(Column):
             )
         if check_zope_admin():
             admin_buttons += u"""
-            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}"
+            target="_blank">
                 <span class="fa fa-info-circle" title="Annotation info"></span>
             </a>
             """.format(

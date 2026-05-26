@@ -1,0 +1,29 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="imio.esign">
+
+  <genericsetup:registerProfile
+      name="default"
+      title="imio.esign"
+      directory="profiles/default"
+      description="Installs the imio.esign add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.post_install"
+      />
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="imio.esign (uninstall)"
+      directory="profiles/uninstall"
+      description="Uninstalls the imio.esign add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.uninstall"
+      />
+
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="imio.esign-hiddenprofiles"
+      />
+
+</configure>

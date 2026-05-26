@@ -3,6 +3,7 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
@@ -134,12 +135,24 @@ class FilesColumn(Column):
         )
         # size_label = u"%d/%d MB" % (size_mb, max_size_mb)
         size_label = u"%d MB" % size_mb
+        help_title = translate(
+            _(
+                "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB.",
+                mapping={
+                    "max_session_files": get_esign_registry_max_session_files(),
+                    "max_session_size": get_esign_registry_max_session_size()
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
         label = translate(
             _(
-                "Quick look (${count} element(s), total size: ${size})",
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
                 mapping={
                     "count": count,
                     "size": u"<span%s>%s</span>" % (size_style, size_label),
+                    "help_title": help_title,
                 },
             ),
             context=self.request,

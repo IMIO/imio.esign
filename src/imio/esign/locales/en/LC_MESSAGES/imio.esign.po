@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-03-25 20:09+0000\n"
+"POT-Creation-Date: 2026-04-03 11:53+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -186,6 +186,10 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
+#: ../browser/templates/session_files.pt:5
+msgid "Quick look (${count} element(s), total size: ${size})"
+msgstr ""
+
 #: ../browser/views.py:178
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
@@ -210,6 +214,10 @@ msgstr ""
 msgid "No users selected for email sending."
 msgstr ""
 
+#: ../browser/templates/sessions.pt:44
+msgid "Open eSign platform"
+msgstr ""
+
 #: ../browser/settings.py:84
 msgid "Parapheo url"
 msgstr ""
@@ -224,10 +232,6 @@ msgstr ""
 
 #: ../browser/actions.py:71
 msgid "Problem getting signers: \"${error}\")!"
-msgstr ""
-
-#: ../browser/table.py:123
-msgid "Quick look"
 msgstr ""
 
 #: ../profiles/default/actions.xml

@@ -5,8 +5,10 @@ Changelog
 1.0b9 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Added session info size on quick look.
+  [chris-adam, sgeulette]
+- Added "Open Paraphéo" button on sessions listing view.
+  [chris-adam]
 
 1.0b8 (2026-05-08)
 ------------------

@@ -33,6 +33,12 @@
         }
     </style>
     <div tal:replace="structure view/render_table"></div>
+    <div style="text-align: center; margin-top: 8px;">
+        <a tal:attributes="href view/get_parapheo_link" target="_blank">
+            <span i18n:translate="" i18n:domain="imio.esign">Open eSign platform</span>
+            <i class="fas fa-external-link-alt"></i>
+        </a>
+    </div>
 </metal:content-core>
 
 

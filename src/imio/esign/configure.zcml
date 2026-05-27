@@ -22,6 +22,11 @@
     provides=".interfaces.IContextUidProvider"
     for="*" />
 
+  <adapter
+    factory=".adapters.DefaultItemOrderProvider"
+    provides=".interfaces.IItemOrderProvider"
+    for="*" />
+
   <adapter for="*"
     factory=".adapters.FilesBelongingToAGivenSession"
     provides="collective.compoundcriterion.interfaces.ICompoundCriterionFilter"

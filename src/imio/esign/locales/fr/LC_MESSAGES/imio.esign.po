@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-05-26 13:04+0000\n"
+"POT-Creation-Date: 2026-05-28 09:56+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -165,7 +165,7 @@ msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
 #: ../browser/settings.py:109
 msgid "Max session files"
-msgstr ""
+msgstr "Nombre maximum de fichiers par session"
 
 #: ../browser/settings.py:100
 msgid "Max session size (MB)"
@@ -173,7 +173,7 @@ msgstr "Taille maximum de la session en MB"
 
 #: ../browser/settings.py:110
 msgid "Maximum number of files per session. If the number of files to be signed exceeds this limit, a new session will be created."
-msgstr ""
+msgstr "Si le nombre de fichiers à signer dépasse cette limite, une nouvelle session sera créée."
 
 #: ../browser/settings.py:101
 msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
@@ -358,35 +358,39 @@ msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
 
-#: ../utils.py:490
+#: ../utils.py
 msgid "The session encountered an error during its processing."
 msgstr "La session a rencontré un problème."
 
-#: ../utils.py:493
+#: ../utils.py
 msgid "The session has been cancelled because a signer refused a document."
 msgstr "La session a été interrompue car un signataire a refusé un document."
 
-#: ../utils.py:489
+#: ../utils.py
 msgid "The session has been sent to Paraphéo."
 msgstr "La session a été envoyée à Paraphéo."
 
-#: ../utils.py:494
+#: ../utils.py
 msgid "The session is finished and signed documents are on the way back to the application."
 msgstr "La session est terminée et les documents vont arriver dans l'application."
 
-#: ../utils.py:495
+#: ../utils.py
 msgid "The session is finished and signed documents have been sent back to the application."
 msgstr "La session est terminée et les documents signés sont revenus dans l'application."
 
-#: ../utils.py:492
+#: ../utils.py
 msgid "The session is finished but signed documents couldn't be sent back to the application."
 msgstr "La session est terminée mais les documents signés n'ont pas pu être renvoyés dans l'application."
 
-#: ../utils.py:488
+#: ../utils.py
+msgid "The session is full (max size or max files reached) and is ready to be sent to Paraphéo by a signing manager."
+msgstr "La session est remplie (taille ou nombre de fichiers maximum atteint) et est prête à être envoyée dans Paraphéo par un gestionnaire de signatures."
+
+#: ../utils.py
 msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
 msgstr "La session est en préparation pour être envoyée dans Paraphéo par un gestionnaire de signatures."
 
-#: ../utils.py:491
+#: ../utils.py
 msgid "The session is ready to be signed in Paraphéo."
 msgstr "La session est prête pour signature dans Paraphéo."
 
@@ -475,15 +479,19 @@ msgstr "Vous êtes sur le point d'envoyer des emails à"
 msgid "You have been invited to Paraphéo"
 msgstr "Vous êtes invité à activer votre compte sur Paraphéo"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "draft"
 msgstr "En création"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
+msgid "draft_full"
+msgstr "Remplie"
+
+#: ../browser/table.py
 msgid "errored"
 msgstr "En erreur"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "finalized"
 msgstr "Finalisée"
 
@@ -495,23 +503,23 @@ msgstr "imio.esign"
 msgid "imio.esign (uninstall)"
 msgstr "imio.esign (uninstall)"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "refused"
 msgstr "Refusée"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "returned"
 msgstr "Retournée"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "sent"
 msgstr "Envoyée"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "signed"
 msgstr "Signée"
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "to_sign"
 msgstr "À signer"
 

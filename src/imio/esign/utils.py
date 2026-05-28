@@ -635,8 +635,7 @@ def get_state_description(state):
     """
     return {
         "draft": u"The session is getting ready to be sent to Paraphéo by a signing manager.",
-        "draft_full": u"The session is full (max size or max files reached) and will not accept any more batches; "
-        u"it is awaiting being sent to Paraphéo.",
+        "draft_full": u"The session is full (max size or max files reached) and is ready to be sent to Paraphéo by a signing manager.",
         "sent": u"The session has been sent to Paraphéo.",
         "errored": u"The session encountered an error during its processing.",
         "to_sign": u"The session is ready to be signed in Paraphéo.",

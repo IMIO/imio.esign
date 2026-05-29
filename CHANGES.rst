@@ -9,6 +9,8 @@ Changelog
   [chris-adam, sgeulette]
 - Added "Open Paraphéo" button on sessions listing view.
   [chris-adam]
+- Added parameter to define session files number limit
+  [sgeulette]
 
 1.0b8 (2026-05-08)
 ------------------

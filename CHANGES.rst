@@ -11,6 +11,10 @@ Changelog
   [chris-adam]
 - Added parameter to define session files number limit
   [sgeulette]
+- In `@@session-annotation-info` display `UID` next to link to element.
+  [gbastien]
+- Fixed session size computation when an annex is deleted.
+  [gbastien]
 
 1.0b8 (2026-05-08)
 ------------------

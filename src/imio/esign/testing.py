@@ -45,7 +45,8 @@ class ImioEsignLayer(PloneSandboxLayer):
         import imio.annex
 
         self.loadZCML(package=imio.annex)
-        self.loadZCML(package=imio.esign)
+        self.loadZCML(package=imio.esign,
+                      name='testing.zcml')
 
     def setUpPloneSite(self, portal):
         setLocal("request", portal.REQUEST)

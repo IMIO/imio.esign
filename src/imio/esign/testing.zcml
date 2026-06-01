@@ -1,0 +1,14 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:five="http://namespaces.zope.org/five"
+    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup">
+
+  <include file="configure.zcml" />
+
+  <subscriber for="imio.annex.content.annex.IAnnex
+                   OFS.interfaces.IObjectWillBeRemovedEvent"
+              handler=".tests.events.on_annex_will_be_removed" />
+
+</configure>

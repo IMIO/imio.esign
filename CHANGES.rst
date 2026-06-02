@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b9 (unreleased)
+1.0b9 (2026-06-02)
 ------------------
 
 - Added session info size on quick look.

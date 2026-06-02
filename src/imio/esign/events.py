@@ -2,6 +2,7 @@
 
 from imio.esign.utils import get_file_info
 from imio.esign.utils import get_sessions_for
+from imio.esign.utils import remove_files_from_session
 from imio.helpers.transmogrifier import get_correct_id
 from os import path
 
@@ -62,3 +63,9 @@ def on_categorized_annex_updated(annex, event):
                         file_data['filename'] = new_filename + ext
                     # file_uid is only there one time per session
                     break
+
+
+def on_annex_will_be_removed(annex, event):
+    '''Called when an annex will be removed, before the removed event.'''
+    # here annex is already unindexed
+    remove_files_from_session([annex.UID()])

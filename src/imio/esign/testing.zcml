@@ -7,8 +7,4 @@
 
   <include file="configure.zcml" />
 
-  <subscriber for="imio.annex.content.annex.IAnnex
-                   OFS.interfaces.IObjectWillBeRemovedEvent"
-              handler=".tests.events.on_annex_will_be_removed" />
-
 </configure>

@@ -246,7 +246,7 @@ class TestUtils(BaseEsignTest):
         sid, ses = add_files_to_session(signers, (last_annex_uid,))[-1]
         self.assertEqual(ses["size"], 13982)
         api.content.delete(last_annex)
-        self.failIf(api.portal.get_tool('portal_catalog')(UID=last_annex_uid))
+        self.assertFalse(api.portal.get_tool('portal_catalog')(UID=last_annex_uid))
         self.assertEqual(ses["size"], 6968)
 
         # --- size-based session splitting ---

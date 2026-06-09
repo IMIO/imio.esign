@@ -646,3 +646,12 @@ class TestSessionsListingView(BaseEsignTest):
         # get_dashboard_link will raise NotImplementedError
         with self.assertRaises(NotImplementedError):
             view()
+
+    def test_session_files(self):
+        """Test the quick look column that will call the @@esign-session-files view."""
+        annex = self.portal["folder0"]["annex0"]
+        annex.setDescription("Descr line 1\nDescr line 2 héhé")
+        view = self.portal.restrictedTraverse("@@esign-session-files")
+        result = view(0)
+        self.assertTrue(u"http://nohost/plone/folder0/annex0/@@download" in result)
+        self.assertTrue(u"<div class=\'discreet\'>Descr line 1<br>Descr line 2 h\xe9h\xe9</div>" in result)

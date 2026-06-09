@@ -9,6 +9,10 @@ Changelog
   [gbastien]
 - In `@@session-annotation-info` display `UID` next to link to element.
   [gbastien]
+- Display annex description in `@@parapheo` quick look column.
+  Added parameter `session_id` to `SessionFilesView.__call__` to avoid having to
+  get it from the `request`, we receive it directly as integer.
+  [gbastien]
 
 1.0b9 (2026-06-02)
 ------------------

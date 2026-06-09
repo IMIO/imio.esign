@@ -41,6 +41,7 @@ from zope.pagetemplate.pagetemplate import PageTemplate
 from zope.publisher.interfaces import IPublishTraverse
 
 import csv
+import html
 import json
 import os
 
@@ -117,6 +118,7 @@ class SessionFilesView(BrowserView):
         descr = obj.Description().strip()
         if descr:
             # description is plain text
+            descr = html.escape(descr)
             descr = descr.replace("\n", "<br>")
             descr = u"<div class='discreet'>{0}</div>".format(safe_unicode(descr))
         return descr

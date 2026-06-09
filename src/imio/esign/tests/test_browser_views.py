@@ -653,5 +653,9 @@ class TestSessionsListingView(BaseEsignTest):
         annex.setDescription("Descr line 1\nDescr line 2 héhé")
         view = self.portal.restrictedTraverse("@@esign-session-files")
         result = view(0)
-        self.assertTrue(u"http://nohost/plone/folder0/annex0/@@download" in result)
-        self.assertTrue(u"<div class=\'discreet\'>Descr line 1<br>Descr line 2 h\xe9h\xe9</div>" in result)
+        self.assertIn(u"http://nohost/plone/folder0/annex0/@@download", result)
+        self.assertIn(u"<div class=\'discreet\'>Descr line 1<br>Descr line 2 h\xe9h\xe9</div>", result)
+        # description is escaped
+        annex.setDescription("ok\n<script>alert(1)</script>")
+        result = view(0)
+        self.assertIn(u"<div class=\'discreet\'>ok<br>&lt;script&gt;alert(1)&lt;/script&gt;</div>", result)

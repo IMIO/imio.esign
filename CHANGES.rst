@@ -5,8 +5,10 @@ Changelog
 1.0b10 (unreleased)
 -------------------
 
-- Nothing changed yet.
-
+- Fixed session size computation when an annex is deleted.
+  [gbastien]
+- In `@@session-annotation-info` display `UID` next to link to element.
+  [gbastien]
 
 1.0b9 (2026-06-02)
 ------------------

@@ -167,7 +167,7 @@ class SessionAnnotationInfoView(BrowserView):
         url = escape(obj.absolute_url() + "/view", quote=True)
         path = escape(u"/".join(obj.getPhysicalPath()))
         title = escape(safe_unicode(getattr(obj, "title", "") or path))
-        return u"<a href='{}' title='{}'>{}</a>".format(url, path, title)
+        return u"<a href='{}' title='{}'>{}</a> ({})".format(url, path, title, uid)
 
     def _render_value(self, value, indent=u""):
         """Render a value, replacing UIDs with links where possible."""

@@ -659,3 +659,7 @@ class TestSessionsListingView(BaseEsignTest):
         annex.setDescription("ok\n<script>alert(1)</script>")
         result = view(0)
         self.assertIn(u"<div class=\'discreet\'>ok<br>&lt;script&gt;alert(1)&lt;/script&gt;</div>", result)
+        # without description
+        annex.setDescription("")
+        result = view(0)
+        self.assertNotIn(u"discreet", result)

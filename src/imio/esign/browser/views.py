@@ -29,6 +29,7 @@ from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone.utils import base_hasattr
+from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
@@ -40,6 +41,7 @@ from zope.pagetemplate.pagetemplate import PageTemplate
 from zope.publisher.interfaces import IPublishTraverse
 
 import csv
+import html
 import json
 import os
 
@@ -97,8 +99,7 @@ class SessionFilesView(BrowserView):
         super(SessionFilesView, self).__init__(context, request)
         self.files = []
 
-    def __call__(self):
-        session_id = int(self.request.get("session_id"))
+    def __call__(self, session_id):
         session = self.get_session(session_id)
         files = []
         for f in session["files"]:
@@ -113,8 +114,18 @@ class SessionFilesView(BrowserView):
         """Get the session object."""
         return get_session_annotation()["sessions"][session_id]
 
+    def _get_file_link_descr(self, ctx, obj):
+        descr = obj.Description().strip()
+        if descr:
+            # description is plain text
+            descr = html.escape(descr)
+            descr = descr.replace("\n", "<br>")
+            descr = u"<div class='discreet'>{0}</div>".format(safe_unicode(descr))
+        return descr
+
     def get_file_link(self, ctx, obj):
-        return IPrettyLink(ctx).getLink() + " / " + IPrettyLink(obj).getLink()
+        descr = self._get_file_link_descr(ctx, obj)
+        return IPrettyLink(ctx).getLink() + " / " + IPrettyLink(obj).getLink() + descr
 
 
 class SessionDeleteView(BrowserView):

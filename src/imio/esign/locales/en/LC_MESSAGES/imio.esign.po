@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-05-28 09:56+0000\n"
+"POT-Creation-Date: 2026-06-12 09:13+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:206
+#: ../browser/table.py:212
 msgid "Actions"
 msgstr ""
 
@@ -39,11 +39,11 @@ msgstr ""
 msgid "Confirm Email Sending"
 msgstr ""
 
-#: ../browser/table.py:239
+#: ../browser/table.py:245
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:225
+#: ../browser/table.py:231
 msgid "Delete session"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:121
+#: ../browser/table.py:127
 msgid "Files"
 msgstr ""
 
@@ -153,7 +153,7 @@ msgstr ""
 msgid "Last Name"
 msgstr ""
 
-#: ../browser/table.py:190
+#: ../browser/table.py:196
 #: ../browser/templates/macros.pt:21
 msgid "Last update"
 msgstr ""
@@ -234,7 +234,7 @@ msgstr ""
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:150
+#: ../browser/table.py:156
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
 msgstr ""
 
@@ -279,7 +279,7 @@ msgstr ""
 msgid "Send Emails"
 msgstr ""
 
-#: ../utils.py:207
+#: ../utils.py:217
 msgid "Session ${id}"
 msgstr ""
 
@@ -287,7 +287,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/table.py:139
+#: ../browser/table.py:145
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr ""
 
@@ -458,7 +458,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:256
+#: ../browser/table.py:262
 msgid "View session in dashboard"
 msgstr ""
 
@@ -517,6 +517,14 @@ msgstr "Sent"
 #: ../browser/table.py
 msgid "signed"
 msgstr "Signed"
+
+#: ../browser/table.py
+msgid "status_title_not_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_signed"
+msgstr ""
 
 #: ../browser/table.py
 msgid "to_sign"

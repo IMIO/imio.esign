@@ -13,6 +13,9 @@ Changelog
   Added parameter `session_id` to `SessionFilesView.__call__` to avoid having to
   get it from the `request`, we receive it directly as integer.
   [gbastien]
+- Added red/green icon next to signers to show if not signed or signed.
+  In info viewlet, display `signed` in green.
+  [gbastien]
 
 1.0b9 (2026-06-02)
 ------------------

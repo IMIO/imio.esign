@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-05-28 09:56+0000\n"
+"POT-Creation-Date: 2026-06-12 09:13+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -20,7 +20,7 @@ msgstr ""
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../browser/table.py:206
+#: ../browser/table.py:212
 msgid "Actions"
 msgstr "Actions"
 
@@ -40,11 +40,11 @@ msgstr "Annuler"
 msgid "Confirm Email Sending"
 msgstr "Confirmer l'envoi des emails"
 
-#: ../browser/table.py:239
+#: ../browser/table.py:245
 msgid "Create external session"
 msgstr "Envoyer dans Paraphéo"
 
-#: ../browser/table.py:225
+#: ../browser/table.py:231
 msgid "Delete session"
 msgstr "Effacer la session"
 
@@ -113,7 +113,7 @@ msgstr "Échec de l'envoi des emails pour ${count} utilisateurs."
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
-#: ../browser/table.py:121
+#: ../browser/table.py:127
 msgid "Files"
 msgstr "Fichiers"
 
@@ -154,7 +154,7 @@ msgstr "Active/désactive la fonctionnalité globalement sur le site."
 msgid "Last Name"
 msgstr "Nom"
 
-#: ../browser/table.py:190
+#: ../browser/table.py:196
 #: ../browser/templates/macros.pt:21
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -235,7 +235,7 @@ msgstr "Fonction"
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/table.py:150
+#: ../browser/table.py:156
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
 msgstr "${count} élément(s), taille: ${size} <span title='${help_title}' class='far fa-question-circle' />"
 
@@ -280,7 +280,7 @@ msgstr "Sélectionnés:"
 msgid "Send Emails"
 msgstr "Envoyer des emails"
 
-#: ../utils.py:207
+#: ../utils.py:217
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -288,7 +288,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/table.py:139
+#: ../browser/table.py:145
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr "Une session peut contenir maximum ${max_session_files} éléments pour une taille totale maximum de ${max_session_size} MB."
 
@@ -459,7 +459,7 @@ msgstr "Le numéro de TVA doit commencer par 'BE'"
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 
-#: ../browser/table.py:256
+#: ../browser/table.py:262
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 
@@ -518,6 +518,14 @@ msgstr "Envoyée"
 #: ../browser/table.py
 msgid "signed"
 msgstr "Signée"
+
+#: ../browser/table.py
+msgid "status_title_not_signed"
+msgstr "Ce signataire n'a pas encore signé la session"
+
+#: ../browser/table.py
+msgid "status_title_signed"
+msgstr "Ce signataire a signé la session"
 
 #: ../browser/table.py
 msgid "to_sign"

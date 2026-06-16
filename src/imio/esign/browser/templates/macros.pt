@@ -57,7 +57,7 @@
                 <td tal:content="python:s['position']">Directeur Général</td>
                 <td tal:content="python:s['email']">user1@sign.com</td>
                 <td>
-                  <span tal:attributes="class python: 'signer-signed' if s['status'] else ''"
+                  <span tal:attributes="class python: 'signer-%s' % s['status'] if s['status'] else ''"
                         tal:content="python:s['status'] or '-'"
                         i18n:translate="">pending</span>
                 </td>

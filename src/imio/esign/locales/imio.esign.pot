@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-12 09:13+0000\n"
+"POT-Creation-Date: 2026-06-16 08:12+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
-#: ../browser/views.py:317
+#: ../browser/views.py:328
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:212
+#: ../browser/table.py:226
 msgid "Actions"
 msgstr ""
 
@@ -39,11 +39,11 @@ msgstr ""
 msgid "Confirm Email Sending"
 msgstr ""
 
-#: ../browser/table.py:245
+#: ../browser/table.py:259
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:231
+#: ../browser/table.py:245
 msgid "Delete session"
 msgstr ""
 
@@ -60,7 +60,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/views.py:586
+#: ../browser/views.py:597
 msgid "Email content is not configured in the settings."
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Email:"
 msgstr ""
 
-#: ../browser/views.py:646
+#: ../browser/views.py:657
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
@@ -88,11 +88,11 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:194
+#: ../browser/views.py:205
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:189
+#: ../browser/views.py:200
 msgid "External session sent successfully!"
 msgstr ""
 
@@ -100,11 +100,11 @@ msgstr ""
 msgid "External watchers emails"
 msgstr ""
 
-#: ../browser/views.py:633
+#: ../browser/views.py:644
 msgid "Failed to send email to ${userid}."
 msgstr ""
 
-#: ../browser/views.py:653
+#: ../browser/views.py:664
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:127
+#: ../browser/table.py:141
 msgid "Files"
 msgstr ""
 
@@ -153,7 +153,7 @@ msgstr ""
 msgid "Last Name"
 msgstr ""
 
-#: ../browser/table.py:196
+#: ../browser/table.py:210
 #: ../browser/templates/macros.pt:21
 msgid "Last update"
 msgstr ""
@@ -190,27 +190,27 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:183
+#: ../browser/views.py:194
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:169
+#: ../browser/views.py:180
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:176
+#: ../browser/views.py:187
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:128
+#: ../browser/views.py:139
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/views.py:541
+#: ../browser/views.py:552
 msgid "No users selected for CSV download."
 msgstr ""
 
-#: ../browser/views.py:580
+#: ../browser/views.py:591
 msgid "No users selected for email sending."
 msgstr ""
 
@@ -222,7 +222,7 @@ msgstr ""
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/views.py:595
+#: ../browser/views.py:606
 msgid "Portal from email is not configured."
 msgstr ""
 
@@ -234,7 +234,7 @@ msgstr ""
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:156
+#: ../browser/table.py:170
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
 msgstr ""
 
@@ -258,7 +258,7 @@ msgstr ""
 msgid "Seal email"
 msgstr ""
 
-#: ../browser/table.py:85
+#: ../browser/table.py:87
 #: ../browser/templates/macros.pt:28
 msgid "Sealed"
 msgstr ""
@@ -287,11 +287,11 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/table.py:145
+#: ../browser/table.py:159
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr ""
 
-#: ../browser/views.py:136
+#: ../browser/views.py:147
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -299,7 +299,7 @@ msgstr ""
 msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
-#: ../browser/views.py:138
+#: ../browser/views.py:149
 msgid "Session not found!"
 msgstr ""
 
@@ -307,7 +307,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:162
+#: ../browser/views.py:173
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -323,11 +323,11 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:369
+#: ../browser/views.py:380
 msgid "Signed file download"
 msgstr ""
 
-#: ../browser/table.py:100
+#: ../browser/table.py:102
 #: ../browser/templates/macros.pt:42
 msgid "Signers"
 msgstr ""
@@ -336,7 +336,7 @@ msgstr ""
 msgid "Signing Users: Export CSV"
 msgstr ""
 
-#: ../browser/table.py:54
+#: ../browser/table.py:56
 #: ../browser/templates/macros.pt:11
 msgid "State"
 msgstr ""
@@ -345,15 +345,15 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:345
+#: ../browser/views.py:356
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:325
+#: ../browser/views.py:336
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:337
+#: ../browser/views.py:348
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
@@ -393,7 +393,7 @@ msgstr ""
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
-#: ../browser/views.py:321
+#: ../browser/views.py:332
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -409,7 +409,7 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:71
+#: ../browser/table.py:73
 #: ../browser/templates/macros.pt:35
 msgid "Title"
 msgstr ""
@@ -426,7 +426,7 @@ msgstr ""
 msgid "Used in signers email template."
 msgstr ""
 
-#: ../browser/views.py:604
+#: ../browser/views.py:615
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr ""
 
@@ -458,7 +458,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:262
+#: ../browser/table.py:276
 msgid "View session in dashboard"
 msgstr ""
 
@@ -474,7 +474,7 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:619
+#: ../browser/views.py:630
 msgid "You have been invited to Paraphéo"
 msgstr ""
 
@@ -520,6 +520,10 @@ msgstr ""
 
 #: ../browser/table.py
 msgid "status_title_not_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_refused"
 msgstr ""
 
 #: ../browser/table.py

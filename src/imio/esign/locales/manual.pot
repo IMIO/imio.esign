@@ -98,3 +98,6 @@ msgstr ""
 msgid "status_title_not_signed"
 msgstr ""
 
+#: ../browser/table.py
+msgid "status_title_refused"
+msgstr ""

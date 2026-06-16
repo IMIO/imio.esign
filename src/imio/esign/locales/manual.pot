@@ -90,3 +90,14 @@ msgstr ""
 msgid "to_sign"
 msgstr ""
 
+#: ../browser/table.py
+msgid "status_title_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_not_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_refused"
+msgstr ""

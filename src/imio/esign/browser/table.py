@@ -17,6 +17,8 @@ from z3c.table.table import Table
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 
+import html
+
 
 class IdColumn(Column):
     # not translated so it stays short
@@ -104,15 +106,33 @@ class SignersColumn(Column):
 
     def renderCell(self, item):
         signers = item.get("signers") or []
-        parts = [
-            "<li>%s, %s%s (%s)</li>" % (
-                safe_encode(s.get("fullname", "")),
-                safe_encode(s.get("position")),
-                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign",
-                                                context=self.request)) if s.get("status") else "",
-                s.get("email"), )
-            for s in signers
-        ]
+        parts = []
+        for s in signers:
+            icon_name = 'edit'
+            css_class = "signer-not-signed"
+            msgid = "status_title_not_signed"
+            if s.get("status") == "signed":
+                css_class = "signer-signed"
+                msgid = "status_title_signed"
+            elif s.get("status") == "refused":
+                icon_name = 'ban'
+                css_class = "signer-refused"
+                msgid = "status_title_refused"
+            parts.append(
+                "<li>%s, %s (%s) %s</li>" % (
+                    safe_encode(s.get("fullname", "")),
+                    safe_encode(s.get("position")),
+                    s.get("email"),
+                    "<span class='fa fa-%s help %s' title='%s'></span>" %
+                        (icon_name,
+                         css_class,
+                         safe_encode(
+                            html.escape(
+                                translate(
+                                    msgid,
+                                    domain="imio.esign",
+                                    context=self.request)))),
+                    ))
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 

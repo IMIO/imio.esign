@@ -2,7 +2,7 @@ Changelog
 =========
 
 
-1.0b10 (unreleased)
+1.0b10 (2026-06-18)
 -------------------
 
 - Fixed session size computation when an annex is deleted.

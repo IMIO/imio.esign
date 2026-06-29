@@ -5,8 +5,8 @@ Changelog
 1.0b11 (unreleased)
 -------------------
 
-- Nothing changed yet.
-
+- Avoided error when deleting site.
+  [sgeulette]
 
 1.0b10 (2026-06-18)
 -------------------

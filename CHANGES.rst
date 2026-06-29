@@ -5,7 +5,8 @@ Changelog
 1.0b11 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Auto delete old esign sessions.
+  [chris-adam]
 
 
 1.0b10 (2026-06-18)
@@ -70,7 +71,7 @@ Changelog
 ------------------
 
 - Renamed imio.esign config functions.
-  [cadam]
+  [chris-adam]
 - Highlight `draft` session in table view and viewlet, use `Id` as
   column header instead `identifier` so it is more narrow and
   make `sessions` view columns sortable.
@@ -166,4 +167,4 @@ Changelog
 ------------------
 
 - Initial release.
-  [sgeulette, gbastien, aduchene, cadam]
+  [sgeulette, gbastien, aduchene, chris-adam]

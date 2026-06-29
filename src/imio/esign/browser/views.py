@@ -12,7 +12,9 @@ from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_esign_registry_enabled
 from imio.esign.config import get_esign_registry_parapheo_url
 from imio.esign.config import get_esign_registry_signing_users_email_content
+from imio.esign.utils import cleanup_expired_sessions
 from imio.esign.utils import create_external_session
+from imio.esign.utils import get_deletion_date_msg
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
@@ -43,6 +45,7 @@ from zope.publisher.interfaces import IPublishTraverse
 import csv
 import html
 import json
+import logging
 import os
 
 
@@ -50,6 +53,9 @@ try:
     from StringIO import StringIO  # Python 2
 except ImportError:
     from io import StringIO  # Python 3
+
+
+logger = logging.getLogger(__name__)
 
 
 class SessionsListingView(BrowserView):
@@ -63,6 +69,10 @@ class SessionsListingView(BrowserView):
     def __call__(self):
         if not self.available():
             raise Unauthorized
+        try:
+            cleanup_expired_sessions()
+        except Exception:
+            logger.exception("Auto-cleanup failed in SessionsListingView.__call__")
         return super(SessionsListingView, self).__call__()
 
     def available(self):
@@ -275,6 +285,15 @@ class FacetedSessionInfoViewlet(ViewletBase):
 
     def get_state_description(self, state):
         return translate(get_state_description(state), context=self.request, domain="imio.esign")
+
+    def get_state_title(self, session):
+        """Return state description with auto-deletion date appended for finalized sessions."""
+        state = session.get("state", "")
+        title = translate(get_state_description(state), context=self.request, domain="imio.esign")
+        deletion_msg = get_deletion_date_msg(session, self.request)
+        if deletion_msg:
+            title = title + u"\n\n" + deletion_msg
+        return title
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

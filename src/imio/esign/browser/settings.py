@@ -121,6 +121,17 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
+    auto_cleanup_days = schema.Int(
+        title=_("Auto-cleanup delay (days)"),
+        description=_(
+            "Number of days after a session enters 'to_sign' state before it is automatically "
+            "deleted (finalized sessions only). Set to 0 to disable auto-cleanup."
+        ),
+        default=100,
+        min=0,
+        required=False,
+    )
+
 
 class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings

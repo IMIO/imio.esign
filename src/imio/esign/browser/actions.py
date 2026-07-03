@@ -13,7 +13,6 @@ from imio.esign.utils import get_sessions_for
 from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
-from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.security import check_zope_admin
 from plone import api
@@ -287,8 +286,8 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         discriminators = old.get("discriminators", ())
         title = old.get("title", u"")
         watchers = list(old.get("watchers", []))
-        # Delete old session so files are never in two sessions simultaneously
-        remove_session(session_id)
+        # Remove selected files from the old session
+        remove_files_from_session(files_uids)
         # Create new draft session (call create_session directly to bypass discriminate_sessions)
         new_id, _new_session = create_session(
             signers=signers,

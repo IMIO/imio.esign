@@ -314,8 +314,8 @@ class TestRecreateSessionView(BaseEsignTest):
     def test_call(self):
         """Guards (unauthorized), missing/unknown/draft session, recreation,
         no-merge with a matching draft, old-session deletion, and partial
-        selection via ``file_uids`` (subset kept, unselected dropped,
-        empty/invalid selections recreate nothing)."""
+        selection via ``file_uids`` (subset moved to new session, unselected
+        files stay in the old session, empty/invalid selections recreate nothing)."""
         annot = get_session_annotation()
 
         # --- Unauthorized: non-Manager ---
@@ -412,7 +412,7 @@ class TestRecreateSessionView(BaseEsignTest):
         # --- Partial selection: keep only the first two files ---
         partial_old_id, partial_old = self._make_non_draft_session()
         partial_files_uids = [f["uid"] for f in partial_old["files"]]
-        kept, dropped = partial_files_uids[:2], partial_files_uids[2]
+        kept, dropped = partial_files_uids[:2], partial_files_uids[2:]
         self.request.form["esign_session_id"] = str(partial_old_id)
         self.request.form["file_uids"] = json.dumps(kept)
         view = RecreateSessionView(self.portal, self.request)
@@ -421,11 +421,13 @@ class TestRecreateSessionView(BaseEsignTest):
         self.assertIsNotNone(partial_new_id)
         partial_new_session = annot["sessions"][partial_new_id]
         self.assertEqual([f["uid"] for f in partial_new_session["files"]], kept)
-        # kept files now belong to the new session, dropped file is gone entirely
+        # kept files now belong to the new session; unselected files stay in the old session
         for uid in kept:
             self.assertEqual(annot["uids"][uid], partial_new_id)
-        self.assertNotIn(dropped, annot["uids"])
-        self.assertNotIn(partial_old_id, annot["sessions"])
+        for uid in dropped:
+            self.assertEqual(annot["uids"][uid], partial_old_id)
+        self.assertIn(partial_old_id, annot["sessions"])
+        self.assertEqual([f["uid"] for f in annot["sessions"][partial_old_id]["files"]], dropped)
         del self.request.form["file_uids"]
         del self.request.form["esign_session_id"]
 

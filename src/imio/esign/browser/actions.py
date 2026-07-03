@@ -236,11 +236,40 @@ class SessionAnnotationInfoView(BrowserView):
 
 
 class _RecreateSessionMixin(object):
-    """Shared permission check for the recreate views."""
+    """Shared permission check and request validation for the recreate views."""
 
-    def may_recreate_session(self):
-        """Check if the user may recreate sessions."""
+    NON_RECREATABLE_STATES = ("draft", "returned", "finalized")
+
+    def may_recreate_session(self, state=None):
+        """Whether the current user may recreate a session.
+
+        When ``state`` is given, a session in a non-recreatable state is refused
+        regardless of permission (used by the table column to show the button).
+        """
+        if state in self.NON_RECREATABLE_STATES:
+            return False
         return api.user.has_permission(manage_session_perm, obj=self.context)
+
+    def _resolve_session(self):
+        """Validate ``esign_session_id`` and return ``(session_id, session, error)``.
+
+        ``error`` is ``None`` for a recreatable (non-draft) session, otherwise a
+        ``(message, message_type)`` pair explaining why the request was rejected.
+        """
+        session_id = self.request.form.get("esign_session_id")
+        if not session_id:
+            return None, None, (_("No session ID provided!"), "error")
+        if not session_id.isdigit():
+            return None, None, (_("Invalid session ID!"), "error")
+        session_id = int(session_id)
+        session = get_session_annotation()["sessions"].get(session_id)
+        if session is None:
+            return None, None, (_("Session not found!"), "error")
+        if session["state"] == "draft":
+            return None, None, (_("Cannot recreate a draft session!"), "warning")
+        if session["state"] in self.NON_RECREATABLE_STATES:
+            return None, None, (_("Cannot recreate a finished session!"), "warning")
+        return session_id, session, None
 
 
 class RecreateSessionView(_RecreateSessionMixin, BrowserView):
@@ -248,30 +277,22 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
 
     _new_session_id = None
 
+    def _redirect(self, msg, type="error"):
+        """Flash ``msg`` and return the parapheo redirect URL."""
+        api.portal.show_message(msg, request=self.request, type=type)
+        return self.context.absolute_url() + "/@@parapheo"
+
     def __call__(self):
         if not self.may_recreate_session():
             raise Unauthorized
-        session_id = self.request.form.get("esign_session_id")
-        if not session_id:
-            api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
-            return self.context.absolute_url() + "/@@parapheo"
-        if not session_id.isdigit():
-            api.portal.show_message(_("Invalid session ID!"), request=self.request, type="error")
-            return self.context.absolute_url() + "/@@parapheo"
-        session_id = int(session_id)
+        session_id, old, error = self._resolve_session()
+        if error:
+            return self._redirect(*error)
         annot = get_session_annotation()
-        sessions = annot["sessions"]
-        if session_id not in sessions:
-            api.portal.show_message(_("Session not found!"), request=self.request, type="error")
-            return self.context.absolute_url() + "/@@parapheo"
-        old = sessions[session_id]
-        if old["state"] == "draft":
-            api.portal.show_message(_("Cannot recreate a draft session!"), request=self.request, type="warning")
-            return self.context.absolute_url() + "/@@parapheo"
         # Extract all data from old session before deleting it
         signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
         files_uids = [f["uid"] for f in old["files"]]
-        raw_selection = self.request.form.get("file_uids", None)
+        raw_selection = self.request.form.get("file_uids")
         if raw_selection is not None:
             try:
                 selected = set(json.loads(raw_selection or "[]"))
@@ -279,12 +300,10 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
                 selected = set()
             files_uids = [uid for uid in files_uids if uid in selected]
             if not files_uids:
-                api.portal.show_message(_("No file selected!"), request=self.request, type="warning")
-                return self.context.absolute_url() + "/@@parapheo"
+                return self._redirect(_("No file selected!"), "warning")
         seal = old.get("seal")
         acroform = old.get("acroform", True)
         discriminators = old.get("discriminators", ())
-        title = old.get("title", u"")
         watchers = list(old.get("watchers", []))
         # Remove selected files from the old session
         remove_files_from_session(files_uids)
@@ -293,7 +312,6 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
             signers=signers,
             seal=seal,
             acroform=acroform,
-            title=title,
             annot=annot,
             discriminators=discriminators,
             watchers=watchers,
@@ -309,12 +327,10 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
             "recreate_session",
             "old_session={} new_session={} files={}".format(session_id, new_id, len(files_uids)),
         )
-        api.portal.show_message(
+        return self._redirect(
             _("New session ${nid} created from session ${oid}", mapping={"nid": new_id, "oid": session_id}),
-            request=self.request,
-            type="info",
+            "info",
         )
-        return self.context.absolute_url() + "/@@parapheo"
 
 
 class RecreateSessionFormView(_RecreateSessionMixin, SessionFilesMixin, BrowserView):
@@ -327,15 +343,9 @@ class RecreateSessionFormView(_RecreateSessionMixin, SessionFilesMixin, BrowserV
     def __call__(self):
         if not self.may_recreate_session():
             raise Unauthorized
-        session_id = self.request.form.get("esign_session_id")
-        if not session_id or not session_id.isdigit():
-            return self._error(_("Invalid session ID!"))
-        session_id = int(session_id)
-        session = get_session_annotation()["sessions"].get(session_id)
-        if session is None:
-            return self._error(_("Session not found!"))
-        if session["state"] == "draft":
-            return self._error(_("Cannot recreate a draft session!"))
+        session_id, session, error = self._resolve_session()
+        if error:
+            return self._error(error[0])
         self.session_id = session_id
         self._session = session
         return self.index()

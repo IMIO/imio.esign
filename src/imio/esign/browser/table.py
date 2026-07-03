@@ -258,9 +258,8 @@ class ActionsColumn(Column):
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
             )
-        if (item.get("state") not in ("draft", "returned", "finalized")
-                and getMultiAdapter((portal, self.request),
-                                    name="esign-session-recreate-form").may_recreate_session()):
+        if getMultiAdapter((portal, self.request),
+                           name="esign-session-recreate-form").may_recreate_session(item.get("state")):
             recreate_title = translate(_("Recreate session"), context=self.request)
             admin_buttons += u"""
             <a class="link-overlay-info" title="{recreate_title}" target="_blank"

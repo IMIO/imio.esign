@@ -382,7 +382,7 @@ class TestRecreateSessionView(BaseEsignTest):
             )
         self.assertEqual(set(new_session["discriminators"]), {u"disc1"})
         self.assertEqual(list(new_session["watchers"]), [u"watcher@sign.com"])
-        self.assertEqual(new_session["title"], u"Original title")
+        self.assertEqual(new_session["title"], u"Session 1")
         self.assertEqual(new_session.get("recreated_from"), old_id)
         # Old session deleted
         self.assertNotIn(old_id, annot["sessions"])

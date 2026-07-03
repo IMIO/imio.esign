@@ -451,6 +451,29 @@ class TestRecreateSessionView(BaseEsignTest):
         del self.request.form["file_uids"]
         del self.request.form["esign_session_id"]
 
+    def test_get_new_session_title_default(self):
+        """The base view returns an empty title, so create_session mints its own."""
+        old_id, old = self._make_non_draft_session()
+        view = RecreateSessionView(self.portal, self.request)
+        self.assertEqual(view.get_new_session_title(old, old_id), u"")
+
+    def test_get_new_session_title_override(self):
+        """A consuming app can set the recreated session title via the hook."""
+        annot = get_session_annotation()
+        old_id, old = self._make_non_draft_session()
+
+        class CustomRecreateSessionView(RecreateSessionView):
+            def get_new_session_title(self, old, old_session_id):
+                return old.get("title", u"")
+
+        self.request.form["esign_session_id"] = str(old_id)
+        view = CustomRecreateSessionView(self.portal, self.request)
+        view()
+        new_id = view._new_session_id
+        self.assertIsNotNone(new_id)
+        self.assertEqual(annot["sessions"][new_id]["title"], u"Original title")
+        del self.request.form["esign_session_id"]
+
 
 class TestRecreateSessionFormView(BaseEsignTest):
     """Tests for the RecreateSessionFormView overlay form."""

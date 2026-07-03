@@ -282,6 +282,15 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         api.portal.show_message(msg, request=self.request, type=type)
         return self.context.absolute_url() + "/@@parapheo"
 
+    def get_new_session_title(self, old, old_session_id):
+        """Title for the recreated session. Override in consuming apps.
+
+        :param old: the source session dict being recreated
+        :param old_session_id: the source session id
+        :return: a title string
+        """
+        return u""
+
     def __call__(self):
         if not self.may_recreate_session():
             raise Unauthorized
@@ -290,6 +299,7 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
             return self._redirect(*error)
         annot = get_session_annotation()
         # Extract all data from old session before deleting it
+        title = self.get_new_session_title(old, session_id)
         signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
         files_uids = [f["uid"] for f in old["files"]]
         raw_selection = self.request.form.get("file_uids")
@@ -312,6 +322,7 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
             signers=signers,
             seal=seal,
             acroform=acroform,
+            title=title,
             annot=annot,
             discriminators=discriminators,
             watchers=watchers,

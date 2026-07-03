@@ -5,6 +5,7 @@ from imio.esign import _
 from imio.esign import manage_session_perm
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
+from imio.esign.browser.views import SessionFilesMixin
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_session
 from imio.esign.utils import get_session_annotation
@@ -20,7 +21,9 @@ from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from six import string_types
+from zope.i18n import translate
 
+import json
 import pprint
 import re
 
@@ -233,7 +236,15 @@ class SessionAnnotationInfoView(BrowserView):
         return check_zope_admin()
 
 
-class RecreateSessionView(BrowserView):
+class _RecreateSessionMixin(object):
+    """Shared permission check for the recreate views."""
+
+    def may_recreate_session(self):
+        """Check if the user may recreate sessions."""
+        return api.user.has_permission(manage_session_perm, obj=self.context)
+
+
+class RecreateSessionView(_RecreateSessionMixin, BrowserView):
     """Admin view to recreate a fresh draft session from an existing non-draft session."""
 
     _new_session_id = None
@@ -261,6 +272,16 @@ class RecreateSessionView(BrowserView):
         # Extract all data from old session before deleting it
         signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
         files_uids = [f["uid"] for f in old["files"]]
+        raw_selection = self.request.form.get("file_uids", None)
+        if raw_selection is not None:
+            try:
+                selected = set(json.loads(raw_selection or "[]"))
+            except (ValueError, TypeError):
+                selected = set()
+            files_uids = [uid for uid in files_uids if uid in selected]
+            if not files_uids:
+                api.portal.show_message(_("No file selected!"), request=self.request, type="warning")
+                return self.context.absolute_url() + "/@@parapheo"
         seal = old.get("seal")
         acroform = old.get("acroform", True)
         discriminators = old.get("discriminators", ())
@@ -285,7 +306,10 @@ class RecreateSessionView(BrowserView):
             session_id=new_id,
         )
         self._new_session_id = new_id
-        audit("recreate_session", "old_session={} new_session={}".format(session_id, new_id))
+        audit(
+            "recreate_session",
+            "old_session={} new_session={} files={}".format(session_id, new_id, len(files_uids)),
+        )
         api.portal.show_message(
             _("New session ${nid} created from session ${oid}", mapping={"nid": new_id, "oid": session_id}),
             request=self.request,
@@ -293,6 +317,71 @@ class RecreateSessionView(BrowserView):
         )
         return self.context.absolute_url() + "/@@parapheo"
 
-    def may_recreate_session(self):
-        """Check if the user may recreate sessions."""
-        return api.user.has_permission(manage_session_perm, obj=self.context)
+
+class RecreateSessionFormView(_RecreateSessionMixin, SessionFilesMixin, BrowserView):
+    """Overlay form to choose which files to include when recreating a session."""
+
+    index = ViewPageTemplateFile("templates/recreate_session_form.pt")
+    session_id = None
+    _session = None
+
+    def __call__(self):
+        if not self.may_recreate_session():
+            raise Unauthorized
+        session_id = self.request.form.get("esign_session_id")
+        if not session_id or not session_id.isdigit():
+            return self._error(_("Invalid session ID!"))
+        session_id = int(session_id)
+        session = get_session_annotation()["sessions"].get(session_id)
+        if session is None:
+            return self._error(_("Session not found!"))
+        if session["state"] == "draft":
+            return self._error(_("Cannot recreate a draft session!"))
+        self.session_id = session_id
+        self._session = session
+        return self.index()
+
+    def _error(self, msg):
+        """Render a standalone error message inside the overlay."""
+        return u'<div class="portalMessage error">{}</div>'.format(translate(msg, context=self.request))
+
+    def files(self):
+        """The (context, file) object pairs of the session"""
+        return self.resolve_session_files(self._session)
+
+    def no_file_msg(self):
+        """Translated alert shown when the user submits with no file selected."""
+        return translate(_("Please select at least one file."), context=self.request)
+
+    def recreate_onclick(self):
+        """JS run by the Recreate button: collect checked files then reload.
+
+        Built here (not in the template) so the many semicolons don't collide
+        with the ``tal:attributes`` separator.
+        """
+        js = (
+            "var u=Array.prototype.map.call("
+            "this.closest('.recreate-session-form').querySelectorAll('.recreate-file-cb:checked'),"
+            "function(c){return c.value;});"
+            "if(!u.length){alert('%(msg)s');return;}"
+            "callViewAndReload('%(base)s','@@esign-session-recreate',"
+            "{'esign_session_id':'%(sid)s','file_uids':JSON.stringify(u)});"
+        ) % {
+            "msg": self.no_file_msg().replace(u"'", u"\\'"),
+            "base": self.context.absolute_url(),
+            "sid": self.session_id,
+        }
+        return js
+
+    def refused_reason(self):
+        """Refusal reason for a refused session, else an empty string.
+
+        The reason is stored by the external feedback service in the "returns"
+        list, on the code 52 (document_declined) entry, as ``value["reason"]``.
+        """
+        if not self._session or self._session.get("state") != "refused":
+            return u""
+        for entry in reversed(list(self._session.get("returns", []))):
+            if entry and entry[0] == 52 and isinstance(entry[2], dict):
+                return entry[2].get("reason", u"") or u""
+        return u""

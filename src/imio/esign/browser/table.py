@@ -260,20 +260,15 @@ class ActionsColumn(Column):
             )
         if (item.get("state") not in ("draft", "returned", "finalized")
                 and getMultiAdapter((portal, self.request),
-                                    name="esign-session-recreate").may_recreate_session()):
-            confirm_msg = translate(
-                _("This action will create a new session with the same files and signers. The current session will be lost. Continue ?"),
-                context=self.request,
-            )
+                                    name="esign-session-recreate-form").may_recreate_session()):
             recreate_title = translate(_("Recreate session"), context=self.request)
             admin_buttons += u"""
-            <a href="javascript:void(0)" title="{recreate_title}"
-               onclick="if(confirm('{confirm_msg}')){{callViewAndReload('{sessions_url}','@@esign-session-recreate',{{'esign_session_id': '{session_id}'}});}}">
+            <a class="link-overlay-info" title="{recreate_title}" target="_blank"
+               href="{sessions_url}/@@esign-session-recreate-form?esign_session_id={session_id}">
                 <i class="fa fa-redo" style="cursor:pointer"></i>
             </a>
             """.format(
                 recreate_title=recreate_title,
-                confirm_msg=confirm_msg.replace(u"'", u"\\'"),
                 sessions_url=sessions_url,
                 session_id=session_id,
             )

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """actions tests for this package."""
 from AccessControl import Unauthorized
+from datetime import datetime
+from imio.esign.browser.actions import RecreateSessionFormView
 from imio.esign.browser.actions import RecreateSessionView
 from imio.esign.browser.actions import RemoveFromSessionView
 from imio.esign.browser.actions import RemoveItemFromSessionView
@@ -14,6 +16,8 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
+
+import json
 
 
 try:
@@ -296,7 +300,7 @@ class TestRecreateSessionView(BaseEsignTest):
             watchers=[u"watcher@sign.com"],
             discriminators=(u"disc1",),
             **kwargs
-        )
+        )[-1]
         session["state"] = state
         return session_id, session
 
@@ -309,7 +313,9 @@ class TestRecreateSessionView(BaseEsignTest):
 
     def test_call(self):
         """Guards (unauthorized), missing/unknown/draft session, recreation,
-        no-merge with a matching draft, and old-session deletion."""
+        no-merge with a matching draft, old-session deletion, and partial
+        selection via ``file_uids`` (subset kept, unselected dropped,
+        empty/invalid selections recreate nothing)."""
         annot = get_session_annotation()
 
         # --- Unauthorized: non-Manager ---
@@ -391,7 +397,7 @@ class TestRecreateSessionView(BaseEsignTest):
             self.signers,
             [self.portal["folder1"]["annex1"].UID()],
             discriminators=(u"disc1",),
-        )
+        )[-1]
         sessions_before = set(annot["sessions"].keys())
         self.request.form["esign_session_id"] = str(second_old_id)
         view = RecreateSessionView(self.portal, self.request)
@@ -401,4 +407,150 @@ class TestRecreateSessionView(BaseEsignTest):
         self.assertNotIn(brand_new_id, sessions_before)
         self.assertNotEqual(brand_new_id, matching_draft_id)
         self.assertNotIn(second_old_id, annot["sessions"])
+        del self.request.form["esign_session_id"]
+
+        # --- Partial selection: keep only the first two files ---
+        partial_old_id, partial_old = self._make_non_draft_session()
+        partial_files_uids = [f["uid"] for f in partial_old["files"]]
+        kept, dropped = partial_files_uids[:2], partial_files_uids[2]
+        self.request.form["esign_session_id"] = str(partial_old_id)
+        self.request.form["file_uids"] = json.dumps(kept)
+        view = RecreateSessionView(self.portal, self.request)
+        view()
+        partial_new_id = view._new_session_id
+        self.assertIsNotNone(partial_new_id)
+        partial_new_session = annot["sessions"][partial_new_id]
+        self.assertEqual([f["uid"] for f in partial_new_session["files"]], kept)
+        # kept files now belong to the new session, dropped file is gone entirely
+        for uid in kept:
+            self.assertEqual(annot["uids"][uid], partial_new_id)
+        self.assertNotIn(dropped, annot["uids"])
+        self.assertNotIn(partial_old_id, annot["sessions"])
+        del self.request.form["file_uids"]
+        del self.request.form["esign_session_id"]
+
+        # --- Empty selection: nothing recreated ---
+        other_id, _ = self._make_non_draft_session()
+        count_before = len(annot["sessions"])
+        self.request.form["esign_session_id"] = str(other_id)
+        self.request.form["file_uids"] = "[]"
+        view = RecreateSessionView(self.portal, self.request)
+        view()
+        self.assertIsNone(view._new_session_id)
+        self.assertEqual(len(annot["sessions"]), count_before)
+        self.assertIn(other_id, annot["sessions"])
+
+        # --- Invalid JSON: treated as empty selection, nothing recreated ---
+        self.request.form["file_uids"] = "not-json"
+        view = RecreateSessionView(self.portal, self.request)
+        view()
+        self.assertIsNone(view._new_session_id)
+        self.assertEqual(len(annot["sessions"]), count_before)
+        del self.request.form["file_uids"]
+        del self.request.form["esign_session_id"]
+
+
+class TestRecreateSessionFormView(BaseEsignTest):
+    """Tests for the RecreateSessionFormView overlay form."""
+
+    def setUp(self):
+        super(TestRecreateSessionFormView, self).setUp()
+        api.user.create(email="user1@sign.com", username="user1", password="password1")
+        api.user.create(email="user2@sign.com", username="user2", password="password2")
+        self.annexes = [self.portal["folder0"]["annex{}".format(i)] for i in (0, 2, 4)]
+        self.signers = [
+            ("user1", "user1@sign.com", u"User 1", u"Position 1"),
+            ("user2", "user2@sign.com", u"User 2", u"Position 2"),
+        ]
+
+    def _make_session(self, state="to_sign", returns=None):
+        session_id, session = add_files_to_session(
+            self.signers,
+            [a.UID() for a in self.annexes],
+            title=u"Original title",
+        )[-1]
+        session["state"] = state
+        if returns is not None:
+            session["returns"].extend(returns)
+        return session_id, session
+
+    def test_may_recreate_session(self):
+        """True for Manager; False for Member."""
+        view = RecreateSessionFormView(self.portal, self.request)
+        self.assertTrue(view.may_recreate_session())
+        setRoles(self.portal, TEST_USER_ID, ["Member"])
+        self.assertFalse(view.may_recreate_session())
+
+    def test_unauthorized(self):
+        """Member and anonymous users cannot open the form."""
+        session_id, _ = self._make_session()
+        self.request.form["esign_session_id"] = str(session_id)
+        setRoles(self.portal, TEST_USER_ID, ["Member"])
+        with self.assertRaises(Unauthorized):
+            RecreateSessionFormView(self.portal, self.request)()
+        setRoles(self.portal, TEST_USER_ID, ["Manager"])
+        logout()
+        with self.assertRaises(Unauthorized):
+            RecreateSessionFormView(self.portal, self.request)()
+        login(self.portal, TEST_USER_NAME)
+
+    def test_invalid_and_draft_sessions_render_error(self):
+        """Missing/unknown/draft sessions render an error snippet, not the form."""
+        # Missing id
+        view = RecreateSessionFormView(self.portal, self.request)
+        self.assertIn("portalMessage error", view())
+        # Unknown id
+        self.request.form["esign_session_id"] = "9999"
+        view = RecreateSessionFormView(self.portal, self.request)
+        self.assertIn("portalMessage error", view())
+        # Draft id
+        draft_id, _ = self._make_session(state="draft")
+        self.request.form["esign_session_id"] = str(draft_id)
+        view = RecreateSessionFormView(self.portal, self.request)
+        self.assertIn("portalMessage error", view())
+        del self.request.form["esign_session_id"]
+
+    def test_files_and_render(self):
+        """The form lists every file of the session."""
+        session_id, session = self._make_session()
+        self.request.form["esign_session_id"] = str(session_id)
+        view = RecreateSessionFormView(self.portal, self.request)
+        html = view()
+        self.assertEqual(len(view.files()), len(self.annexes))
+        for f in session["files"]:
+            self.assertIn(f["uid"], html)
+        self.assertIn("recreate-file-cb", html)
+        del self.request.form["esign_session_id"]
+
+    def test_refused_reason(self):
+        """The refusal reason is read from the code 52 ``returns`` entry."""
+        reason = u"J'ai détecté un problème dans le document"
+        returns = [
+            (21, u"to_sign", {u"sign_session_url": u"http://x"}, u"created", datetime(2026, 6, 1, 14, 40)),
+            (52, u"refused", {u"reason": reason, u"user": u"user1@sign.com"},
+             u"Document has been declined", datetime(2026, 6, 1, 14, 55)),
+        ]
+        refused_id, _ = self._make_session(state="refused", returns=returns)
+        self.request.form["esign_session_id"] = str(refused_id)
+        view = RecreateSessionFormView(self.portal, self.request)
+        html = view()
+        self.assertEqual(view.refused_reason(), reason)
+        self.assertIn("Refusal reason", html)
+        del self.request.form["esign_session_id"]
+
+    def test_no_refused_reason_when_not_refused(self):
+        """No reason for non-refused sessions, or refused without a code 52 entry."""
+        # Non-refused session
+        session_id, _ = self._make_session(state="to_sign")
+        self.request.form["esign_session_id"] = str(session_id)
+        view = RecreateSessionFormView(self.portal, self.request)
+        view()
+        self.assertEqual(view.refused_reason(), u"")
+        del self.request.form["esign_session_id"]
+        # Refused session but no code 52 entry
+        refused_id, _ = self._make_session(state="refused", returns=[])
+        self.request.form["esign_session_id"] = str(refused_id)
+        view = RecreateSessionFormView(self.portal, self.request)
+        view()
+        self.assertEqual(view.refused_reason(), u"")
         del self.request.form["esign_session_id"]

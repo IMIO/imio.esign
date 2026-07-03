@@ -70,6 +70,15 @@
     />
 
     <browser:page
+            name="esign-session-recreate-form"
+            for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+            class=".actions.RecreateSessionFormView"
+            permission="zope2.View"
+            allowed_attributes="may_recreate_session files refused_reason session_id no_file_msg recreate_onclick"
+            i18n:domain="imio.esign"
+    />
+
+    <browser:page
             name="external-esign-session-create"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"
             class=".views.ExternalSessionCreateView"
@@ -150,6 +159,13 @@
         for="*"
         class=".views.EsignMacros"
         template="templates/macros.pt"
+        permission="zope2.View" />
+
+    <browser:page
+        name="esign-files-list-macro"
+        for="*"
+        class=".views.EsignMacros"
+        template="templates/files_list.pt"
         permission="zope2.View" />
 
 </configure>

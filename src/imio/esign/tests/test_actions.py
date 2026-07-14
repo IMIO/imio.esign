@@ -159,11 +159,11 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
         uid = self.folder.UID()
         self.assertEqual(
             self.view._uid_to_link(uid),
-            u"<a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a>",
+            u"<a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({0})".format(uid)
         )
         self.assertEqual(
             self.view._uid_to_link(u"a" * 32),
-            u"<span title='not found'>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>",
+            u"<span title='not found'>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa</span>"
         )
 
     def test_esign_sessions(self):
@@ -210,6 +210,7 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
         del self.portal.REQUEST.form["context_uid"]
 
         # Rendered HTML for first session
+        folder_uid = self.folder.UID()
         self.assertEqual(
             unescape(view.esign_session_html(esign_session[1])),
             u"""{{
@@ -218,23 +219,23 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
   'discriminators': [],
   'files': [
     {{
-      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a>,
+      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({0}),
       'filename': u'annex0.pdf',
       'scan_id': '012345600000000',
       'status': '',
       'title': u'Annex 0',
-      'uid': <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a>,
+      'uid': <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
     }},
     {{
-      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a>,
+      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({2}),
       'filename': u'annex2.pdf',
       'scan_id': '012345600000002',
       'status': '',
       'title': u'Annex 2',
-      'uid': <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a>,
+      'uid': <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a> ({3}),
     }},
   ],
-  'last_update': {},
+  'last_update': {4},
   'returns': [],
   'seal': None,
   'sign_id': '012345600000',
@@ -260,6 +261,10 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
   'title': u'[ia.parapheo] Session 012345600000',
   'watchers': [],
 }}""".format(
-                repr(esign_session[1]["last_update"]),
+    folder_uid,
+    self.annexes[0].UID(),
+    folder_uid,
+    self.annexes[1].UID(),
+    repr(esign_session[1]["last_update"]),
             ),
         )

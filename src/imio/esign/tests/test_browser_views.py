@@ -46,7 +46,7 @@ class TestSessionDeleteView(BaseEsignTest):
         self.folder = self.portal["folder0"]
         annex = self.portal["folder0"]["annex0"]
         signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        self.session_id, _session = add_files_to_session(signers, (annex.UID(),))
+        self.session_id, _session = add_files_to_session(signers, (annex.UID(),))[-1]
         self.view = SessionDeleteView(self.folder, self.request)
 
     def test_may_delete_session(self):
@@ -91,7 +91,7 @@ class TestExternalSessionCreateView(BaseEsignTest):
         self.folder = self.portal["folder0"]
         annex = self.portal["folder0"]["annex0"]
         signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        self.session_id, _session = add_files_to_session(signers, (annex.UID(),))
+        self.session_id, _session = add_files_to_session(signers, (annex.UID(),))[-1]
         self.view = ExternalSessionCreateView(self.folder, self.request)
 
     def test_may_create_external_sessions(self):
@@ -533,7 +533,7 @@ class TestFacetedSessionInfoViewlet(BaseEsignTest):
         self.assertEqual(self._make_viewlet().sessions, {})
 
         # --- valid session id → {session_id: session_info} ---
-        sid, session = add_files_to_session(self.signers, [self.annex.UID()])
+        sid, session = add_files_to_session(self.signers, [self.annex.UID()])[-1]
         self.request.form["esign_session_id[]"] = str(sid)
         sessions = self._make_viewlet().sessions
         self.assertEqual(list(sessions.keys()), [sid])
@@ -559,7 +559,7 @@ class TestFacetedSessionInfoViewlet(BaseEsignTest):
         self.assertIn("<table", result)
 
         # --- c1[] matches (right collection), session selected → index() ---
-        sid, _session = add_files_to_session(self.signers, [self.annex.UID()])
+        sid, _session = add_files_to_session(self.signers, [self.annex.UID()])[-1]
         self.request.form["esign_session_id[]"] = str(sid)
         self.assertEqual(self._make_viewlet().render(), "<rendered/>")
 
@@ -646,3 +646,20 @@ class TestSessionsListingView(BaseEsignTest):
         # get_dashboard_link will raise NotImplementedError
         with self.assertRaises(NotImplementedError):
             view()
+
+    def test_session_files(self):
+        """Test the quick look column that will call the @@esign-session-files view."""
+        annex = self.portal["folder0"]["annex0"]
+        annex.setDescription("Descr line 1\nDescr line 2 héhé")
+        view = self.portal.restrictedTraverse("@@esign-session-files")
+        result = view(0)
+        self.assertIn(u"http://nohost/plone/folder0/annex0/@@download", result)
+        self.assertIn(u"<div class=\'discreet\'>Descr line 1<br>Descr line 2 h\xe9h\xe9</div>", result)
+        # description is escaped
+        annex.setDescription("ok\n<script>alert(1)</script>")
+        result = view(0)
+        self.assertIn(u"<div class=\'discreet\'>ok<br>&lt;script&gt;alert(1)&lt;/script&gt;</div>", result)
+        # without description
+        annex.setDescription("")
+        result = view(0)
+        self.assertNotIn(u"discreet", result)

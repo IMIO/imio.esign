@@ -16,7 +16,7 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self.request.other.pop("BODY", None)
         self.signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
         self.annex = self.portal["folder0"]["annex0"]
-        self.session_id, self.session = add_files_to_session(self.signers, [self.annex.UID()])
+        self.session_id, self.session = add_files_to_session(self.signers, [self.annex.UID()])[-1]
         self.sign_id = self.session["sign_id"]
         self.request._auth = "Bearer test-token"
 
@@ -102,7 +102,7 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self.assertEqual(self.session["sign_url"], "https://sign.example.com/session/1")
 
         # code 22: matching signer email → status 'signed'
-        _, s22 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c22",))
+        _, s22 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c22",))[-1]
         self._reply(
             {
                 "app_session_id": s22["sign_id"],
@@ -113,7 +113,7 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self.assertEqual(s22["signers"][0]["status"], "signed")
 
         # code 22: signer already 'refused' is not updated
-        _, s22b = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c22b",))
+        _, s22b = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c22b",))[-1]
         s22b["signers"][0]["status"] = "refused"
         self._reply(
             {
@@ -125,12 +125,12 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self.assertEqual(s22b["signers"][0]["status"], "refused")
 
         # code 23: state → 'returned'
-        _, s23 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c23",))
+        _, s23 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c23",))[-1]
         self._reply({"app_session_id": s23["sign_id"], "code": 23})
         self.assertEqual(s23["state"], "returned")
 
         # code 52: state → 'refused'; matching signer → 'refused'
-        _, s52 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c52",))
+        _, s52 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c52",))[-1]
         self._reply(
             {
                 "app_session_id": s52["sign_id"],
@@ -142,18 +142,18 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self.assertEqual(s52["signers"][0]["status"], "refused")
 
         # code 53: state → 'signed' (documents signed but not returned)
-        _, s53 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c53",))
+        _, s53 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c53",))[-1]
         self._reply({"app_session_id": s53["sign_id"], "code": 53})
         self.assertEqual(s53["state"], "signed")
 
         # error codes: state → 'errored'
         for code in (50, 51, 54, 55, 56, 57, 58, 59):
-            _, serr = add_files_to_session(self.signers, [annex1.UID()], discriminators=(str(code),))
+            _, serr = add_files_to_session(self.signers, [annex1.UID()], discriminators=(str(code),))[-1]
             self._reply({"app_session_id": serr["sign_id"], "code": code})
             self.assertEqual(serr["state"], "errored")
 
         # returns: entry structure (code, db_state, value, message, datetime)
-        _, srtn = add_files_to_session(self.signers, [annex1.UID()], discriminators=("rtn",))
+        _, srtn = add_files_to_session(self.signers, [annex1.UID()], discriminators=("rtn",))[-1]
         self._reply(
             {
                 "app_session_id": srtn["sign_id"],

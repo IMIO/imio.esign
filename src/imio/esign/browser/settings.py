@@ -105,6 +105,15 @@ class IImioEsignSettings(Interface):
         required=True,
     )
 
+    max_session_files = schema.Int(
+        title=_("Max session files"),
+        description=_("Maximum number of files per session. If the number of files to be signed exceeds this "
+                      "limit, a new session will be created."),
+        default=25,
+        min=1,
+        required=True,
+    )
+
     external_watchers = schema.TextLine(
         title=_("External watchers emails"),
         description=_("Multiple values must be separated by a comma."),

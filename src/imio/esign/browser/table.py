@@ -3,6 +3,8 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_esign_registry_max_session_files
+from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.utils import get_state_description
@@ -14,6 +16,8 @@ from z3c.table.column import Column
 from z3c.table.table import Table
 from zope.component import getMultiAdapter
 from zope.i18n import translate
+
+import html
 
 
 class IdColumn(Column):
@@ -60,7 +64,8 @@ class StateColumn(Column):
         ))
         title = escape(translate(get_state_description(item.get("state", "")), context=self.request,
                                  domain="imio.esign"))
-        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} <span class='far fa-question-circle' />"
+        return (u"<span class='state-title state-title-{state_title_value}' title='{title}'>{state} "
+                u"<span class='far fa-question-circle' />"
                 u"</span>".format(state=state, title=title, state_title_value=item.get("state")))
 
 
@@ -101,28 +106,84 @@ class SignersColumn(Column):
 
     def renderCell(self, item):
         signers = item.get("signers") or []
-        parts = [
-            "<li>%s, %s%s (%s)</li>" % (
-                safe_encode(s.get("fullname", "")),
-                safe_encode(s.get("position")),
-                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign", context=self.request)) if s.get("status") else "",
-                s.get("email"), )
-            for s in signers
-        ]
+        parts = []
+        for s in signers:
+            icon_name = 'edit'
+            css_class = "signer-not-signed"
+            msgid = "status_title_not_signed"
+            if s.get("status") == "signed":
+                css_class = "signer-signed"
+                msgid = "status_title_signed"
+            elif s.get("status") == "refused":
+                icon_name = 'ban'
+                css_class = "signer-refused"
+                msgid = "status_title_refused"
+            parts.append(
+                "<li>%s, %s (%s) %s</li>" % (
+                    safe_encode(s.get("fullname", "")),
+                    safe_encode(s.get("position")),
+                    s.get("email"),
+                    "<span class='fa fa-%s help %s' title='%s'></span>" %
+                        (icon_name,
+                         css_class,
+                         safe_encode(
+                            html.escape(
+                                translate(
+                                    msgid,
+                                    domain="imio.esign",
+                                    context=self.request)))),
+                    ))
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 
 class FilesColumn(Column):
+    SESSION_SIZE_WARNING_THRESHOLD = 0.8  # Warn when size reaches 80% of max
     header = _("Files")
     weight = 60
     cssClasses = {"th": "th_header_sessions_documents nosort",
                   "td": "documents-column"}
 
+    def renderQuickLook(self, item):
+        """Renders collapsible label with file count and session size info"""
+        count = len(item.get("files", []))
+        max_size_mb = get_esign_registry_max_session_size()
+        max_size_bytes = max_size_mb * 1024 * 1024
+        size_bytes = item.get("size", 0)
+        size_mb = -(-size_bytes // (1024.0 * 1024.0))  # round size up to int
+        size_style = (
+            u' style="color:red"' if size_bytes >= self.SESSION_SIZE_WARNING_THRESHOLD * max_size_bytes else u""
+        )
+        # size_label = u"%d/%d MB" % (size_mb, max_size_mb)
+        size_label = u"%d MB" % size_mb
+        help_title = translate(
+            _(
+                "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB.",
+                mapping={
+                    "max_session_files": get_esign_registry_max_session_files(),
+                    "max_session_size": get_esign_registry_max_session_size()
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
+        label = translate(
+            _(
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
+                mapping={
+                    "count": count,
+                    "size": u"<span%s>%s</span>" % (size_style, size_label),
+                    "help_title": help_title,
+                },
+            ),
+            context=self.request,
+            domain="imio.esign",
+        )
+        return label
+
     def renderCell(self, item):
         """Render a collapsible block that loads the list on demand."""
         # Row identifier (unique per session)
         session_id = item.get("id")
-        details_msg = translate(_("Quick look"), context=self.request)
         base_url = getattr(self.table, "portal_url", None)
         if not base_url:
             try:
@@ -134,13 +195,13 @@ class FilesColumn(Column):
             u'<div id="session-files" class="collapsible" '
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
-            u"load_view='@@esign-session-files?session_id={0}', "
+            u"load_view='@@esign-session-files?session_id:int={0}', "
             u"base_url='{1}');\"> {2}</div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
             u'<img src="{1}/spinner_small.gif" />'
             u"</div></div>"
-        ).format(session_id, base_url, details_msg)
+        ).format(session_id, base_url, self.renderQuickLook(item))
 
         return html
 
@@ -185,7 +246,7 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
             )
-        if (item.get("state") == "draft"
+        if (item.get("state") in ("draft", "draft_full")
                 and getMultiAdapter((portal, self.request),
                                     name="external-esign-session-create").may_create_external_sessions()):
             admin_buttons += u"""
@@ -199,7 +260,8 @@ class ActionsColumn(Column):
             )
         if check_zope_admin():
             admin_buttons += u"""
-            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}" target="_blank">
+            <a class="link-overlay-info" href="{sessions_url}/@@session-annotation-info?session_id={session_id}"
+            target="_blank">
                 <span class="fa fa-info-circle" title="Annotation info"></span>
             </a>
             """.format(

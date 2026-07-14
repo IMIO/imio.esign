@@ -29,7 +29,7 @@ class AddToSessionView(BrowserView):
         super(AddToSessionView, self).__init__(context, request)
 
     def _finished(self, failed_msgid="", mapping={}):
-        msgid = "Element added to session!"
+        msgid = "Element added to session(s) ${session_ids}!"
         msg_type = "info"
         if failed_msgid:
             msgid = failed_msgid
@@ -45,7 +45,7 @@ class AddToSessionView(BrowserView):
         if not signers:
             return self._finished(failed_msgid="Could not get signers to add to the session!")
         # watchers = self.get_watchers()
-        session_id, _session = add_files_to_session(
+        session_ids = add_files_to_session(
             signers=signers,
             # watchers=watchers,
             files_uids=files_uids,
@@ -55,7 +55,7 @@ class AddToSessionView(BrowserView):
         )
         # audit("add_to_session", "session={} context={} files={} signers={}".format(
         #     session_id, self.context.UID(), ",".join(files_uids), len(signers)))
-        self._finished()
+        self._finished(mapping={"session_ids": u", ".join([tup[0] for tup in session_ids])})
 
     def get_signers(self):
         """Get the list of held_positions to be used as signer.
@@ -167,7 +167,7 @@ class SessionAnnotationInfoView(BrowserView):
         url = escape(obj.absolute_url() + "/view", quote=True)
         path = escape(u"/".join(obj.getPhysicalPath()))
         title = escape(safe_unicode(getattr(obj, "title", "") or path))
-        return u"<a href='{}' title='{}'>{}</a>".format(url, path, title)
+        return u"<a href='{}' title='{}'>{}</a> ({})".format(url, path, title, uid)
 
     def _render_value(self, value, indent=u""):
         """Render a value, replacing UIDs with links where possible."""

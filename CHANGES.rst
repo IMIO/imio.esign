@@ -2,12 +2,38 @@ Changelog
 =========
 
 
-1.0b9 (unreleased)
-------------------
+1.0b11 (unreleased)
+-------------------
 
+- Avoided error when deleting site.
+  [sgeulette]
 - Improved ExternalSessionFeedback audit.
   [chris-adam]
 
+1.0b10 (2026-06-18)
+-------------------
+
+- Fixed session size computation when an annex is deleted.
+  [gbastien]
+- In `@@session-annotation-info` display `UID` next to link to element.
+  [gbastien]
+- Display annex description in `@@parapheo` quick look column.
+  Added parameter `session_id` to `SessionFilesView.__call__` to avoid having to
+  get it from the `request`, we receive it directly as integer.
+  [gbastien]
+- Added red/green icon next to signers to show if not signed or signed.
+  In info viewlet, display `signed` in green.
+  [gbastien]
+
+1.0b9 (2026-06-02)
+------------------
+
+- Added session info size on quick look.
+  [chris-adam, sgeulette]
+- Added "Open Paraphéo" button on sessions listing view.
+  [chris-adam]
+- Added parameter to define session files number limit
+  [sgeulette]
 
 1.0b8 (2026-05-08)
 ------------------

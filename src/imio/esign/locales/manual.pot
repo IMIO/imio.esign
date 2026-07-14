@@ -14,35 +14,39 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../utils.py:490
+#: ../utils.py
 msgid "The session encountered an error during its processing."
 msgstr ""
 
-#: ../utils.py:493
+#: ../utils.py
 msgid "The session has been cancelled because a signer refused a document."
 msgstr ""
 
-#: ../utils.py:489
+#: ../utils.py
 msgid "The session has been sent to Paraphéo."
 msgstr ""
 
-#: ../utils.py:494
+#: ../utils.py
 msgid "The session is finished and signed documents are on the way back to the application."
 msgstr ""
 
-#: ../utils.py:495
+#: ../utils.py
 msgid "The session is finished and signed documents have been sent back to the application."
 msgstr ""
 
-#: ../utils.py:492
+#: ../utils.py
 msgid "The session is finished but signed documents couldn't be sent back to the application."
 msgstr ""
 
-#: ../utils.py:488
+#: ../utils.py
+msgid "The session is full (max size or max files reached) and is ready to be sent to Paraphéo by a signing manager."
+msgstr ""
+
+#: ../utils.py
 msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
 msgstr ""
 
-#: ../utils.py:491
+#: ../utils.py
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
@@ -50,35 +54,50 @@ msgstr ""
 msgid "Yes"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "finalized"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "draft"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
+msgid "draft_full"
+msgstr ""
+
+#: ../browser/table.py
 msgid "errored"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "refused"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "returned"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "sent"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "signed"
 msgstr ""
 
-#: ../browser/table.py:25
+#: ../browser/table.py
 msgid "to_sign"
 msgstr ""
 
+#: ../browser/table.py
+msgid "status_title_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_not_signed"
+msgstr ""
+
+#: ../browser/table.py
+msgid "status_title_refused"
+msgstr ""

@@ -85,7 +85,10 @@ class ExternalSessionFeedbackPost(Service):
             if session_update:
                 session.update(session_update)
                 session["last_update"] = datetime.now()
-            audit("session_feedback", "session={} code={} db_state={}".format(session_id, code, db_state))
+            audit(
+                "session_feedback",
+                'session={} code={} db_state={} data="{}"'.format(session_id, code, db_state, data),
+            )
 
         except Exception as e:
             self.request.response.setStatus(500)
@@ -104,5 +107,6 @@ class ExternalSessionFeedbackPost(Service):
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
 
     def check_permission(self):
+        """Override the default permission check to implement token-based authentication."""
         if not self._authorized():
             raise Unauthorized("Unauthorized: Invalid or missing authentication token")

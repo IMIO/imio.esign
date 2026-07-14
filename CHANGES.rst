@@ -7,6 +7,8 @@ Changelog
 
 - Avoided error when deleting site.
   [sgeulette]
+- Improved ExternalSessionFeedback audit.
+  [chris-adam]
 
 1.0b10 (2026-06-18)
 -------------------

@@ -9,6 +9,8 @@ Changelog
   [sgeulette]
 - Improved ExternalSessionFeedback audit.
   [chris-adam]
+- When a session status is received as completed, mark each signer as signed.
+  [sgeulette]
 
 1.0b10 (2026-06-18)
 -------------------

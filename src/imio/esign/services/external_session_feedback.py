@@ -69,6 +69,10 @@ class ExternalSessionFeedbackPost(Service):
             elif code == 23:
                 # 23: upload_successful (files returned)
                 session_update["state"] = "returned"
+                session_update["signers"] = session["signers"]
+                for i, d in enumerate(session["signers"]):
+                    if d["status"] not in ("signed", "refused"):
+                        session_update["signers"][i]["status"] = "signed"
             elif code == 53:
                 # 53: upload_error
                 session_update["state"] = "signed"

@@ -4,6 +4,7 @@ from AccessControl import Unauthorized
 from collections import OrderedDict
 from datetime import datetime
 from datetime import timedelta
+from imio.esign.browser.views import AcroformErrorsViewlet
 from imio.esign.browser.views import DownloadFileView
 from imio.esign.browser.views import ExternalSessionCreateView
 from imio.esign.browser.views import FacetedSessionInfoViewlet
@@ -12,6 +13,8 @@ from imio.esign.browser.views import SessionDeleteView
 from imio.esign.browser.views import SigningUsersCsv
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import pdf_file
+from imio.esign.tests.base import tag
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from imio.pyutils.utils import shortuid_encode_id
@@ -106,7 +109,12 @@ class TestExternalSessionCreateView(BaseEsignTest):
             self.view()
 
     def test_call(self):
-        """Missing id → error; sentinel strings → specific errors; 200 → success; non-200 → error.
+        """
+        Missing id → error
+        wrong signature tags → nothing sent
+        sentinel strings → specific
+        errors; 200 → success
+        non-200 → error
 
         create_external_session mocked: HTTP tested in test_utils.py.
         """
@@ -119,6 +127,20 @@ class TestExternalSessionCreateView(BaseEsignTest):
         _clear_status_messages(self.request)
 
         self.request.form["session_id"] = str(self.session_id)
+
+        # --- wrong signature tags: the session is not sent (PARAF-503) ---
+        annex = self.portal["folder0"]["annex0"]
+        original_file = annex.file
+        annex.file = pdf_file(tag(2))  # a tag for a signer the session does not have
+        with patch("imio.esign.browser.views.create_external_session") as mock_create:
+            result = ExternalSessionCreateView(self.folder, self.request)()
+        self.assertFalse(mock_create.called)
+        messages = IStatusMessage(self.request).show()
+        self.assertIn("not sent because signature or seal tags are wrong", messages[0].message)
+        self.assertEqual(messages[0].type, "error")
+        self.assertEqual("http://nohost/plone/folder0/@@parapheo", result)
+        annex.file = original_file
+        _clear_status_messages(self.request)
 
         def _run(return_value):
             _clear_status_messages(self.request)
@@ -623,6 +645,55 @@ class TestItemSessionInfoViewlet(BaseEsignTest):
         sessions = viewlet.sessions
         self.assertEqual(len(sessions), 2)
         self.assertEqual(list(sessions.keys()), [0, 1])
+
+
+class TestAcroformErrorsViewlet(BaseEsignTest):
+    """Tests for AcroformErrorsViewlet."""
+
+    def setUp(self):
+        super(TestAcroformErrorsViewlet, self).setUp()
+        self.folder = self.portal["folder0"]
+        self.annex = self.folder["annex0"]
+        self.other_annex = self.portal["folder1"]["annex1"]
+        self.signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
+
+    def test_errors(self):
+        """Reported on the file and on its container, for draft sessions only."""
+        # --- no session at all ---
+        self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).errors, OrderedDict())
+        self.assertEqual(AcroformErrorsViewlet(self.folder, self.request, None, None).errors, OrderedDict())
+
+        # --- a draft session, one tag but two signers ---
+        self.annex.file = pdf_file(tag(1))
+        session_id, session = add_files_to_session(self.signers, (self.annex.UID(), self.other_annex.UID()))[-1]
+        errors = AcroformErrorsViewlet(self.annex, self.request, None, None).errors
+        self.assertEqual(list(errors.keys()), [self.annex.UID()])
+        obj, messages = errors[self.annex.UID()]
+        self.assertEqual(obj, self.annex)
+        self.assertEqual(messages, [u"The signature tag of Signer2 is missing."])
+
+        # --- the container of the file reports it too ---
+        errors = AcroformErrorsViewlet(self.folder, self.request, None, None).errors
+        self.assertEqual(list(errors.keys()), [self.annex.UID()])
+
+        # --- the container of another file of the same session reports nothing ---
+        self.assertEqual(
+            AcroformErrorsViewlet(self.portal["folder1"], self.request, None, None).errors, OrderedDict()
+        )
+
+        # --- once the session left the draft states, nothing is reported ---
+        session["state"] = "sent"
+        self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).errors, OrderedDict())
+        session["state"] = "draft_full"
+        self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
+
+        # --- a complete set of tags ---
+        self.annex.file = pdf_file(tag(1), tag(2))
+        self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).errors, OrderedDict())
+        self.assertEqual(get_session_annotation()["uids"][self.annex.UID()], session_id)
 
 
 class TestSessionsListingView(BaseEsignTest):

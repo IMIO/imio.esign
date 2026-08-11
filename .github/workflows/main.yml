@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev poppler-utils
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:
@@ -64,7 +64,7 @@ jobs:
       - name: Setup Env
         run: |
           sudo apt-get update -qqy
-          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev libreadline-dev
+          sudo apt-get install -y libjpeg8-dev libbz2-dev liblzma-dev libreadline-dev poppler-utils
       - name: Set up pyenv and Python
         uses: "gabrielfalcao/pyenv-action@v18"
         with:

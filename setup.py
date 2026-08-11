@@ -78,6 +78,7 @@ setup(
             "mock",
             "imio.annex",
             "mock",
+            "reportlab",
         ],
     },
     entry_points="""

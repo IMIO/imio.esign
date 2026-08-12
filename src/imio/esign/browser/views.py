@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
+from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.acroform import format_errors
+from imio.esign.acroform import get_session_acroform_errors
 from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
@@ -166,6 +169,23 @@ class ExternalSessionCreateView(BrowserView):
         if session_id is None:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
             return self.context.absolute_url() + "/@@parapheo"
+        acroform_errors = get_session_acroform_errors(int(session_id))
+        if acroform_errors:
+            audit("send_to_external_service", "session={} error=acroform".format(session_id))
+            api.portal.show_message(
+                _(
+                    "Session ${id} not sent because signature or seal tags are wrong: ${details}",
+                    mapping={
+                        "id": session_id,
+                        "details": format_errors(
+                            [(obj, messages) for obj, _cuid, messages in acroform_errors.values()], self.request
+                        ),
+                    },
+                ),
+                request=self.request,
+                type="error",
+            )
+            return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
             audit("send_to_external_service", "session={} error=session_not_found".format(session_id))
@@ -294,6 +314,45 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
     def sessions(self):
         """Return all sessions that contain files from this context."""
         return get_sessions_for(self.context.UID())
+
+
+class AcroformErrorsViewlet(ViewletBase):
+    """Show the signature tag errors of the files of a draft session.
+
+    Works both on a file and on its container:
+    - a file reports its own errors
+    - a container reports the errors of the files it owns.
+    """
+
+    index = ViewPageTemplateFile("templates/acroform_errors.pt")
+    draft_states = ("draft", "draft_full")
+
+    @CachedProperty
+    def errors(self):
+        """Return OrderedDict {file uid: (file object, [translated error messages])}."""
+        uid = self.context.UID()
+        annot = get_session_annotation()
+        if uid in annot["uids"]:  # the context is a file itself
+            session_ids = [annot["uids"][uid]]
+        else:                     # the context is a container
+            session_ids = list(get_sessions_for(uid).keys())
+        res = OrderedDict()
+        for session_id in session_ids:
+            if get_session_info(session_id).get("state") not in self.draft_states:
+                continue
+            for f_uid, (obj, context_uid, messages) in get_session_acroform_errors(session_id).items():
+                if uid not in (f_uid, context_uid):
+                    continue
+                res[f_uid] = (obj, [translate(msg, context=self.request) for msg in messages])
+        return res
+
+    def available(self):
+        return bool(self.errors)
+
+    def render(self):
+        if not self.available():
+            return ""
+        return self.index()
 
 
 @implementer(IPublishTraverse)

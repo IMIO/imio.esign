@@ -4,6 +4,7 @@
         xmlns:i18n="http://namespaces.zope.org/i18n"
         xmlns:plone="http://namespaces.plone.org/plone"
         xmlns:browser="http://namespaces.zope.org/browser"
+        xmlns:zcml="http://namespaces.zope.org/zcml"
         i18n_domain="imio.esign">
 
     <include package="eea.facetednavigation" />
@@ -86,6 +87,16 @@
             class=".views.ItemSessionInfoViewlet"
             permission="imio.esign.ManageSessions"
     /-->
+
+    <browser:viewlet
+            zcml:condition="installed imio.annex"
+            for="imio.annex.content.annex.IAnnex"
+            manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+            name="esign-acroform-errors"
+            template="templates/acroform_errors.pt"
+            class=".views.AcroformErrorsViewlet"
+            permission="zope2.View"
+    />
 
     <browser:view
             name="add-to-esign-session"

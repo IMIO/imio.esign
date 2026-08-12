@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from imio.esign import _
+from imio.esign.acroform import get_tag_ids
 from imio.esign.utils import get_file_info
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import remove_files_from_session
 from imio.helpers.transmogrifier import get_correct_id
 from os import path
+from plone import api
+from Products.CMFPlone.utils import safe_unicode
+from zope.annotation.interfaces import IAnnotations
 
 
 def on_categorized_annex_updated(annex, event):
@@ -63,6 +68,34 @@ def on_categorized_annex_updated(annex, event):
                         file_data["filename"] = new_filename + ext
                     # file_uid is only there one time per session
                     break
+
+
+def on_annex_added(annex, event):
+    """Tell the user which acroform tags the file of a new annex holds.
+
+    Nothing is shown when the file holds no tag, or when the file was generated from a template.
+    """
+
+    def is_generated_from_template(obj):
+        if IAnnotations(obj).get("documentgenerator"):
+            return True
+        published = getattr(obj, "REQUEST", None) and obj.REQUEST.get("PUBLISHED", None)
+        return "document-generation" in getattr(published, "__name__", "")
+
+    if is_generated_from_template(annex):
+        return
+    numbers, seal_count = get_tag_ids(getattr(annex, "file", None))
+    tags = [u"Signer{}".format(nb) for nb in numbers if nb > 0] + seal_count * [u"SCEAU"]
+    if not tags:
+        return
+    api.portal.show_message(
+        _(
+            "Acroform tags detected in '${title}': ${tags}",
+            mapping={"title": safe_unicode(annex.Title()), "tags": u", ".join(tags)},
+        ),
+        request=annex.REQUEST,
+        type="info",
+    )
 
 
 def on_annex_will_be_removed(annex, event):

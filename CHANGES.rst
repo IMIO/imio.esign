@@ -11,6 +11,8 @@ Changelog
   [chris-adam]
 - When a session status is received as completed, mark each signer as signed.
   [sgeulette]
+- Displayed who refused a session and his comment in the state help tooltip (PARAF-457).
+  [chris-adam]
 
 1.0b10 (2026-06-18)
 -------------------

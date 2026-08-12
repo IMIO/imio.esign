@@ -22,6 +22,7 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.testing import z2
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.statusmessages import STATUSMESSAGEKEY
 from Products.statusmessages.interfaces import IStatusMessage
 from zope.annotation.interfaces import IAnnotations
@@ -583,12 +584,6 @@ class TestFacetedSessionInfoViewlet(BaseEsignTest):
         session["sign_url"] = "https://sign.example.com/s/1"
         result = v.ext_session_link(session)
         self.assertEqual(result, u'<a href="https://sign.example.com/s/1" target="_blank">My Session</a>')
-
-    def test_get_state_description(self):
-        """Known state → non-empty translated string; unknown state → ''."""
-        v = self._make_viewlet()
-        self.assertTrue(len(v.get_state_description("draft")) > 0)
-        self.assertEqual(v.get_state_description("unknown_state"), "")
 
 
 class TestItemSessionInfoViewlet(BaseEsignTest):

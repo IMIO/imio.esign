@@ -1,7 +1,6 @@
 Changelog
 =========
 
-
 1.0b11 (unreleased)
 -------------------
 
@@ -11,6 +10,8 @@ Changelog
   [chris-adam]
 - When a session status is received as completed, mark each signer as signed.
   [sgeulette]
+- Added action RecreateSession (PARAF-420).
+  [chris-adam]
 
 1.0b10 (2026-06-18)
 -------------------

@@ -123,16 +123,15 @@ class SignersColumn(Column):
                     safe_encode(s.get("fullname", "")),
                     safe_encode(s.get("position")),
                     s.get("email"),
-                    "<span class='fa fa-%s help %s' title='%s'></span>" %
-                        (icon_name,
-                         css_class,
-                         safe_encode(
-                            html.escape(
-                                translate(
-                                    msgid,
-                                    domain="imio.esign",
-                                    context=self.request)))),
-                    ))
+                    "<span class='fa fa-%s help %s' title='%s'></span>" % (
+                        icon_name,
+                        css_class,
+                        safe_encode(html.escape(
+                            translate(
+                                msgid,
+                                domain="imio.esign",
+                                context=self.request)))),
+                ))
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 
@@ -168,7 +167,8 @@ class FilesColumn(Column):
         )
         label = translate(
             _(
-                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' "
+                "class='far fa-question-circle' />",
                 mapping={
                     "count": count,
                     "size": u"<span%s>%s</span>" % (size_style, size_label),
@@ -257,6 +257,19 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
+            )
+        if getMultiAdapter((portal, self.request),
+                           name="esign-session-recreate-form").may_recreate_session(item.get("state")):
+            recreate_title = translate(_("Recreate session"), context=self.request)
+            admin_buttons += u"""
+            <a class="link-overlay-info" title="{recreate_title}" target="_blank"
+               href="{sessions_url}/@@esign-session-recreate-form?esign_session_id={session_id}">
+                <i class="fa fa-redo" style="cursor:pointer"></i>
+            </a>
+            """.format(
+                recreate_title=recreate_title,
+                sessions_url=sessions_url,
+                session_id=session_id,
             )
         if check_zope_admin():
             admin_buttons += u"""

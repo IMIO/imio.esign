@@ -11,6 +11,7 @@ from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
+from imio.esign.utils import create_session
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_file_info
 from imio.esign.utils import get_filesize
@@ -456,6 +457,17 @@ class TestUtils(BaseEsignTest):
         signers2 = [("user2", "user2@sign.com", "User 2", "Position 2")]
         add_files_to_session(signers2, (self.uids[2],))
         self.assertEqual(list(get_sessions_for(context_uid).keys()), [0, 1])
+
+        # One item belonging to multiple sessions
+        annot = get_session_annotation()
+        annot["sessions"][0]["state"] = "to_sign"
+        new_id, _new = create_session(signers, annot=annot, title=u"")
+        add_files_to_session(signers, (self.uids[0],), session_id=new_id)
+        result = get_sessions_for(context_uid)
+        self.assertIn(0, result)
+        self.assertIn(1, result)
+        self.assertIn(new_id, result)
+        self.assertEqual(len(result), 3)
 
         # readonly=True (default): mutations do not persist
         sessions = get_sessions_for(context_uid)

@@ -1,0 +1,38 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
+    xmlns:tal="http://xml.zope.org/namespaces/tal"
+    xmlns:metal="http://xml.zope.org/namespaces/metal"
+    xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+    i18n:domain="imio.esign">
+    <body>
+        <div id="content">
+            <div id="content-core" class="recreate-session-form"
+                 tal:define="reason view/refused_reason">
+
+                <h1 class="documentFirstHeading" i18n:translate="">Recreate session</h1>
+
+                <dl class="portalMessage warning" tal:condition="reason">
+                    <dt i18n:translate="">Refusal reason</dt>
+                    <dd tal:content="reason">the refusal reason</dd>
+                </dl>
+
+                <form tal:define="files view/files;
+                                  with_checkbox python:True;
+                                  with_info_link python:False;
+                                  template python: context.unrestrictedTraverse('@@esign-files-list-macro').index">
+                    <fieldset>
+                        <legend i18n:translate="">Select the files to include in the new session</legend>
+                        <metal:list use-macro="python: template.macros['files_list']" />
+                    </fieldset>
+
+                    <div class="formControls">
+                        <input type="button" class="context"
+                               i18n:attributes="value" value="Recreate session"
+                               tal:attributes="onclick view/recreate_onclick" />
+                        <input type="button" class="standalone" name="form.buttons.cancel"
+                               i18n:attributes="value" value="Cancel" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

@@ -86,6 +86,11 @@ class ExternalSessionFeedbackPost(Service):
                 # 58: fatal_error_unknown_notification
                 # 59: fatal_error_unknown
                 session_update["state"] = "errored"
+            elif code == 60:
+                # 60: session deleted
+                if session["state"] in ("sent", "to_sign"):
+                    session_update["state"] = "errored"
+                session_update["sign_url"] = ""
             if session_update:
                 session.update(session_update)
                 session["last_update"] = datetime.now()

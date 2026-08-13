@@ -146,6 +146,22 @@ class TestExternalSessionFeedbackPost(BaseEsignTest):
         self._reply({"app_session_id": s53["sign_id"], "code": 53})
         self.assertEqual(s53["state"], "signed")
 
+        # code 60: session deleted; state 'to_sign' → 'errored' and sign_url cleared
+        _, s60 = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c60",))[-1]
+        s60["state"] = "to_sign"
+        s60["sign_url"] = "https://sign.example.com/session/60"
+        self._reply({"app_session_id": s60["sign_id"], "code": 60})
+        self.assertEqual(s60["state"], "errored")
+        self.assertEqual(s60["sign_url"], "")
+
+        # code 60: other state kept, sign_url cleared anyway
+        _, s60b = add_files_to_session(self.signers, [annex1.UID()], discriminators=("c60b",))[-1]
+        s60b["state"] = "returned"
+        s60b["sign_url"] = "https://sign.example.com/session/60b"
+        self._reply({"app_session_id": s60b["sign_id"], "code": 60})
+        self.assertEqual(s60b["state"], "returned")
+        self.assertEqual(s60b["sign_url"], "")
+
         # error codes: state → 'errored'
         for code in (50, 51, 54, 55, 56, 57, 58, 59):
             _, serr = add_files_to_session(self.signers, [annex1.UID()], discriminators=(str(code),))[-1]

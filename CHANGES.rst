@@ -12,6 +12,8 @@ Changelog
   [sgeulette]
 - Added action RecreateSession (PARAF-420).
   [chris-adam]
+- Handled return code 60: external session deleted
+  [sgeulette]
 
 1.0b10 (2026-06-18)
 -------------------

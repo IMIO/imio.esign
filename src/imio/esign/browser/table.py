@@ -123,16 +123,15 @@ class SignersColumn(Column):
                     safe_encode(s.get("fullname", "")),
                     safe_encode(s.get("position")),
                     s.get("email"),
-                    "<span class='fa fa-%s help %s' title='%s'></span>" %
-                        (icon_name,
-                         css_class,
-                         safe_encode(
-                            html.escape(
-                                translate(
-                                    msgid,
-                                    domain="imio.esign",
-                                    context=self.request)))),
-                    ))
+                    "<span class='fa fa-%s help %s' title='%s'></span>" % (
+                        icon_name,
+                        css_class,
+                        safe_encode(html.escape(
+                            translate(
+                                msgid,
+                                domain="imio.esign",
+                                context=self.request)))),
+                ))
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 
@@ -168,7 +167,8 @@ class FilesColumn(Column):
         )
         label = translate(
             _(
-                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' "
+                "class='far fa-question-circle' />",
                 mapping={
                     "count": count,
                     "size": u"<span%s>%s</span>" % (size_style, size_label),

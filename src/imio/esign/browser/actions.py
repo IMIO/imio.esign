@@ -238,7 +238,7 @@ class SessionAnnotationInfoView(BrowserView):
 class _RecreateSessionMixin(object):
     """Shared permission check and request validation for the recreate views."""
 
-    NON_RECREATABLE_STATES = ("draft", "returned", "finalized")
+    NON_RECREATABLE_STATES = ("draft", "draft_full", "returned", "finalized")
 
     def may_recreate_session(self, state=None):
         """Whether the current user may recreate a session.
@@ -265,7 +265,7 @@ class _RecreateSessionMixin(object):
         session = get_session_annotation()["sessions"].get(session_id)
         if session is None:
             return None, None, (_("Session not found!"), "error")
-        if session["state"] == "draft":
+        if session["state"] in ("draft", "draft_full"):
             return None, None, (_("Cannot recreate a draft session!"), "warning")
         if session["state"] in self.NON_RECREATABLE_STATES:
             return None, None, (_("Cannot recreate a finished session!"), "warning")
@@ -363,7 +363,10 @@ class RecreateSessionFormView(_RecreateSessionMixin, SessionFilesMixin, BrowserV
 
     def _error(self, msg):
         """Render a standalone error message inside the overlay."""
-        return u'<div class="portalMessage error">{}</div>'.format(translate(msg, context=self.request))
+        return u'<dl class="portalMessage error"><dt>{}</dt><dd>{}</dd></dl>'.format(
+            translate(u"Error", domain="plone", context=self.request),
+            translate(msg, context=self.request),
+        )
 
     def files(self):
         """The (context, file) object pairs of the session"""

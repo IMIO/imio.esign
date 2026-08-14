@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.0b11 (unreleased)
--------------------
+1.0.0 (2026-08-14)
+------------------
 
 - Avoided error when deleting site.
   [sgeulette]

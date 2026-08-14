@@ -143,23 +143,29 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
         self.assertEqual(self.view._render_value({}), u"{}")
         self.assertEqual(
             self.view._render_value({"key": "val"}),
-            u"{\n  &#x27;key&#x27;: &#x27;val&#x27;,\n}",
+            u"{\n  &quot;key&quot;: &quot;val&quot;,\n}",
         )
         # Nested value increases indent level
         self.assertEqual(
             self.view._render_value({"key": ["a"]}),
-            u"{\n  &#x27;key&#x27;: [\n    &#x27;a&#x27;,\n  ],\n}",
+            u"{\n  &quot;key&quot;: [\n    &quot;a&quot;,\n  ],\n}",
         )
         # List: empty and with items
         self.assertEqual(self.view._render_value([]), u"[]")
         self.assertEqual(
             self.view._render_value(["a", "b"]),
-            u"[\n  &#x27;a&#x27;,\n  &#x27;b&#x27;,\n]",
+            u"[\n  &quot;a&quot;,\n  &quot;b&quot;,\n]",
         )
         # Tuple treated like list
         self.assertEqual(self.view._render_value(()), u"[]")
-        # String rendered with u'' prefix
-        self.assertEqual(self.view._render_value(u"hello"), u"u&#x27;hello&#x27;")
+        # Strings are quoted, accented characters are kept readable
+        self.assertEqual(self.view._render_value(u"hello"), u"&quot;hello&quot;")
+        self.assertEqual(self.view._render_value(u"Directeur Général"), u"&quot;Directeur Général&quot;")
+        self.assertEqual(self.view._render_value("Général"), u"&quot;Général&quot;")
+        # Datetime rendered as day/month/year hour:minute:second, kept distinguishable from a string
+        self.assertEqual(self.view._render_value(datetime(2026, 8, 14, 9, 23, 45)), u"datetime(14/08/2026 09:23:45)")
+        # Non-strings still use pprint
+        self.assertEqual(self.view._render_value(42), u"42")
 
     def test_uid_to_link(self):
         """Returns clickable link for known UID; span with 'not found' title for unknown."""
@@ -176,13 +182,13 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
     def test_esign_sessions(self):
         """Returns all sessions; supports session_id and context_uid filters; renders HTML correctly."""
         uids = [a.UID() for a in self.annexes]
-        add_files_to_session(self.signers, uids, title=u"[ia.parapheo] Session {sign_id}")
+        add_files_to_session(self.signers, uids, title=u"[iA.Paraphéo] Session {sign_id}")
 
         # Add a second session with a different folder and annex
         folder2 = self.portal["folder1"]
         annex2 = folder2["annex1"]
         add_files_to_session(
-            self.signers, [annex2.UID()], title=u"[ia.parapheo] Session {sign_id}", discriminators=(u"second",)
+            self.signers, [annex2.UID()], title=u"[iA.Paraphéo] Session {sign_id}", discriminators=(u"second",)
         )
 
         view = SessionAnnotationInfoView(self.folder, self.portal.REQUEST)
@@ -221,58 +227,58 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
         self.assertEqual(
             unescape(view.esign_session_html(esign_session[1])),
             u"""{{
-  'acroform': True,
-  'client_id': '0123456',
-  'discriminators': [],
-  'files': [
+  "acroform": True,
+  "client_id": "0123456",
+  "discriminators": [],
+  "files": [
     {{
-      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({0}),
-      'filename': u'annex0.pdf',
-      'scan_id': '012345600000000',
-      'status': '',
-      'title': u'Annex 0',
-      'uid': <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
+      "context_uid": <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({0}),
+      "filename": "annex0.pdf",
+      "scan_id": "012345600000000",
+      "status": "",
+      "title": "Annex 0",
+      "uid": <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
     }},
     {{
-      'context_uid': <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({2}),
-      'filename': u'annex2.pdf',
-      'scan_id': '012345600000002',
-      'status': '',
-      'title': u'Annex 2',
-      'uid': <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a> ({3}),
-    }},
-  ],
-  'last_update': {4},
-  'returns': [],
-  'seal': None,
-  'sign_id': '012345600000',
-  'sign_url': None,
-  'signers': [
-    {{
-      'email': 'user1@sign.com',
-      'fullname': u'User 1',
-      'position': u'Position 1',
-      'status': '',
-      'userid': 'user1',
-    }},
-    {{
-      'email': 'user2@sign.com',
-      'fullname': u'User 2',
-      'position': u'Position 2',
-      'status': '',
-      'userid': 'user2',
+      "context_uid": <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({2}),
+      "filename": "annex2.pdf",
+      "scan_id": "012345600000002",
+      "status": "",
+      "title": "Annex 2",
+      "uid": <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a> ({3}),
     }},
   ],
-  'size': 13936,
-  'state': 'draft',
-  'title': u'[ia.parapheo] Session 012345600000',
-  'watchers': [],
+  "last_update": {4},
+  "returns": [],
+  "seal": None,
+  "sign_id": "012345600000",
+  "sign_url": None,
+  "signers": [
+    {{
+      "email": "user1@sign.com",
+      "fullname": "User 1",
+      "position": "Position 1",
+      "status": "",
+      "userid": "user1",
+    }},
+    {{
+      "email": "user2@sign.com",
+      "fullname": "User 2",
+      "position": "Position 2",
+      "status": "",
+      "userid": "user2",
+    }},
+  ],
+  "size": 13936,
+  "state": "draft",
+  "title": "[iA.Paraphéo] Session 012345600000",
+  "watchers": [],
 }}""".format(
     folder_uid,
     self.annexes[0].UID(),
     folder_uid,
     self.annexes[1].UID(),
-    repr(esign_session[1]["last_update"]),
+    "datetime({})".format(esign_session[1]["last_update"].strftime("%d/%m/%Y %H:%M:%S")),
             ),
         )
 

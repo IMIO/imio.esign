@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
+from datetime import datetime
 from html import escape
 from imio.esign import _
 from imio.esign import manage_session_perm
@@ -174,6 +175,14 @@ class SessionAnnotationInfoView(BrowserView):
         title = escape(safe_unicode(getattr(obj, "title", "") or path))
         return u"<a href='{}' title='{}'>{}</a> ({})".format(url, path, title, uid)
 
+    def _format_leaf(self, value):
+        """Format a scalar value: strings keep their accented characters, dates are readable."""
+        if isinstance(value, string_types):
+            return safe_unicode(json.dumps(safe_unicode(value), ensure_ascii=False))
+        elif isinstance(value, datetime):
+            return u"datetime({})".format(safe_unicode(value.strftime("%d/%m/%Y %H:%M:%S")))
+        return safe_unicode(pprint.pformat(value))
+
     def _render_value(self, value, indent=u""):
         """Render a value, replacing UIDs with links where possible."""
         inner = indent + u"  "
@@ -182,7 +191,7 @@ class SessionAnnotationInfoView(BrowserView):
                 return u"{}"
             lines = [u"{"]
             for k, v in sorted(value.items()):
-                key = escape(safe_unicode(pprint.pformat(k)))
+                key = escape(self._format_leaf(k))
                 lines.append(u"{}{}: {},".format(inner, key, self._render_value(v, inner)))
             lines.append(u"{}}}".format(indent))
             return u"\n".join(lines)
@@ -198,7 +207,7 @@ class SessionAnnotationInfoView(BrowserView):
             # Looks like a UUID
             return self._uid_to_link(value)
         else:
-            return escape(safe_unicode(pprint.pformat(value)))
+            return escape(self._format_leaf(value))
 
     @property
     def esign_sessions(self):

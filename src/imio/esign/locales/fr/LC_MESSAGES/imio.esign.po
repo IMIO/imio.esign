@@ -39,11 +39,11 @@ msgstr "Annuler"
 
 #: ../browser/actions.py:269
 msgid "Cannot recreate a draft session!"
-msgstr "On ne peut pas dupliquer une session en création !"
+msgstr "On ne peut pas recréer une session en création !"
 
 #: ../browser/actions.py:271
 msgid "Cannot recreate a finished session!"
-msgstr "ON ne peut pas dupliquer une session finalisée !"
+msgstr "On ne peut pas recréer une session finalisée !"
 
 #: ../browser/templates/signing_users.pt:248
 msgid "Confirm Email Sending"
@@ -268,7 +268,7 @@ msgstr "${count} élément(s), taille: ${size} <span title='${help_title}' class
 #: ../browser/table.py:263
 #: ../browser/templates/recreate_session_form.pt:11
 msgid "Recreate session"
-msgstr "Dupliquer la session"
+msgstr "Recréer la session"
 
 #: ../browser/templates/recreate_session_form.pt:14
 msgid "Refusal reason"

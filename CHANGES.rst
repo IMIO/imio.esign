@@ -20,6 +20,8 @@ Changelog
   [chris-adam]
 - Handled return code 60: external session deleted
   [sgeulette]
+- Displayed special characters and dates correctly in session annotation info view (PARAF-508).
+  [chris-adam]
 
 1.0b10 (2026-06-18)
 -------------------

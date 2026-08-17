@@ -4,8 +4,9 @@ Changelog
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Add a final `.` at end of help title message displayed when hovering the
+  `Signed/Not signed` icon in the UI.
+  [gbastien]
 
 1.0.0 (2026-08-14)
 ------------------

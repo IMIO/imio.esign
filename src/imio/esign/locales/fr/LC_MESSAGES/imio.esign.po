@@ -561,15 +561,15 @@ msgstr "Signée"
 
 #: ../browser/table.py
 msgid "status_title_not_signed"
-msgstr "Ce signataire n'a pas encore signé la session"
+msgstr "Ce signataire n'a pas encore signé la session."
 
 #: ../browser/table.py
 msgid "status_title_refused"
-msgstr "Ce signataire a refusé la session"
+msgstr "Ce signataire a refusé la session."
 
 #: ../browser/table.py
 msgid "status_title_signed"
-msgstr "Ce signataire a signé la session"
+msgstr "Ce signataire a signé la session."
 
 #: ../browser/table.py
 msgid "to_sign"

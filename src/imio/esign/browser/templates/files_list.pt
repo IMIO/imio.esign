@@ -1,0 +1,20 @@
+<ol metal:define-macro="files_list" i18n:domain="imio.esign"
+    tal:condition="files"
+    tal:define="with_checkbox with_checkbox|python:False;
+                with_info_link with_info_link|python:True">
+    <tal:loop repeat="file files">
+        <li tal:define="oddrow repeat/file/odd;
+                        classOddEven python: oddrow and 'even' or 'odd';"
+            tal:attributes="class classOddEven">
+            <input tal:condition="with_checkbox" type="checkbox" class="recreate-file-cb"
+                   checked="checked" tal:attributes="value python:file[1].UID()" />
+            <a tal:condition="python: with_info_link and context.unrestrictedTraverse('@@session-annotation-info').available()"
+               tal:attributes="href python:file[0].absolute_url() + '/@@session-annotation-info?context_uid=' + file[0].UID()"
+               target="_blank"
+               class="link-overlay-info">
+                <span class="fa fa-info-circle" title="Annotation info"></span>
+            </a>
+            <tal:link tal:replace="structure python:view.get_file_link(file[0], file[1])">link</tal:link>
+        </li>
+    </tal:loop>
+</ol>

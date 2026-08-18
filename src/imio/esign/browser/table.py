@@ -17,6 +17,8 @@ from z3c.table.table import Table
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 
+import html
+
 
 class IdColumn(Column):
     # not translated so it stays short
@@ -104,15 +106,32 @@ class SignersColumn(Column):
 
     def renderCell(self, item):
         signers = item.get("signers") or []
-        parts = [
-            "<li>%s, %s%s (%s)</li>" % (
-                safe_encode(s.get("fullname", "")),
-                safe_encode(s.get("position")),
-                " (%s)" % safe_encode(translate(s.get("status"), domain="imio.esign",
-                                                context=self.request)) if s.get("status") else "",
-                s.get("email"), )
-            for s in signers
-        ]
+        parts = []
+        for s in signers:
+            icon_name = 'edit'
+            css_class = "signer-not-signed"
+            msgid = "status_title_not_signed"
+            if s.get("status") == "signed":
+                css_class = "signer-signed"
+                msgid = "status_title_signed"
+            elif s.get("status") == "refused":
+                icon_name = 'ban'
+                css_class = "signer-refused"
+                msgid = "status_title_refused"
+            parts.append(
+                "<li>%s, %s (%s) %s</li>" % (
+                    safe_encode(s.get("fullname", "")),
+                    safe_encode(s.get("position")),
+                    s.get("email"),
+                    "<span class='fa fa-%s help %s' title='%s'></span>" % (
+                        icon_name,
+                        css_class,
+                        safe_encode(html.escape(
+                            translate(
+                                msgid,
+                                domain="imio.esign",
+                                context=self.request)))),
+                ))
         return safe_unicode("<ol>%s</ol>" % "".join(parts))
 
 
@@ -148,7 +167,8 @@ class FilesColumn(Column):
         )
         label = translate(
             _(
-                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />",
+                "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' "
+                "class='far fa-question-circle' />",
                 mapping={
                     "count": count,
                     "size": u"<span%s>%s</span>" % (size_style, size_label),
@@ -175,7 +195,7 @@ class FilesColumn(Column):
             u'<div id="session-files" class="collapsible" '
             u"onclick=\"toggleDetails('collapsible-session-files_{0}', "
             u"toggle_parent_active=true, parent_tag=null, "
-            u"load_view='@@esign-session-files?session_id={0}', "
+            u"load_view='@@esign-session-files?session_id:int={0}', "
             u"base_url='{1}');\"> {2}</div>"
             u'<div id="collapsible-session-files_{0}" class="collapsible-content" style="display: none;">'
             u'<div class="collapsible-inner-content">'
@@ -237,6 +257,19 @@ class ActionsColumn(Column):
                 sessions_url=sessions_url,
                 session_id=session_id,
                 send=translate(_("Create external session"), context=self.request),
+            )
+        if getMultiAdapter((portal, self.request),
+                           name="esign-session-recreate-form").may_recreate_session(item.get("state")):
+            recreate_title = translate(_("Recreate session"), context=self.request)
+            admin_buttons += u"""
+            <a class="link-overlay-info" title="{recreate_title}" target="_blank"
+               href="{sessions_url}/@@esign-session-recreate-form?esign_session_id={session_id}">
+                <i class="fa fa-redo" style="cursor:pointer"></i>
+            </a>
+            """.format(
+                recreate_title=recreate_title,
+                sessions_url=sessions_url,
+                session_id=session_id,
             )
         if check_zope_admin():
             admin_buttons += u"""

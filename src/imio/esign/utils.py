@@ -37,17 +37,27 @@ import requests
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def get_filesize(uid):
+def get_filesize(uid, session=None):
     """Get the file size of an annex.
 
     :param uid: The UID of the annex.
     :return: The file size in bytes, or 0 if not found.
     """
+    parent = None
     annex = uuidToObject(uuid=uid, unrestricted=True)
     if not annex:
-        logger.error("Annex with UID %s not found.", uid)
-        return 0
-    return getattr(annex.__parent__, "categorized_elements", {}).get(uid, {}).get("filesize", annex.file.size)
+        # try to get context from session in case annex was not found
+        # this can happen if we are in an event of a deleted annex
+        if session is not None:
+            for file_info in session['files']:
+                if file_info['uid'] == uid:
+                    parent = uuidToObject(uuid=file_info['context_uid'], unrestricted=True)
+                    break
+        if parent is None:
+            logger.error("Annex with UID %s not found.", uid)
+            return 0
+    parent = parent or annex.__parent__
+    return getattr(parent, "categorized_elements", {}).get(uid, {}).get("filesize", annex.file.size if annex else 0)
 
 
 def add_files_to_session(  # noqa C901
@@ -156,9 +166,9 @@ def add_files_to_session(  # noqa C901
                 uid_order = getAdapter(context, IItemOrderProvider).get_item_order()
             else:
                 uid_order = {}
-            files = session["files"][context_start_idx : context_end_idx + 1]
+            files = session["files"][context_start_idx: context_end_idx + 1]
             files.append(file_dict)
-            session["files"][context_start_idx : context_end_idx + 1] = sorted(
+            session["files"][context_start_idx: context_end_idx + 1] = sorted(
                 files, key=lambda f: uid_order.get(f["uid"], -1)
             )
         session["size"] = session.get("size", 0) + file_size
@@ -337,7 +347,7 @@ def create_session(
             ),
             "watchers": PersistentList(watchers),
             "state": "draft",
-            "title": title,
+            "title": title or _("Session ${id}", mapping={"id": session_id}),
             "returns": PersistentList(),
         }
     )
@@ -473,8 +483,9 @@ def remove_files_from_session(files_uids, remove_empty_session=True):
     """Remove files from their corresponding sessions.
 
     :param files_uids: list of file UIDs to remove
-    :param remove_empty_session: when the last file of a session is removed the session will be removed by default,
-           except when False, the empty session is kept
+    :param remove_empty_session: when the last file of a session is removed
+           the session will be removed by default, except when False,
+           the empty session is kept
     """
     annot = get_session_annotation()
     sessions = annot["sessions"]
@@ -491,7 +502,7 @@ def remove_files_from_session(files_uids, remove_empty_session=True):
             logger.error("Session %s not found", session_id)
             continue
         session = sessions[session_id]
-        session["size"] = max(0, session.get("size", 0) - get_filesize(uid))
+        session["size"] = max(0, session.get("size", 0) - get_filesize(uid, session))
         i = 0
         context_uid = None
         for j, dic in enumerate(session["files"]):
@@ -636,8 +647,8 @@ def get_state_description(state):
     """
     return {
         "draft": u"The session is getting ready to be sent to Paraphéo by a signing manager.",
-        "draft_full": u"The session is full (max size or max files reached) and will not accept any more batches; "
-        u"it is awaiting being sent to Paraphéo.",
+        "draft_full": u"The session is full (max size or max files reached) and is ready to be "
+        u"sent to Paraphéo by a signing manager.",
         "sent": u"The session has been sent to Paraphéo.",
         "errored": u"The session encountered an error during its processing.",
         "to_sign": u"The session is ready to be signed in Paraphéo.",
@@ -652,13 +663,7 @@ def get_sessions_for(context_uid, readonly=True):
     """Returns a list of all sessions involving the provided context_uid"""
     annot = get_session_annotation()
     sessions = OrderedDict()
-    seen = set()
-    for f_uid in annot["c_uids"].get(context_uid, []):
-        session_id = annot["uids"].get(f_uid)
-        if session_id is not None and session_id not in seen:
-            seen.add(session_id)
-            session = annot["sessions"][session_id]
-            if readonly:
-                session = deepcopy(session)
-            sessions[session_id] = session
+    for session_id, session in sorted(annot["sessions"].items()):
+        if any(f["context_uid"] == context_uid for f in session["files"]):
+            sessions[session_id] = deepcopy(session) if readonly else session
     return sessions

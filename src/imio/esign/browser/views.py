@@ -29,6 +29,7 @@ from plone import api
 from plone.app.layout.viewlets import ViewletBase
 from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone.utils import base_hasattr
+from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
@@ -40,6 +41,7 @@ from zope.pagetemplate.pagetemplate import PageTemplate
 from zope.publisher.interfaces import IPublishTraverse
 
 import csv
+import html
 import json
 import os
 
@@ -90,31 +92,52 @@ class SessionsListingView(BrowserView):
         return get_esign_registry_parapheo_url()
 
 
-class SessionFilesView(BrowserView):
-    """View to display documents of a session."""
+class SessionFilesMixin(object):
+    """Shared rendering of a session's files (used by the files view and the
+    recreate overlay form) via the ``files_list`` macro."""
 
-    def __init__(self, context, request):
-        super(SessionFilesView, self).__init__(context, request)
-        self.files = []
-
-    def __call__(self):
-        session_id = int(self.request.get("session_id"))
-        session = self.get_session(session_id)
+    def resolve_session_files(self, session):
+        """Return the resolvable (context, file) object pairs of a session."""
         files = []
         for f in session["files"]:
             ctx = uuidToObject(f["context_uid"])
             obj = uuidToObject(f["uid"])
             if obj and ctx:
                 files.append((ctx, obj))
-        self.files = files
+        return files
+
+    def _get_file_link_descr(self, ctx, obj):
+        descr = obj.Description().strip()
+        if descr:
+            # description is plain text
+            descr = html.escape(descr)
+            descr = descr.replace("\n", "<br>")
+            descr = u"<div class='discreet'>{0}</div>".format(safe_unicode(descr))
+        return descr
+
+    def get_file_link(self, ctx, obj):
+        descr = self._get_file_link_descr(ctx, obj)
+        ctx_link = IPrettyLink(ctx)
+        obj_link = IPrettyLink(obj)
+        ctx_link.target = obj_link.target = "_blank"
+        return ctx_link.getLink() + " / " + obj_link.getLink() + descr
+
+
+class SessionFilesView(SessionFilesMixin, BrowserView):
+    """View to display documents of a session."""
+
+    def __init__(self, context, request):
+        super(SessionFilesView, self).__init__(context, request)
+        self.files = []
+
+    def __call__(self, session_id):
+        session = self.get_session(session_id)
+        self.files = self.resolve_session_files(session)
         return self.index()
 
     def get_session(self, session_id):
         """Get the session object."""
         return get_session_annotation()["sessions"][session_id]
-
-    def get_file_link(self, ctx, obj):
-        return IPrettyLink(ctx).getLink() + " / " + IPrettyLink(obj).getLink()
 
 
 class SessionDeleteView(BrowserView):

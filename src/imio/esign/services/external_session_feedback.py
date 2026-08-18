@@ -69,6 +69,10 @@ class ExternalSessionFeedbackPost(Service):
             elif code == 23:
                 # 23: upload_successful (files returned)
                 session_update["state"] = "returned"
+                session_update["signers"] = session["signers"]
+                for i, d in enumerate(session["signers"]):
+                    if d["status"] not in ("signed", "refused"):
+                        session_update["signers"][i]["status"] = "signed"
             elif code == 53:
                 # 53: upload_error
                 session_update["state"] = "signed"
@@ -82,10 +86,18 @@ class ExternalSessionFeedbackPost(Service):
                 # 58: fatal_error_unknown_notification
                 # 59: fatal_error_unknown
                 session_update["state"] = "errored"
+            elif code == 60:
+                # 60: session deleted
+                if session["state"] in ("sent", "to_sign"):
+                    session_update["state"] = "errored"
+                session_update["sign_url"] = ""
             if session_update:
                 session.update(session_update)
                 session["last_update"] = datetime.now()
-            audit("session_feedback", "session={} code={} db_state={}".format(session_id, code, db_state))
+            audit(
+                "session_feedback",
+                'session={} code={} db_state={} data="{}"'.format(session_id, code, db_state, data),
+            )
 
         except Exception as e:
             self.request.response.setStatus(500)
@@ -104,5 +116,6 @@ class ExternalSessionFeedbackPost(Service):
         return verify_auth_token(token, groups=["access_imio-apps-docs"])
 
     def check_permission(self):
+        """Override the default permission check to implement token-based authentication."""
         if not self._authorized():
             raise Unauthorized("Unauthorized: Invalid or missing authentication token")

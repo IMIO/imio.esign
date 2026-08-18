@@ -1,16 +1,55 @@
 Changelog
 =========
 
+1.0.1 (unreleased)
+------------------
 
-1.0b9 (unreleased)
+- Add a final `.` at end of help title message displayed when hovering the
+  `Signed/Not signed` icon in the UI.
+  [gbastien]
+- Improved file ordering in session.
+  [chris-adam]
+
+1.0.0 (2026-08-14)
+------------------
+
+- Avoided error when deleting site.
+  [sgeulette]
+- Improved ExternalSessionFeedback audit.
+  [chris-adam]
+- When a session status is received as completed, mark each signer as signed.
+  [sgeulette]
+- Added action RecreateSession (PARAF-420).
+  [chris-adam]
+- Handled return code 60: external session deleted
+  [sgeulette]
+- Displayed special characters and dates correctly in session annotation info view (PARAF-508).
+  [chris-adam]
+
+1.0b10 (2026-06-18)
+-------------------
+
+- Fixed session size computation when an annex is deleted.
+  [gbastien]
+- In `@@session-annotation-info` display `UID` next to link to element.
+  [gbastien]
+- Display annex description in `@@parapheo` quick look column.
+  Added parameter `session_id` to `SessionFilesView.__call__` to avoid having to
+  get it from the `request`, we receive it directly as integer.
+  [gbastien]
+- Added red/green icon next to signers to show if not signed or signed.
+  In info viewlet, display `signed` in green.
+  [gbastien]
+
+1.0b9 (2026-06-02)
 ------------------
 
 - Added session info size on quick look.
   [chris-adam, sgeulette]
 - Added "Open Paraphéo" button on sessions listing view.
   [chris-adam]
-- Improved file ordering in session.
-  [chris-adam]
+- Added parameter to define session files number limit
+  [sgeulette]
 
 1.0b8 (2026-05-08)
 ------------------

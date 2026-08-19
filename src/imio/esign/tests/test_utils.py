@@ -19,6 +19,7 @@ from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
+from imio.esign.utils import get_state_title
 from imio.esign.utils import get_suid_from_uuid
 from imio.esign.utils import remove_context_from_session
 from imio.esign.utils import remove_files_from_session
@@ -480,6 +481,43 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(get_session_info(0)["watchers"], [])
         sessions[0]["watchers"] = ["watcher@sign.com"]
         self.assertEqual(get_session_info(0)["watchers"], ["watcher@sign.com"])
+
+    def test_get_state_title(self):
+        """get_state_title: state description, plus who refused the session and why."""
+        request = self.portal.REQUEST
+        self.assertEqual(get_state_title({}, request), "")
+        self.assertEqual(get_state_title({"state": "unknown_state"}, request), "")
+        draft_title = get_state_title({"state": "draft"}, request)
+        self.assertTrue(len(draft_title) > 0)
+        self.assertNotIn(u"\n", draft_title)
+
+        # refusal feedback without comment: who refused, on a new line after the state description
+        session = {
+            "state": "refused",
+            "signers": [{"email": "user1@sign.com", "fullname": u"Marie Dupont"}],
+            "returns": [(52, u"refused", {"user": u"user1@sign.com"}, u"Document has been declined", None)],
+        }
+        title = get_state_title(session, request)
+        self.assertIn(u"a signer refused a document.", title)
+        self.assertTrue(title.endswith(u"\nMarie Dupont refused the session without comment"))
+
+        # refusal feedback with comment
+        session["returns"].append(
+            (52, u"refused", {"reason": u"Délibération corrigée.", "user": u"user1@sign.com"}, u"", None)
+        )
+        with_comment = u'\nMarie Dupont refused the session with comment: "Délibération corrigée."'
+        self.assertTrue(get_state_title(session, request).endswith(with_comment))
+
+        # a feedback value that is not a mapping is ignored
+        session["returns"].append((52, u"refused", u"", u"", None))
+        self.assertTrue(get_state_title(session, request).endswith(with_comment))
+
+        # empty fullname or unknown signer email: the email is used
+        session["signers"][0]["fullname"] = u""
+        by_email = u'\nuser1@sign.com refused the session with comment: "Délibération corrigée."'
+        self.assertTrue(get_state_title(session, request).endswith(by_email))
+        session["signers"] = []
+        self.assertTrue(get_state_title(session, request).endswith(by_email))
 
     def test_get_file_info(self):
         """get_file_info: returns None for unknown session/file; honours readonly flag."""

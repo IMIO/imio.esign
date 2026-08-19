@@ -28,6 +28,7 @@ from persistent.mapping import PersistentMapping
 from plone import api
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
+from zope.i18n import translate
 
 import json
 import requests
@@ -656,6 +657,32 @@ def get_state_description(state):
         "returned": u"The session is finished and signed documents are on the way back to the application.",
         "finalized": u"The session is finished and signed documents have been sent back to the application.",
     }.get(state, "")
+
+
+def get_state_title(session, request):
+    """Translated state description, followed by who refused the session and why."""
+    title = translate(get_state_description(session.get("state", "")), context=request, domain="imio.esign")
+    # code 52 = a signer refused
+    refusals = [
+        r[2] for r in session.get("returns") or [] if r[0] == 52 and isinstance(r[2], (PersistentMapping, dict))
+    ]
+    if refusals:
+        email = refusals[-1].get("user", u"")
+        fullname = next(
+            (s["fullname"] for s in session.get("signers") or [] if s.get("email") == email and s.get("fullname")),
+            email,
+        )
+        reason = refusals[-1].get("reason")
+        if fullname and reason:
+            title += u"\n\n" + _(
+                u'${fullname} refused the session with comment: "${reason}"',
+                mapping={"fullname": fullname, "reason": reason},
+            )
+        elif fullname:
+            title += u"\n\n" + _(
+                u"${fullname} refused the session without comment", mapping={"fullname": fullname}
+            )
+    return title
 
 
 def get_sessions_for(context_uid, readonly=True):

@@ -7,6 +7,8 @@ Changelog
 - Add a final `.` at end of help title message displayed when hovering the
   `Signed/Not signed` icon in the UI.
   [gbastien]
+- Displayed who refused a session and his comment in the state help tooltip (PARAF-457).
+  [chris-adam]
 
 1.0.0 (2026-08-14)
 ------------------

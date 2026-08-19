@@ -115,12 +115,23 @@ class SessionFilesMixin(object):
             descr = u"<div class='discreet'>{0}</div>".format(safe_unicode(descr))
         return descr
 
+    def _treat_previous_ctx_pretty_link(self, ctx_pretty_link, suffix=" / "):
+        """Manage file link depending on previous file link value,
+           if same value as previous, we return an empty link."""
+        if ctx_pretty_link != getattr(self, "_prev_ctx_pretty_link", None):
+            setattr(self, "_prev_ctx_pretty_link", ctx_pretty_link)
+            return ctx_pretty_link + suffix
+        return ""
+
     def get_file_link(self, ctx, obj):
         descr = self._get_file_link_descr(ctx, obj)
         ctx_link = IPrettyLink(ctx)
         obj_link = IPrettyLink(obj)
         ctx_link.target = obj_link.target = "_blank"
-        return ctx_link.getLink() + " / " + obj_link.getLink() + descr
+        ctx_pretty_link = ctx_link.getLink()
+        obj_pretty_link = obj_link.getLink() + descr
+        ctx_pretty_link = self._treat_previous_ctx_pretty_link(ctx_pretty_link)
+        return ctx_pretty_link + obj_pretty_link
 
 
 class SessionFilesView(SessionFilesMixin, BrowserView):

@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-06-16 08:12+0000\n"
+"POT-Creation-Date: 2026-08-13 10:11+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Preferred-Encodings: utf-8 latin1\n"
 "Domain: DOMAIN\n"
 
-#: ../browser/views.py:328
+#: ../browser/views.py:340
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
@@ -31,8 +31,17 @@ msgstr ""
 msgid "Before sending emails, please ensure that all selected users have their accounts created in \"Wallonie Connect\" (WaCo). If not, send the CSV to the DevOps team and wait for account creation."
 msgstr ""
 
+#: ../browser/templates/recreate_session_form.pt:31
 #: ../browser/templates/signing_users.pt:267
 msgid "Cancel"
+msgstr ""
+
+#: ../browser/actions.py:269
+msgid "Cannot recreate a draft session!"
+msgstr ""
+
+#: ../browser/actions.py:271
+msgid "Cannot recreate a finished session!"
 msgstr ""
 
 #: ../browser/templates/signing_users.pt:248
@@ -51,7 +60,7 @@ msgstr ""
 msgid "Deselect All"
 msgstr ""
 
-#: ../browser/actions.py:107
+#: ../browser/actions.py:112
 msgid "Element removed from session!"
 msgstr ""
 
@@ -60,7 +69,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/views.py:597
+#: ../browser/views.py:609
 msgid "Email content is not configured in the settings."
 msgstr ""
 
@@ -80,7 +89,7 @@ msgstr ""
 msgid "Email:"
 msgstr ""
 
-#: ../browser/views.py:657
+#: ../browser/views.py:669
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
@@ -88,11 +97,11 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:205
+#: ../browser/views.py:217
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:200
+#: ../browser/views.py:212
 msgid "External session sent successfully!"
 msgstr ""
 
@@ -100,11 +109,11 @@ msgstr ""
 msgid "External watchers emails"
 msgstr ""
 
-#: ../browser/views.py:644
+#: ../browser/views.py:656
 msgid "Failed to send email to ${userid}."
 msgstr ""
 
-#: ../browser/views.py:664
+#: ../browser/views.py:676
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
@@ -112,7 +121,7 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:141
+#: ../browser/table.py:140
 msgid "Files"
 msgstr ""
 
@@ -143,6 +152,10 @@ msgstr ""
 
 #: ../browser/settings.py:38
 msgid "Invalid VAT number: checksum verification failed"
+msgstr ""
+
+#: ../browser/actions.py:263
+msgid "Invalid session ID!"
 msgstr ""
 
 #: ../browser/settings.py:47
@@ -182,35 +195,44 @@ msgstr ""
 msgid "Multiple values must be separated by a comma."
 msgstr ""
 
+#: ../browser/actions.py:342
+msgid "New session ${nid} created from session ${oid}"
+msgstr ""
+
 #: ../browser/templates/faceted_session_info.pt
 msgid "No"
 msgstr ""
 
-#: ../browser/templates/session_files.pt:3
+#: ../browser/actions.py:313
+msgid "No file selected!"
+msgstr ""
+
+#: ../browser/templates/session_files.pt:5
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:194
+#: ../browser/views.py:206
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:180
+#: ../browser/views.py:192
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:187
+#: ../browser/views.py:199
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:139
+#: ../browser/actions.py:261
+#: ../browser/views.py:151
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/views.py:552
+#: ../browser/views.py:564
 msgid "No users selected for CSV download."
 msgstr ""
 
-#: ../browser/views.py:591
+#: ../browser/views.py:603
 msgid "No users selected for email sending."
 msgstr ""
 
@@ -222,7 +244,11 @@ msgstr ""
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/views.py:606
+#: ../browser/actions.py:377
+msgid "Please select at least one file."
+msgstr ""
+
+#: ../browser/views.py:618
 msgid "Portal from email is not configured."
 msgstr ""
 
@@ -230,12 +256,21 @@ msgstr ""
 msgid "Position"
 msgstr ""
 
-#: ../browser/actions.py:71
+#: ../browser/actions.py:76
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:170
+#: ../browser/table.py:169
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
+msgstr ""
+
+#: ../browser/table.py:263
+#: ../browser/templates/recreate_session_form.pt:11
+msgid "Recreate session"
+msgstr ""
+
+#: ../browser/templates/recreate_session_form.pt:14
+msgid "Refusal reason"
 msgstr ""
 
 #: ../profiles/default/actions.xml
@@ -271,6 +306,10 @@ msgstr ""
 msgid "Select Only Signers"
 msgstr ""
 
+#: ../browser/templates/recreate_session_form.pt:23
+msgid "Select the files to include in the new session"
+msgstr ""
+
 #: ../browser/templates/signing_users.pt:184
 msgid "Selected:"
 msgstr ""
@@ -287,11 +326,11 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/table.py:159
+#: ../browser/table.py:158
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr ""
 
-#: ../browser/views.py:147
+#: ../browser/views.py:159
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -299,7 +338,8 @@ msgstr ""
 msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
-#: ../browser/views.py:149
+#: ../browser/actions.py:267
+#: ../browser/views.py:161
 msgid "Session not found!"
 msgstr ""
 
@@ -307,7 +347,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:173
+#: ../browser/views.py:185
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -323,7 +363,7 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:380
+#: ../browser/views.py:392
 msgid "Signed file download"
 msgstr ""
 
@@ -345,15 +385,15 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:356
+#: ../browser/views.py:368
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:336
+#: ../browser/views.py:348
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:348
+#: ../browser/views.py:360
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr ""
 
@@ -393,7 +433,7 @@ msgstr ""
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
-#: ../browser/views.py:332
+#: ../browser/views.py:344
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -426,7 +466,7 @@ msgstr ""
 msgid "Used in signers email template."
 msgstr ""
 
-#: ../browser/views.py:615
+#: ../browser/views.py:627
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr ""
 
@@ -458,7 +498,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:276
+#: ../browser/table.py:289
 msgid "View session in dashboard"
 msgstr ""
 
@@ -474,7 +514,7 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:630
+#: ../browser/views.py:642
 msgid "You have been invited to Paraphéo"
 msgstr ""
 

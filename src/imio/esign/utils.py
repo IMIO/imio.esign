@@ -347,7 +347,7 @@ def create_session(
             ),
             "watchers": PersistentList(watchers),
             "state": "draft",
-            "title": title,
+            "title": title or _("Session ${id}", mapping={"id": session_id}),
             "returns": PersistentList(),
         }
     )
@@ -689,13 +689,7 @@ def get_sessions_for(context_uid, readonly=True):
     """Returns a list of all sessions involving the provided context_uid"""
     annot = get_session_annotation()
     sessions = OrderedDict()
-    seen = set()
-    for f_uid in annot["c_uids"].get(context_uid, []):
-        session_id = annot["uids"].get(f_uid)
-        if session_id is not None and session_id not in seen:
-            seen.add(session_id)
-            session = annot["sessions"][session_id]
-            if readonly:
-                session = deepcopy(session)
-            sessions[session_id] = session
+    for session_id, session in sorted(annot["sessions"].items()):
+        if any(f["context_uid"] == context_uid for f in session["files"]):
+            sessions[session_id] = deepcopy(session) if readonly else session
     return sessions

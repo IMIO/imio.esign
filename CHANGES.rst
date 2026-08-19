@@ -1,9 +1,17 @@
 Changelog
 =========
 
+1.0.1 (unreleased)
+------------------
 
-1.0b11 (unreleased)
--------------------
+- Add a final `.` at end of help title message displayed when hovering the
+  `Signed/Not signed` icon in the UI.
+  [gbastien]
+- Displayed who refused a session and his comment in the state help tooltip (PARAF-457).
+  [chris-adam]
+
+1.0.0 (2026-08-14)
+------------------
 
 - Avoided error when deleting site.
   [sgeulette]
@@ -11,7 +19,11 @@ Changelog
   [chris-adam]
 - When a session status is received as completed, mark each signer as signed.
   [sgeulette]
-- Displayed who refused a session and his comment in the state help tooltip (PARAF-457).
+- Added action RecreateSession (PARAF-420).
+  [chris-adam]
+- Handled return code 60: external session deleted
+  [sgeulette]
+- Displayed special characters and dates correctly in session annotation info view (PARAF-508).
   [chris-adam]
 
 1.0b10 (2026-06-18)

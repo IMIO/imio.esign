@@ -9,6 +9,8 @@ Changelog
   [gbastien]
 - Improved file ordering in session.
   [chris-adam]
+- Displayed who refused a session and his comment in the state help tooltip (PARAF-457).
+  [chris-adam]
 
 1.0.0 (2026-08-14)
 ------------------

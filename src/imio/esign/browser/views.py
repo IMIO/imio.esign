@@ -16,7 +16,7 @@ from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
-from imio.esign.utils import get_state_description
+from imio.esign.utils import get_state_title
 from imio.esign.utils import remove_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.emailer import create_html_email
@@ -285,8 +285,8 @@ class FacetedSessionInfoViewlet(ViewletBase):
         """Default CSS class to apply on the collapsible."""
         return "collapsible-content"
 
-    def get_state_description(self, state):
-        return translate(get_state_description(state), context=self.request, domain="imio.esign")
+    def get_state_title(self, session):
+        return get_state_title(session, self.request)
 
 
 class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):

@@ -20,6 +20,16 @@ class DefaultContextUidProvider(object):
         return None
 
 
+class DefaultItemOrderProvider(object):
+    """Default adapter that orders items by their position in the context container."""
+
+    def __init__(self, context):
+        self.context = context
+
+    def get_item_order(self):
+        return {a.UID(): idx for idx, a in enumerate(self.context.values())}
+
+
 class FilesBelongingToAGivenSession(object):
     def __init__(self, context):
         self.context = context

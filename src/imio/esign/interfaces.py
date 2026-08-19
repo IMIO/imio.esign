@@ -14,3 +14,12 @@ class IContextUidProvider(Interface):
 
     def get_context_uid():
         """Return the context UID for the file to sign."""
+
+
+class IItemOrderProvider(Interface):
+    """Adapter to provide item ordering within a context."""
+
+    def get_item_order():
+        """Return a dict mapping item UID to sort position (int).
+        Items not in the dict get position -1.
+        """

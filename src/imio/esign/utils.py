@@ -17,6 +17,7 @@ from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.config import get_esign_registry_sign_code
 from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
+from imio.esign.interfaces import IItemOrderProvider
 from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
 from imio.helpers.ws import get_auth_token
@@ -163,7 +164,7 @@ def add_files_to_session(  # noqa C901
             # Insert alongside other files from the same context, ordered by position
             context = uuidToObject(context_uid)
             if context is not None:
-                uid_order = {a.UID(): idx for idx, a in enumerate(context.values())}
+                uid_order = getAdapter(context, IItemOrderProvider).get_item_order()
             else:
                 uid_order = {}
             files = session["files"][context_start_idx: context_end_idx + 1]

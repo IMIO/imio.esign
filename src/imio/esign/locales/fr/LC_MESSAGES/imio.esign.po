@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-08-13 10:11+0000\n"
+"POT-Creation-Date: 2026-08-19 14:35+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,11 +16,19 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
+#: ../utils.py:678
+msgid "${fullname} refused the session with comment: \"${reason}\""
+msgstr "${fullname} a refusé la session avec le commentaire : \"${reason}\""
+
+#: ../utils.py:683
+msgid "${fullname} refused the session without comment"
+msgstr "${fullname} a refusé la session sans commentaire"
+
 #: ../browser/views.py:340
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../browser/table.py:226
+#: ../browser/table.py:225
 msgid "Actions"
 msgstr "Actions"
 
@@ -37,11 +45,11 @@ msgstr "Avant d'envoyer les emails, assurez-vous que tous les utilisateurs séle
 msgid "Cancel"
 msgstr "Annuler"
 
-#: ../browser/actions.py:269
+#: ../browser/actions.py:278
 msgid "Cannot recreate a draft session!"
 msgstr "On ne peut pas recréer une session en création !"
 
-#: ../browser/actions.py:271
+#: ../browser/actions.py:280
 msgid "Cannot recreate a finished session!"
 msgstr "On ne peut pas recréer une session finalisée !"
 
@@ -49,11 +57,11 @@ msgstr "On ne peut pas recréer une session finalisée !"
 msgid "Confirm Email Sending"
 msgstr "Confirmer l'envoi des emails"
 
-#: ../browser/table.py:259
+#: ../browser/table.py:258
 msgid "Create external session"
 msgstr "Envoyer dans Paraphéo"
 
-#: ../browser/table.py:245
+#: ../browser/table.py:244
 msgid "Delete session"
 msgstr "Effacer la session"
 
@@ -61,7 +69,7 @@ msgstr "Effacer la session"
 msgid "Deselect All"
 msgstr "Désélectionner tout"
 
-#: ../browser/actions.py:112
+#: ../browser/actions.py:113
 msgid "Element removed from session!"
 msgstr "Élément retiré de la session !"
 
@@ -122,7 +130,7 @@ msgstr "Échec de l'envoi des emails pour ${count} utilisateurs."
 msgid "File URL download domain"
 msgstr "Nom de domaine de téléchargement"
 
-#: ../browser/table.py:140
+#: ../browser/table.py:139
 msgid "Files"
 msgstr "Fichiers"
 
@@ -155,7 +163,7 @@ msgstr "Installs the imio.esign add-on."
 msgid "Invalid VAT number: checksum verification failed"
 msgstr "Numéro de TVA invalide : échec de la vérification de la somme de contrôle"
 
-#: ../browser/actions.py:263
+#: ../browser/actions.py:272
 msgid "Invalid session ID!"
 msgstr "Identifiant de session invalide !"
 
@@ -167,7 +175,7 @@ msgstr "Active/désactive la fonctionnalité globalement sur le site."
 msgid "Last Name"
 msgstr "Nom"
 
-#: ../browser/table.py:210
+#: ../browser/table.py:209
 #: ../browser/templates/macros.pt:21
 msgid "Last update"
 msgstr "Dernière mise à jour"
@@ -196,7 +204,7 @@ msgstr "Si la taille totale des fichiers à signer dépasse cette limite, une no
 msgid "Multiple values must be separated by a comma."
 msgstr "Les valeurs multiples doivent être séparées par une virgule."
 
-#: ../browser/actions.py:342
+#: ../browser/actions.py:351
 msgid "New session ${nid} created from session ${oid}"
 msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 
@@ -204,7 +212,7 @@ msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/actions.py:313
+#: ../browser/actions.py:322
 msgid "No file selected!"
 msgstr "Aucun fichier sélectionné !"
 
@@ -224,7 +232,7 @@ msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr "Aucun email de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/actions.py:261
+#: ../browser/actions.py:270
 #: ../browser/views.py:151
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
@@ -245,7 +253,7 @@ msgstr "Ouvrir la plateforme de signature électronique"
 msgid "Parapheo url"
 msgstr "Url de Paraphéo"
 
-#: ../browser/actions.py:377
+#: ../browser/actions.py:386
 msgid "Please select at least one file."
 msgstr "Veuillez sélectionner au moins 1 fichier."
 
@@ -257,15 +265,15 @@ msgstr "L'adresse d'expéditeur du site n'est pas configurée"
 msgid "Position"
 msgstr "Fonction"
 
-#: ../browser/actions.py:76
+#: ../browser/actions.py:77
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
-#: ../browser/table.py:169
+#: ../browser/table.py:168
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
 msgstr "${count} élément(s), taille: ${size} <span title='${help_title}' class='far fa-question-circle' />"
 
-#: ../browser/table.py:263
+#: ../browser/table.py:262
 #: ../browser/templates/recreate_session_form.pt:11
 msgid "Recreate session"
 msgstr "Recréer la session"
@@ -294,7 +302,7 @@ msgstr "Code fourni par le fournisseur eidas."
 msgid "Seal email"
 msgstr "Email du compte avec l'image du sceau"
 
-#: ../browser/table.py:87
+#: ../browser/table.py:86
 #: ../browser/templates/macros.pt:28
 msgid "Sealed"
 msgstr "Sceau"
@@ -319,7 +327,7 @@ msgstr "Sélectionnés:"
 msgid "Send Emails"
 msgstr "Envoyer des emails"
 
-#: ../utils.py:217
+#: ../utils.py:219
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
@@ -327,7 +335,7 @@ msgstr "Session ${id}"
 msgid "Session ID"
 msgstr "Identifiant"
 
-#: ../browser/table.py:158
+#: ../browser/table.py:157
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr "Une session peut contenir maximum ${max_session_files} éléments pour une taille totale maximum de ${max_session_size} MB."
 
@@ -339,7 +347,7 @@ msgstr "Session effacée avec succès !"
 msgid "Session information (${icon_url} Parapheo)"
 msgstr "Session de signature électronique (${icon_url} Paraphéo)"
 
-#: ../browser/actions.py:267
+#: ../browser/actions.py:276
 #: ../browser/views.py:161
 msgid "Session not found!"
 msgstr "Session non trouvée !"
@@ -368,7 +376,7 @@ msgstr "Le lien de la session de signature n'a pas encore été reçu."
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
-#: ../browser/table.py:102
+#: ../browser/table.py:101
 #: ../browser/templates/macros.pt:42
 msgid "Signers"
 msgstr "Signataires"
@@ -450,7 +458,7 @@ msgstr "Ceci va supprimer l'élement courant de la session de signature"
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr "Cela retirera cet élément ou les sous-éléments configurés de la session de signature"
 
-#: ../browser/table.py:73
+#: ../browser/table.py:72
 #: ../browser/templates/macros.pt:35
 msgid "Title"
 msgstr "Titre"
@@ -499,7 +507,7 @@ msgstr "Le numéro de TVA doit commencer par 'BE'"
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr "Numéro de TVA utilisé pour la facturation esign (BE0123456789)."
 
-#: ../browser/table.py:289
+#: ../browser/table.py:288
 msgid "View session in dashboard"
 msgstr "Voir la session dans un tableau de bord"
 

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-08-13 10:11+0000\n"
+"POT-Creation-Date: 2026-08-19 14:35+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,19 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
+#: ../utils.py:678
+msgid "${fullname} refused the session with comment: \"${reason}\""
+msgstr ""
+
+#: ../utils.py:683
+msgid "${fullname} refused the session without comment"
+msgstr ""
+
 #: ../browser/views.py:340
 msgid "A file identifier must be passed in the url !"
 msgstr ""
 
-#: ../browser/table.py:226
+#: ../browser/table.py:225
 msgid "Actions"
 msgstr ""
 
@@ -36,11 +44,11 @@ msgstr ""
 msgid "Cancel"
 msgstr ""
 
-#: ../browser/actions.py:269
+#: ../browser/actions.py:278
 msgid "Cannot recreate a draft session!"
 msgstr ""
 
-#: ../browser/actions.py:271
+#: ../browser/actions.py:280
 msgid "Cannot recreate a finished session!"
 msgstr ""
 
@@ -48,11 +56,11 @@ msgstr ""
 msgid "Confirm Email Sending"
 msgstr ""
 
-#: ../browser/table.py:259
+#: ../browser/table.py:258
 msgid "Create external session"
 msgstr ""
 
-#: ../browser/table.py:245
+#: ../browser/table.py:244
 msgid "Delete session"
 msgstr ""
 
@@ -60,7 +68,7 @@ msgstr ""
 msgid "Deselect All"
 msgstr ""
 
-#: ../browser/actions.py:112
+#: ../browser/actions.py:113
 msgid "Element removed from session!"
 msgstr ""
 
@@ -121,7 +129,7 @@ msgstr ""
 msgid "File URL download domain"
 msgstr ""
 
-#: ../browser/table.py:140
+#: ../browser/table.py:139
 msgid "Files"
 msgstr ""
 
@@ -154,7 +162,7 @@ msgstr ""
 msgid "Invalid VAT number: checksum verification failed"
 msgstr ""
 
-#: ../browser/actions.py:263
+#: ../browser/actions.py:272
 msgid "Invalid session ID!"
 msgstr ""
 
@@ -166,7 +174,7 @@ msgstr ""
 msgid "Last Name"
 msgstr ""
 
-#: ../browser/table.py:210
+#: ../browser/table.py:209
 #: ../browser/templates/macros.pt:21
 msgid "Last update"
 msgstr ""
@@ -195,7 +203,7 @@ msgstr ""
 msgid "Multiple values must be separated by a comma."
 msgstr ""
 
-#: ../browser/actions.py:342
+#: ../browser/actions.py:351
 msgid "New session ${nid} created from session ${oid}"
 msgstr ""
 
@@ -203,7 +211,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/actions.py:313
+#: ../browser/actions.py:322
 msgid "No file selected!"
 msgstr ""
 
@@ -223,7 +231,7 @@ msgstr ""
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/actions.py:261
+#: ../browser/actions.py:270
 #: ../browser/views.py:151
 msgid "No session ID provided!"
 msgstr ""
@@ -244,7 +252,7 @@ msgstr ""
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/actions.py:377
+#: ../browser/actions.py:386
 msgid "Please select at least one file."
 msgstr ""
 
@@ -256,15 +264,15 @@ msgstr ""
 msgid "Position"
 msgstr ""
 
-#: ../browser/actions.py:76
+#: ../browser/actions.py:77
 msgid "Problem getting signers: \"${error}\")!"
 msgstr ""
 
-#: ../browser/table.py:169
+#: ../browser/table.py:168
 msgid "Quick look (${count} element(s), total size: ${size}) <span title='${help_title}' class='far fa-question-circle' />"
 msgstr ""
 
-#: ../browser/table.py:263
+#: ../browser/table.py:262
 #: ../browser/templates/recreate_session_form.pt:11
 msgid "Recreate session"
 msgstr ""
@@ -293,7 +301,7 @@ msgstr ""
 msgid "Seal email"
 msgstr ""
 
-#: ../browser/table.py:87
+#: ../browser/table.py:86
 #: ../browser/templates/macros.pt:28
 msgid "Sealed"
 msgstr ""
@@ -318,7 +326,7 @@ msgstr ""
 msgid "Send Emails"
 msgstr ""
 
-#: ../utils.py:217
+#: ../utils.py:219
 msgid "Session ${id}"
 msgstr ""
 
@@ -326,7 +334,7 @@ msgstr ""
 msgid "Session ID"
 msgstr ""
 
-#: ../browser/table.py:158
+#: ../browser/table.py:157
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr ""
 
@@ -338,7 +346,7 @@ msgstr ""
 msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
-#: ../browser/actions.py:267
+#: ../browser/actions.py:276
 #: ../browser/views.py:161
 msgid "Session not found!"
 msgstr ""
@@ -367,7 +375,7 @@ msgstr ""
 msgid "Signed file download"
 msgstr ""
 
-#: ../browser/table.py:102
+#: ../browser/table.py:101
 #: ../browser/templates/macros.pt:42
 msgid "Signers"
 msgstr ""
@@ -449,7 +457,7 @@ msgstr ""
 msgid "This will remove this element or configured sub elements from the relevant esign session"
 msgstr ""
 
-#: ../browser/table.py:73
+#: ../browser/table.py:72
 #: ../browser/templates/macros.pt:35
 msgid "Title"
 msgstr ""
@@ -498,7 +506,7 @@ msgstr ""
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 
-#: ../browser/table.py:289
+#: ../browser/table.py:288
 msgid "View session in dashboard"
 msgstr ""
 

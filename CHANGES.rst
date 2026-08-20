@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.1 (unreleased)
+1.0.1 (2026-08-20)
 ------------------
 
 - Add a final `.` at end of help title message displayed when hovering the

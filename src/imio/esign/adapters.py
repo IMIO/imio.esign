@@ -59,6 +59,28 @@ class FilesBelongingToAGivenSession(object):
     query = query_session_files
 
 
+class SignableAdapter(object):
+    """Default implementation."""
+
+    def __init__(self, context):
+        self.context = context
+
+    def get_signers(self):
+        return []
+
+    def get_files_uids(self):
+        return []
+
+    def get_watchers(self):
+        return []
+
+    def get_discriminators(self):
+        return []
+
+    def get_create_session_custom_data(self):
+        return {}
+
+
 class ISignable(Interface):
     def get_signers(self):
         """

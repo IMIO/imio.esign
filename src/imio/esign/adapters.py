@@ -114,5 +114,7 @@ class ISignable(Interface):
     def get_create_session_custom_data(self):
         """
         Dict of custom data that will be stored on session at creation time.
+        This must be managed carefully to not use and overwrite data already existing
+        in the annotation.
         """
         return {}

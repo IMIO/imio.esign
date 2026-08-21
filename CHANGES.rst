@@ -8,9 +8,8 @@ Changelog
   `create_session_custom_data` using first element of old session.
   Moreover, `Recreate session` action is hidden when session is `to_sign`.
   [gbastien]
-- Added default implementation for `ISignable` adapter so we are sure that every
-  relevant methods have a default implementation.
-  Overrides should inheritates from it.
+- Added a default implementation for the `ISignable` adapter so all relevant
+  methods have a default implementation. Overrides should inherit from it.
   [gbastien]
 
 1.0.1 (2026-08-20)

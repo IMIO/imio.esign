@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-08-19 14:35+0000\n"
+"POT-Creation-Date: 2026-08-21 14:26+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,10 +46,6 @@ msgstr ""
 
 #: ../browser/actions.py:278
 msgid "Cannot recreate a draft session!"
-msgstr ""
-
-#: ../browser/actions.py:280
-msgid "Cannot recreate a finished session!"
 msgstr ""
 
 #: ../browser/templates/signing_users.pt:248
@@ -203,7 +199,7 @@ msgstr ""
 msgid "Multiple values must be separated by a comma."
 msgstr ""
 
-#: ../browser/actions.py:351
+#: ../browser/actions.py:365
 msgid "New session ${nid} created from session ${oid}"
 msgstr ""
 
@@ -211,7 +207,7 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: ../browser/actions.py:322
+#: ../browser/actions.py:334
 msgid "No file selected!"
 msgstr ""
 
@@ -252,7 +248,7 @@ msgstr ""
 msgid "Parapheo url"
 msgstr ""
 
-#: ../browser/actions.py:386
+#: ../browser/actions.py:400
 msgid "Please select at least one file."
 msgstr ""
 
@@ -435,6 +431,10 @@ msgstr ""
 
 #: ../utils.py
 msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
+msgstr ""
+
+#: ../browser/actions.py:281
+msgid "The session is in a state in which it cannot be recreated!"
 msgstr ""
 
 #: ../utils.py

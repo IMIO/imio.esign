@@ -277,7 +277,8 @@ class _RecreateSessionMixin(object):
         if session["state"] in ("draft", "draft_full"):
             return None, None, (_("Cannot recreate a draft session!"), "warning")
         if session["state"] in self.NON_RECREATABLE_STATES:
-            return None, None, (_("Cannot recreate a finished session!"), "warning")
+            return None, None, (
+                _("The session is in a state in which it cannot be recreated!"), "warning")
         return session_id, session, None
 
 

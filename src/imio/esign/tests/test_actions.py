@@ -297,7 +297,7 @@ class TestRecreateSessionView(BaseEsignTest):
             ("user2", "user2@sign.com", u"User 2", u"Position 2"),
         ]
 
-    def _make_non_draft_session(self, state="to_sign", **kwargs):
+    def _make_refused_session(self, state="refused", **kwargs):
         """Create a session via add_files_to_session and flip its state to ``state``."""
         session_id, session = add_files_to_session(
             self.signers,
@@ -337,7 +337,7 @@ class TestRecreateSessionView(BaseEsignTest):
         login(self.portal, TEST_USER_NAME)
 
         # --- No session_id: redirect, no new session created ---
-        old_id, old = self._make_non_draft_session()
+        old_id, old = self._make_refused_session()
         old_files_uids = [f["uid"] for f in old["files"]]
         view = RecreateSessionView(self.portal, self.request)
         result = view()
@@ -368,7 +368,7 @@ class TestRecreateSessionView(BaseEsignTest):
         view()
         self.assertIsNone(view._new_session_id)
         self.assertEqual(len(annot["sessions"]), 1)
-        annot["sessions"][old_id]["state"] = "to_sign"
+        annot["sessions"][old_id]["state"] = "refused"
         del self.request.form["esign_session_id"]
 
         # --- Successful recreation: new draft with same files, signers, metadata ---
@@ -398,7 +398,7 @@ class TestRecreateSessionView(BaseEsignTest):
 
         # --- No merge: recreation always creates a brand-new session even when a
         #     matching draft (same signers + discriminators) already exists ---
-        second_old_id, _ = self._make_non_draft_session()
+        second_old_id, _ = self._make_refused_session()
         matching_draft_id, _ = add_files_to_session(
             self.signers,
             [self.portal["folder1"]["annex1"].UID()],
@@ -416,7 +416,7 @@ class TestRecreateSessionView(BaseEsignTest):
         del self.request.form["esign_session_id"]
 
         # --- Partial selection: keep only the first two files ---
-        partial_old_id, partial_old = self._make_non_draft_session()
+        partial_old_id, partial_old = self._make_refused_session()
         partial_files_uids = [f["uid"] for f in partial_old["files"]]
         kept, dropped = partial_files_uids[:2], partial_files_uids[2:]
         self.request.form["esign_session_id"] = str(partial_old_id)
@@ -438,7 +438,7 @@ class TestRecreateSessionView(BaseEsignTest):
         del self.request.form["esign_session_id"]
 
         # --- Empty selection: nothing recreated ---
-        other_id, _ = self._make_non_draft_session()
+        other_id, _ = self._make_refused_session()
         count_before = len(annot["sessions"])
         self.request.form["esign_session_id"] = str(other_id)
         self.request.form["file_uids"] = "[]"
@@ -459,14 +459,14 @@ class TestRecreateSessionView(BaseEsignTest):
 
     def test_get_new_session_title_default(self):
         """The base view returns an empty title, so create_session mints its own."""
-        old_id, old = self._make_non_draft_session()
+        old_id, old = self._make_refused_session()
         view = RecreateSessionView(self.portal, self.request)
         self.assertEqual(view.get_new_session_title(old, old_id), u"")
 
     def test_get_new_session_title_override(self):
         """A consuming app can set the recreated session title via the hook."""
         annot = get_session_annotation()
-        old_id, old = self._make_non_draft_session()
+        old_id, old = self._make_refused_session()
 
         class CustomRecreateSessionView(RecreateSessionView):
             def get_new_session_title(self, old, old_session_id):
@@ -543,7 +543,7 @@ class TestRecreateSessionFormView(BaseEsignTest):
 
     def test_files_and_render(self):
         """The form lists every file of the session."""
-        session_id, session = self._make_session()
+        session_id, session = self._make_session(state="refused")
         self.request.form["esign_session_id"] = str(session_id)
         view = RecreateSessionFormView(self.portal, self.request)
         html = view()

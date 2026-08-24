@@ -247,7 +247,7 @@ class SessionAnnotationInfoView(BrowserView):
 class _RecreateSessionMixin(object):
     """Shared permission check and request validation for the recreate views."""
 
-    NON_RECREATABLE_STATES = ("draft", "draft_full", "returned", "finalized")
+    NON_RECREATABLE_STATES = ("draft", "draft_full", "to_sign", "returned", "finalized")
 
     def may_recreate_session(self, state=None):
         """Whether the current user may recreate a session.
@@ -277,7 +277,8 @@ class _RecreateSessionMixin(object):
         if session["state"] in ("draft", "draft_full"):
             return None, None, (_("Cannot recreate a draft session!"), "warning")
         if session["state"] in self.NON_RECREATABLE_STATES:
-            return None, None, (_("Cannot recreate a finished session!"), "warning")
+            return None, None, (
+                _("The session is in a state in which it cannot be recreated!"), "warning")
         return session_id, session, None
 
 
@@ -299,6 +300,17 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         :return: a title string
         """
         return u""
+
+    def get_create_session_custom_data(self, old, old_session_id):
+        """Manage custom data when recreating session.
+
+        :param
+        :param old: the source session dict being recreated
+        :param old_session_id: the source session id
+        :return: a dict of custom data
+        """
+        obj = uuidToObject(old["files"][0]["context_uid"])
+        return ISignable(obj).get_create_session_custom_data()
 
     def __call__(self):
         if not self.may_recreate_session():
@@ -324,6 +336,8 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         acroform = old.get("acroform", True)
         discriminators = old.get("discriminators", ())
         watchers = list(old.get("watchers", []))
+        create_session_custom_data = self.get_create_session_custom_data(old, session_id)
+        create_session_custom_data["recreated_from"] = session_id
         # Remove selected files from the old session
         remove_files_from_session(files_uids)
         # Create new draft session (call create_session directly to bypass discriminate_sessions)
@@ -335,7 +349,7 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
             annot=annot,
             discriminators=discriminators,
             watchers=watchers,
-            create_session_custom_data={"recreated_from": session_id},
+            create_session_custom_data=create_session_custom_data,
         )
         add_files_to_session(
             signers=signers,

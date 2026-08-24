@@ -4,8 +4,13 @@ Changelog
 1.0.2 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Added `RecreateSessionView.get_create_session_custom_data` to compute
+  `create_session_custom_data` using first element of old session.
+  Moreover, `Recreate session` action is hidden when session is `to_sign`.
+  [gbastien]
+- Added a default implementation for the `ISignable` adapter so all relevant
+  methods have a default implementation. Overrides should inherit from it.
+  [gbastien]
 
 1.0.1 (2026-08-20)
 ------------------

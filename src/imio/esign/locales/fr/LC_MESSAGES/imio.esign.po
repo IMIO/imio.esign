@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-08-19 14:35+0000\n"
+"POT-Creation-Date: 2026-08-21 14:26+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -48,10 +48,6 @@ msgstr "Annuler"
 #: ../browser/actions.py:278
 msgid "Cannot recreate a draft session!"
 msgstr "On ne peut pas recréer une session en création !"
-
-#: ../browser/actions.py:280
-msgid "Cannot recreate a finished session!"
-msgstr "On ne peut pas recréer une session finalisée !"
 
 #: ../browser/templates/signing_users.pt:248
 msgid "Confirm Email Sending"
@@ -204,7 +200,7 @@ msgstr "Si la taille totale des fichiers à signer dépasse cette limite, une no
 msgid "Multiple values must be separated by a comma."
 msgstr "Les valeurs multiples doivent être séparées par une virgule."
 
-#: ../browser/actions.py:351
+#: ../browser/actions.py:365
 msgid "New session ${nid} created from session ${oid}"
 msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 
@@ -212,7 +208,7 @@ msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/actions.py:322
+#: ../browser/actions.py:334
 msgid "No file selected!"
 msgstr "Aucun fichier sélectionné !"
 
@@ -253,7 +249,7 @@ msgstr "Ouvrir la plateforme de signature électronique"
 msgid "Parapheo url"
 msgstr "Url de Paraphéo"
 
-#: ../browser/actions.py:386
+#: ../browser/actions.py:400
 msgid "Please select at least one file."
 msgstr "Veuillez sélectionner au moins 1 fichier."
 
@@ -437,6 +433,10 @@ msgstr "La session est remplie (taille ou nombre de fichiers maximum atteint) et
 #: ../utils.py
 msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
 msgstr "La session est en préparation pour être envoyée dans Paraphéo par un gestionnaire de signatures."
+
+#: ../browser/actions.py:281
+msgid "The session is in a state in which it cannot be recreated!"
+msgstr "La session est dans un état dans lequel elle ne peut pas être recréée !"
 
 #: ../utils.py
 msgid "The session is ready to be signed in Paraphéo."

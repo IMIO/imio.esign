@@ -11,6 +11,8 @@ Changelog
 - Added a default implementation for the `ISignable` adapter so all relevant
   methods have a default implementation. Overrides should inherit from it.
   [gbastien]
+- More accurate translation for `sent` state `(?)` tooltip.
+  [gbastien]
 
 1.0.1 (2026-08-20)
 ------------------

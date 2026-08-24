@@ -412,7 +412,7 @@ msgstr "La session a été interrompue car un signataire a refusé un document."
 
 #: ../utils.py
 msgid "The session has been sent to Paraphéo."
-msgstr "La session a été envoyée à Paraphéo."
+msgstr "La session a été envoyée vers Paraphéo et sera bientôt prête à être signée.  Rechargez la page dans quelques secondes (en cliquant sur l'onglet \"Paraphéo\") pour obenir un lien vers la session."
 
 #: ../utils.py
 msgid "The session is finished and signed documents are on the way back to the application."

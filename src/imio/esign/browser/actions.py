@@ -247,7 +247,7 @@ class SessionAnnotationInfoView(BrowserView):
 class _RecreateSessionMixin(object):
     """Shared permission check and request validation for the recreate views."""
 
-    NON_RECREATABLE_STATES = ("draft", "draft_full", "to_sign", "returned", "finalized")
+    NON_RECREATABLE_STATES = ("draft", "draft_full", "sent", "to_sign", "signed", "returned", "finalized")
 
     def may_recreate_session(self, state=None):
         """Whether the current user may recreate a session.

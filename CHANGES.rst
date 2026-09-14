@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.3 (unreleased)
+1.0.3 (2026-09-14)
 ------------------
 
 - Do not let `Recreate session` when it is `sent` or `signed`.

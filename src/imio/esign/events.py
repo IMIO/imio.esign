@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from Acquisition import aq_parent
+from imio.esign.adapters import ISignable
 from imio.esign.utils import get_file_info
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import remove_files_from_session
-from imio.helpers.transmogrifier import get_correct_id
 from os import path
 
 
@@ -57,10 +58,12 @@ def on_categorized_annex_updated(annex, event):
                     file_data["scan_id"] = annex.scan_id
                     # filename changed, need to make sure new filename is unique
                     if annex.file.filename != file_data["filename"]:
-                        existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
-                        filename, ext = path.splitext(annex.file.filename)
-                        new_filename = get_correct_id(existing_files, filename)
-                        file_data["filename"] = new_filename + ext
+                        existing_files = [
+                            path.splitext(f["filename"])[0] for f in session["files"] if f["uid"] != annex_uid
+                        ]
+                        file_data["filename"] = ISignable(aq_parent(annex)).get_filename(
+                            annex, existing_files=existing_files
+                        )
                     # file_uid is only there one time per session
                     break
 

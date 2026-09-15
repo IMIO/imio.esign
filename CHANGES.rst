@@ -6,6 +6,8 @@ Changelog
 
 - Do not let `Recreate session` when it is `sent` or `signed`.
   [gbastien]
+- Formalised the sent filename generation in `ISignable.get_filename` (PARAF-550).
+  [chris-adam]
 
 1.0.2 (2026-08-24)
 ------------------

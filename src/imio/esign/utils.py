@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from Acquisition import aq_parent
 from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime
@@ -19,7 +20,6 @@ from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
 from imio.helpers.content import uuidToObject
-from imio.helpers.transmogrifier import get_correct_id
 from imio.helpers.ws import get_auth_token
 # from imio.pyutils.system import post_request
 from imio.pyutils.utils import shortuid_encode_id
@@ -101,6 +101,7 @@ def add_files_to_session(  # noqa C901
             session = annot["sessions"][session_id]
     dispatch = session_id is None
     sessions_used = []
+    from imio.esign.adapters import ISignable  # avoid circular import
 
     for uid in files_uids:
         file_size = get_filesize(uid)
@@ -135,13 +136,11 @@ def add_files_to_session(  # noqa C901
             logger.info("File with UID %s is already in session_id %s and data were updated!", uid, session_id)
             remove_files_from_session([uid], remove_empty_session=False)
 
-        existing_files = [path.splitext(f["filename"])[0] for f in session["files"]]
-        filename, ext = path.splitext(annex.file.filename or "no_filename.pdf")
-        new_filename = get_correct_id(existing_files, filename)
+        existing_files = [path.splitext(f["filename"])[0] for f in session["files"] if f["uid"] != uid]
         file_dict = PersistentMapping(
             {
                 "scan_id": annex.scan_id,
-                "filename": new_filename + ext,
+                "filename": ISignable(aq_parent(annex)).get_filename(annex, existing_files=existing_files),
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,

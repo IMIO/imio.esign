@@ -2,6 +2,8 @@
 
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
+from imio.helpers.transmogrifier import get_correct_id
+from os import path
 from plone.memoize import ram
 from zope.interface import Interface
 
@@ -80,6 +82,10 @@ class SignableAdapter(object):
     def get_create_session_custom_data(self):
         return {}
 
+    def get_filename(self, annex, existing_files=()):
+        filename, ext = path.splitext(annex.file.filename or u"no_filename.pdf")
+        return get_correct_id(existing_files, filename) + ext
+
 
 class ISignable(Interface):
     def get_signers(self):
@@ -118,3 +124,12 @@ class ISignable(Interface):
         in the annotation.
         """
         return {}
+
+    def get_filename(self, annex, existing_files=()):
+        """
+        Return the filename to use for that element in the session.
+
+        `existing_files` holds the names (without extension) already used in the
+        session, to keep them unique.
+        """
+        return u""

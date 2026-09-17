@@ -7,9 +7,4 @@
 
   <include file="configure.zcml" />
 
-  <adapter
-      for="*"
-      factory="imio.esign.adapters.SignableAdapter"
-      provides="imio.esign.adapters.ISignable"/>
-
 </configure>

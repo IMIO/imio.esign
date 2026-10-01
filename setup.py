@@ -59,6 +59,7 @@ setup(
         "imio.helpers>1.3.10",
         "imio.prettylink",
         "imio.pyutils",
+        "jsonschema",
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "plone.restapi",

@@ -14,19 +14,37 @@ from imio.esign.interfaces import IContextUidProvider
 from imio.esign.utils import get_session_info
 from imio.helpers.content import uuidToObject
 from io import BytesIO
+from jsonschema import Draft4Validator
+from jsonschema import ValidationError
 from Products.CMFPlone.utils import safe_unicode
 from xml.sax.saxutils import unescape
 from zope.component import getAdapter
 from zope.i18n import translate
 
+import json
 import re
 import subprocess
 import zipfile
 
 
 ACROFORM_TAG_RE = re.compile(r"\{\{#(.*?)#\}\}")
-SIGNER_ID_RE = re.compile(r'"ID":"Signer(0|[1-9]\d*)"')
-SEAL_ID_RE = re.compile(r'"ID":"SCEAU"')
+POSITIVE_INT_STRING = {"type": "string", "pattern": "^[1-9][0-9]*$"}
+# what the signing service expects between {{# and #}}, once wrapped in braces
+TAG_VALIDATOR = Draft4Validator(
+    {
+        "required": ["ID", "Size"],
+        "additionalProperties": False,
+        "properties": {
+            "ID": {"type": "string", "pattern": "^(Signer[1-9][0-9]*|SCEAU)$"},
+            "Size": {
+                "type": "object",
+                "required": ["Height", "Width"],
+                "additionalProperties": False,
+                "properties": {"Height": POSITIVE_INT_STRING, "Width": POSITIVE_INT_STRING},
+            },
+        },
+    }
+)
 XML_TAG_RE = re.compile(r"<[^>]*>")
 WHITESPACE_RE = re.compile(r"\s+")
 PDFTOTEXT = "pdftotext"
@@ -89,18 +107,24 @@ def extract_text(nbf):
 def get_tag_ids(nbf):
     """Return the acroform tag ids of a file field, reading its text only once.
 
-    :return: the signer number of every signature tag, in document order, and the number
-             of seal tags
+    :return: the signer number of every valid signature tag, in document order, the number
+             of valid seal tags, and the malformed tags
     """
     numbers = []
     seals = 0
+    malformed = []
     for payload in ACROFORM_TAG_RE.findall(extract_text(nbf)):
-        match = SIGNER_ID_RE.search(payload)
-        if match:
-            numbers.append(int(match.group(1)))
-        elif SEAL_ID_RE.search(payload):
+        try:
+            tag = json.loads(u"{" + payload + u"}")
+            TAG_VALIDATOR.validate(tag)
+        except (ValueError, ValidationError):
+            malformed.append(u"{{#" + payload + u"#}}")
+            continue
+        if tag["ID"] == u"SCEAU":
             seals += 1
-    return numbers, seals
+        else:
+            numbers.append(int(tag["ID"][len(u"Signer"):]))
+    return numbers, seals, malformed
 
 
 def validate_signer_numbers(numbers, nb_signers):
@@ -119,7 +143,7 @@ def validate_signer_numbers(numbers, nb_signers):
         if counts[nb] > 1:
             errors.append(_("The signature tag of Signer${nb} is present ${count} times.",
                             mapping={"nb": nb, "count": counts[nb]}))
-        if nb < 1 or nb > nb_signers:
+        if nb > nb_signers:
             errors.append(_("There is a signature tag for Signer${nb} but ${count} signer(s) are defined.",
                             mapping={"nb": nb, "count": nb_signers}))
     for nb in range(1, nb_signers + 1):
@@ -148,8 +172,10 @@ def check_file(obj, nb_signers, seal=False):
     :param nb_signers: number of signers, or None when the signature tags are unused
     :param seal: whether a seal is defined on the container
     """
-    numbers, seal_count = get_tag_ids(getattr(obj, "file", None))
-    errors = [] if nb_signers is None else validate_signer_numbers(numbers, nb_signers)
+    numbers, seal_count, malformed = get_tag_ids(getattr(obj, "file", None))
+    errors = [_("The tag ${tag} is malformed.", mapping={"tag": tag}) for tag in malformed]
+    if nb_signers is not None:
+        errors += validate_signer_numbers(numbers, nb_signers)
     return errors + validate_seal_count(seal_count, seal)
 
 

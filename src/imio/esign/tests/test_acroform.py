@@ -46,13 +46,13 @@ class TestAcroform(BaseEsignTest):
         # --- the quotes stored as xml entities, as appy/POD writes them ---
         escaped = odt_file(tag(1).replace(u'"', u"&quot;"), u"l&apos;essai")
         self.assertEqual(extract_text(escaped), u'{{#"ID":"Signer1","Size":{"Height":"70","Width":"200"}#}}l\'essai')
-        self.assertEqual(get_tag_ids(escaped), ([1], 0))
+        self.assertEqual(get_tag_ids(escaped), ([1], 0, []))
 
         # --- a real pdf produced by LibreOffice: its embedded fonts defeat PyPDF2 ---
         with open(os.path.join(TESTS_DIR, "signer_tags.pdf"), "rb") as fh:
             real_pdf = NamedBlobFile(data=fh.read(), filename=u"signer_tags.pdf", contentType="application/pdf")
         self.assertIn(tag(1) + tag(2), extract_text(real_pdf))
-        self.assertEqual(get_tag_ids(real_pdf), ([1, 2], 0))
+        self.assertEqual(get_tag_ids(real_pdf), ([1, 2], 0, []))
 
         # --- unreadable: no file, no data, unsupported type, corrupt data ---
         self.assertEqual(extract_text(None), u"")
@@ -67,22 +67,35 @@ class TestAcroform(BaseEsignTest):
                                                     contentType=ODT_CONTENT_TYPE)), u"")
 
     def test_get_tag_ids(self):
-        """Signer numbers come in document order, seal tags are counted, unknown ids are ignored."""
-        self.assertEqual(get_tag_ids(pdf_file(u"no tag here")), ([], 0))
-        self.assertEqual(get_tag_ids(pdf_file(tag(2), tag(1))), ([2, 1], 0))
-        self.assertEqual(get_tag_ids(odt_file(tag(1), tag(1))), ([1, 1], 0))
+        """Signer numbers come in document order, seal tags are counted, malformed tags are listed."""
+        self.assertEqual(get_tag_ids(pdf_file(u"no tag here")), ([], 0, []))
+        self.assertEqual(get_tag_ids(pdf_file(tag(2), tag(1))), ([2, 1], 0, []))
+        self.assertEqual(get_tag_ids(odt_file(tag(1), tag(1))), ([1, 1], 0, []))
+        self.assertEqual(get_tag_ids(odt_file(tag(10))), ([10], 0, []))
 
         # --- the seal tag, alone, beside a signer and twice ---
-        self.assertEqual(get_tag_ids(odt_file(seal_tag())), ([], 1))
-        self.assertEqual(get_tag_ids(pdf_file(tag(1), seal_tag())), ([1], 1))
-        self.assertEqual(get_tag_ids(odt_file(seal_tag(), seal_tag())), ([], 2))
+        self.assertEqual(get_tag_ids(odt_file(seal_tag())), ([], 1, []))
+        self.assertEqual(get_tag_ids(pdf_file(tag(1), seal_tag())), ([1], 1, []))
+        self.assertEqual(get_tag_ids(odt_file(seal_tag(), seal_tag())), ([], 2, []))
 
-        # --- an id that is neither a signer nor the seal ---
-        self.assertEqual(get_tag_ids(odt_file(u'{{#"ID":"WRONG"#}}')), ([], 0))
+        # --- a brace after the closing #}} is plain text, not part of the tag ---
+        self.assertEqual(get_tag_ids(odt_file(tag(1) + u"}")), ([1], 0, []))
 
-        # --- a padded number is not the signer number: the service would not fill it ---
-        self.assertEqual(get_tag_ids(odt_file(u'{{#"ID":"Signer01"#}}')), ([], 0))
-        self.assertEqual(get_tag_ids(odt_file(u'{{#"ID":"Signer10"#}}')), ([10], 0))
+        # --- malformed tags are listed apart, the valid ones are still read ---
+        for malformed in (
+            u'{{#"ID":"Signer1","Size"{"Height":"70","Width":"200"}#}}',  # not json
+            u'{{#"ID":"SIGNER1","SIZE":{"HEIGHT":"70","WIDTH":"200"}#}}',
+            u'{{#"ID":"Signer1"#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"70"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"70","Width":"200"},"Page":"1"#}}',
+            u'{{#"ID":"WRONG","Size":{"Height":"70","Width":"200"}#}}',
+            tag(0),
+            u'{{#"ID":"Signer01","Size":{"Height":"70","Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":70,"Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"7O","Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":"70x200"#}}',
+        ):
+            self.assertEqual(get_tag_ids(odt_file(malformed, tag(2))), ([2], 0, [malformed]))
 
     def test_validate_signer_numbers(self):
         """No tag is valid; a complete set is valid; duplicate, unknown and missing are errors."""
@@ -159,6 +172,12 @@ class TestAcroform(BaseEsignTest):
 
         # --- a wrong signature tag and a wrong seal tag are both reported ---
         self.assertEqual(len(check_file(self.annex, 2, False)), 2)
+
+        # --- a malformed tag is reported, even when the signature tags are ignored ---
+        self.annex.file = pdf_file(u'{{#"ID":"Signer1"#}}')
+        errors = check_file(self.annex, None)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0].mapping, {"tag": u'{{#"ID":"Signer1"#}}'})
 
     def test_get_session_acroform_errors(self):
         """Session files are checked against the number of signers of their session."""

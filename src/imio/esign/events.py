@@ -76,7 +76,7 @@ def on_categorized_annex_updated(annex, event):
 def on_annex_added(annex, event):
     """Tell the user which acroform tags the file of a new annex holds.
 
-    Nothing is shown when the file holds no tag, or when the file was generated from a template.
+    Malformed tags are warned about. Nothing is shown when the file was generated from a template.
     """
 
     def is_generated_from_template(obj):
@@ -87,18 +87,21 @@ def on_annex_added(annex, event):
 
     if is_generated_from_template(annex):
         return
-    numbers, seal_count = get_tag_ids(getattr(annex, "file", None))
-    tags = [u"Signer{}".format(nb) for nb in numbers if nb > 0] + seal_count * [u"SCEAU"]
-    if not tags:
-        return
-    api.portal.show_message(
-        _(
-            "Acroform tags detected in '${title}': ${tags}",
-            mapping={"title": safe_unicode(annex.Title()), "tags": u", ".join(tags)},
-        ),
-        request=annex.REQUEST,
-        type="info",
-    )
+    numbers, seal_count, malformed = get_tag_ids(getattr(annex, "file", None))
+    title = safe_unicode(annex.Title())
+    tags = [u"Signer{}".format(nb) for nb in numbers] + seal_count * [u"SCEAU"]
+    if tags:
+        api.portal.show_message(
+            _("Acroform tags detected in '${title}': ${tags}", mapping={"title": title, "tags": u", ".join(tags)}),
+            request=annex.REQUEST,
+            type="info",
+        )
+    if malformed:
+        api.portal.show_message(
+            _("Malformed acroform tags in '${title}': ${tags}", mapping={"title": title, "tags": u" ".join(malformed)}),
+            request=annex.REQUEST,
+            type="warning",
+        )
 
 
 def on_annex_will_be_removed(annex, event):

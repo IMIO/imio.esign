@@ -4,7 +4,8 @@ Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added acroform signature and seal tags validation (PARAF-503).
+  [chris-adam]
 
 
 1.0.3 (2026-09-14)

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-08-21 14:26+0000\n"
+"POT-Creation-Date: 2026-10-01 12:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,16 +15,20 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../utils.py:678
+#: ../utils.py:677
 msgid "${fullname} refused the session with comment: \"${reason}\""
 msgstr ""
 
-#: ../utils.py:683
+#: ../utils.py:682
 msgid "${fullname} refused the session without comment"
 msgstr ""
 
-#: ../browser/views.py:340
+#: ../browser/views.py:399
 msgid "A file identifier must be passed in the url !"
+msgstr ""
+
+#: ../events.py:95
+msgid "Acroform tags detected in '${title}': ${tags}"
 msgstr ""
 
 #: ../browser/table.py:225
@@ -73,7 +77,7 @@ msgstr ""
 msgid "Email"
 msgstr ""
 
-#: ../browser/views.py:609
+#: ../browser/views.py:668
 msgid "Email content is not configured in the settings."
 msgstr ""
 
@@ -93,7 +97,7 @@ msgstr ""
 msgid "Email:"
 msgstr ""
 
-#: ../browser/views.py:669
+#: ../browser/views.py:728
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
@@ -101,11 +105,11 @@ msgstr ""
 msgid "Enabled?"
 msgstr ""
 
-#: ../browser/views.py:217
+#: ../browser/views.py:237
 msgid "Error while sending session: ${error}"
 msgstr ""
 
-#: ../browser/views.py:212
+#: ../browser/views.py:232
 msgid "External session sent successfully!"
 msgstr ""
 
@@ -113,11 +117,11 @@ msgstr ""
 msgid "External watchers emails"
 msgstr ""
 
-#: ../browser/views.py:656
+#: ../browser/views.py:715
 msgid "Failed to send email to ${userid}."
 msgstr ""
 
-#: ../browser/views.py:676
+#: ../browser/views.py:735
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
@@ -179,6 +183,10 @@ msgstr ""
 msgid "List of electronic signing sessions"
 msgstr ""
 
+#: ../events.py:101
+msgid "Malformed acroform tags in '${title}': ${tags}"
+msgstr ""
+
 #: ../browser/settings.py:109
 msgid "Max session files"
 msgstr ""
@@ -215,28 +223,28 @@ msgstr ""
 msgid "No files"
 msgstr ""
 
-#: ../browser/views.py:206
+#: ../browser/views.py:226
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:192
+#: ../browser/views.py:212
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr ""
 
-#: ../browser/views.py:199
+#: ../browser/views.py:219
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr ""
 
 #: ../browser/actions.py:270
-#: ../browser/views.py:151
+#: ../browser/views.py:154
 msgid "No session ID provided!"
 msgstr ""
 
-#: ../browser/views.py:564
+#: ../browser/views.py:623
 msgid "No users selected for CSV download."
 msgstr ""
 
-#: ../browser/views.py:603
+#: ../browser/views.py:662
 msgid "No users selected for email sending."
 msgstr ""
 
@@ -252,7 +260,7 @@ msgstr ""
 msgid "Please select at least one file."
 msgstr ""
 
-#: ../browser/views.py:618
+#: ../browser/views.py:677
 msgid "Portal from email is not configured."
 msgstr ""
 
@@ -322,8 +330,12 @@ msgstr ""
 msgid "Send Emails"
 msgstr ""
 
-#: ../utils.py:219
+#: ../utils.py:218
 msgid "Session ${id}"
+msgstr ""
+
+#: ../browser/views.py:188
+msgid "Session ${id} not sent because signature or seal tags are wrong: ${details}"
 msgstr ""
 
 #: ../browser/templates/macros.pt:2
@@ -334,7 +346,7 @@ msgstr ""
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr ""
 
-#: ../browser/views.py:159
+#: ../browser/views.py:162
 msgid "Session deleted successfully!"
 msgstr ""
 
@@ -343,7 +355,7 @@ msgid "Session information (${icon_url} Parapheo)"
 msgstr ""
 
 #: ../browser/actions.py:276
-#: ../browser/views.py:161
+#: ../browser/views.py:164
 msgid "Session not found!"
 msgstr ""
 
@@ -351,7 +363,7 @@ msgstr ""
 msgid "Session not yet sent."
 msgstr ""
 
-#: ../browser/views.py:185
+#: ../browser/views.py:205
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
@@ -367,7 +379,7 @@ msgstr ""
 msgid "Sign url not yet received."
 msgstr ""
 
-#: ../browser/views.py:392
+#: ../browser/views.py:451
 msgid "Signed file download"
 msgstr ""
 
@@ -389,16 +401,20 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: ../browser/views.py:368
+#: ../browser/views.py:427
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:348
+#: ../browser/views.py:407
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr ""
 
-#: ../browser/views.py:360
+#: ../browser/views.py:419
 msgid "The download period for this file has expired (was ${valid_date}) !"
+msgstr ""
+
+#: ../acroform.py:165
+msgid "The seal tag is present ${count} times."
 msgstr ""
 
 #: ../utils.py
@@ -441,7 +457,27 @@ msgstr ""
 msgid "The session is ready to be signed in Paraphéo."
 msgstr ""
 
-#: ../browser/views.py:344
+#: ../acroform.py:151
+msgid "The signature tag of Signer${nb} is missing."
+msgstr ""
+
+#: ../acroform.py:144
+msgid "The signature tag of Signer${nb} is present ${count} times."
+msgstr ""
+
+#: ../acroform.py:176
+msgid "The tag ${tag} is malformed."
+msgstr ""
+
+#: ../acroform.py:163
+msgid "There is a seal tag but no seal is defined."
+msgstr ""
+
+#: ../acroform.py:147
+msgid "There is a signature tag for Signer${nb} but ${count} signer(s) are defined."
+msgstr ""
+
+#: ../browser/views.py:403
 msgid "This file identifier is not correct !"
 msgstr ""
 
@@ -474,7 +510,7 @@ msgstr ""
 msgid "Used in signers email template."
 msgstr ""
 
-#: ../browser/views.py:627
+#: ../browser/views.py:686
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr ""
 
@@ -514,6 +550,10 @@ msgstr ""
 msgid "Warning: Duplicate email addresses detected"
 msgstr ""
 
+#: ../browser/templates/acroform_errors.pt:8
+msgid "Wrong signature or seal tags"
+msgstr ""
+
 #: ../browser/templates/faceted_session_info.pt
 msgid "Yes"
 msgstr ""
@@ -522,7 +562,7 @@ msgstr ""
 msgid "You are about to send emails to"
 msgstr ""
 
-#: ../browser/views.py:642
+#: ../browser/views.py:701
 msgid "You have been invited to Paraphéo"
 msgstr ""
 

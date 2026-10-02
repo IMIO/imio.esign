@@ -321,7 +321,10 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         annot = get_session_annotation()
         # Extract all data from old session before deleting it
         title = self.get_new_session_title(old, session_id)
-        signers = [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
+        signers = [
+            (s["userid"], s["email"], s["fullname"], s["position"], s.get("signer_id", s["userid"]))
+            for s in old["signers"]
+        ]
         files_uids = [f["uid"] for f in old["files"]]
         raw_selection = self.request.form.get("file_uids")
         if raw_selection is not None:

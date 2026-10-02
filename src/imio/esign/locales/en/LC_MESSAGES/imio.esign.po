@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2026-08-21 14:26+0000\n"
+"POT-Creation-Date: 2026-10-02 09:58+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI +ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Domain: imio.dashboard\n"
 "X-is-fallback-for: en-au en-ca en-gb en-us\n"
 
-#: ../utils.py:678
+#: ../utils.py:687
 msgid "${fullname} refused the session with comment: \"${reason}\""
 msgstr ""
 
-#: ../utils.py:683
+#: ../utils.py:692
 msgid "${fullname} refused the session without comment"
 msgstr ""
 
@@ -77,15 +77,15 @@ msgstr ""
 msgid "Email content is not configured in the settings."
 msgstr ""
 
-#: ../browser/settings.py:91
+#: ../browser/settings.py:95
 msgid "Email content model for signing users"
 msgstr ""
 
-#: ../browser/settings.py:92
+#: ../browser/settings.py:96
 msgid "Email content sent to users when inviting them to Parapheo. TAL compliant with variables: view, context, user_data, parapheo_url, request and modules."
 msgstr ""
 
-#: ../browser/settings.py:73
+#: ../browser/settings.py:77
 msgid "Email of the eidas provider account containing the seal image."
 msgstr ""
 
@@ -97,8 +97,12 @@ msgstr ""
 msgid "Emails sent successfully to ${count} users."
 msgstr ""
 
-#: ../browser/settings.py:46
+#: ../browser/settings.py:50
 msgid "Enabled?"
+msgstr ""
+
+#: ../browser/settings.py:129
+msgid "Enforce signers order?"
 msgstr ""
 
 #: ../browser/views.py:217
@@ -109,7 +113,7 @@ msgstr ""
 msgid "External session sent successfully!"
 msgstr ""
 
-#: ../browser/settings.py:118
+#: ../browser/settings.py:122
 msgid "External watchers emails"
 msgstr ""
 
@@ -121,7 +125,7 @@ msgstr ""
 msgid "Failed to send emails to ${count} users."
 msgstr ""
 
-#: ../browser/settings.py:59
+#: ../browser/settings.py:63
 msgid "File URL download domain"
 msgstr ""
 
@@ -141,7 +145,11 @@ msgstr ""
 msgid "Full name"
 msgstr ""
 
-#: ../browser/settings.py:128
+#: ../browser/settings.py:130
+msgid "If checked, signers must sign one after the other, following the signers order."
+msgstr ""
+
+#: ../browser/settings.py:156
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr ""
@@ -154,7 +162,7 @@ msgstr ""
 msgid "Installs the imio.esign add-on."
 msgstr ""
 
-#: ../browser/settings.py:38
+#: ../browser/settings.py:42
 msgid "Invalid VAT number: checksum verification failed"
 msgstr ""
 
@@ -162,7 +170,7 @@ msgstr ""
 msgid "Invalid session ID!"
 msgstr ""
 
-#: ../browser/settings.py:47
+#: ../browser/settings.py:51
 msgid "Is the eSign service enabled?"
 msgstr ""
 
@@ -179,23 +187,23 @@ msgstr ""
 msgid "List of electronic signing sessions"
 msgstr ""
 
-#: ../browser/settings.py:109
+#: ../browser/settings.py:113
 msgid "Max session files"
 msgstr ""
 
-#: ../browser/settings.py:100
+#: ../browser/settings.py:104
 msgid "Max session size (MB)"
 msgstr ""
 
-#: ../browser/settings.py:110
+#: ../browser/settings.py:114
 msgid "Maximum number of files per session. If the number of files to be signed exceeds this limit, a new session will be created."
 msgstr ""
 
-#: ../browser/settings.py:101
+#: ../browser/settings.py:105
 msgid "Maximum size of the session in megabytes. If the total size of files to be signed exceeds this limit, a new session will be created."
 msgstr ""
 
-#: ../browser/settings.py:119
+#: ../browser/settings.py:123
 msgid "Multiple values must be separated by a comma."
 msgstr ""
 
@@ -244,7 +252,11 @@ msgstr ""
 msgid "Open eSign platform"
 msgstr ""
 
-#: ../browser/settings.py:84
+#: ../browser/settings.py:138
+msgid "Order in which signers sign, the first one first. Unlisted signers sign last."
+msgstr ""
+
+#: ../browser/settings.py:88
 msgid "Parapheo url"
 msgstr ""
 
@@ -285,15 +297,15 @@ msgstr ""
 msgid "Remove item from esign session"
 msgstr ""
 
-#: ../browser/settings.py:66
+#: ../browser/settings.py:70
 msgid "Seal code"
 msgstr ""
 
-#: ../browser/settings.py:67
+#: ../browser/settings.py:71
 msgid "Seal code given by eidas provider."
 msgstr ""
 
-#: ../browser/settings.py:72
+#: ../browser/settings.py:76
 msgid "Seal email"
 msgstr ""
 
@@ -322,7 +334,7 @@ msgstr ""
 msgid "Send Emails"
 msgstr ""
 
-#: ../utils.py:219
+#: ../utils.py:220
 msgid "Session ${id}"
 msgstr ""
 
@@ -355,11 +367,11 @@ msgstr ""
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr ""
 
-#: ../browser/settings.py:78
+#: ../browser/settings.py:82
 msgid "Sign code"
 msgstr ""
 
-#: ../browser/settings.py:79
+#: ../browser/settings.py:83
 msgid "Sign code used to specify sign method. Keep empty to use default method."
 msgstr ""
 
@@ -374,6 +386,10 @@ msgstr ""
 #: ../browser/table.py:101
 #: ../browser/templates/macros.pt:42
 msgid "Signers"
+msgstr ""
+
+#: ../browser/settings.py:137
+msgid "Signers order"
 msgstr ""
 
 #: ../browser/templates/signing_users.pt:150
@@ -462,7 +478,7 @@ msgstr ""
 msgid "Title"
 msgstr ""
 
-#: ../browser/settings.py:60
+#: ../browser/settings.py:64
 msgid "URL domain where the file can be downloaded."
 msgstr ""
 
@@ -470,7 +486,7 @@ msgstr ""
 msgid "Uninstalls the imio.esign add-on."
 msgstr ""
 
-#: ../browser/settings.py:85
+#: ../browser/settings.py:89
 msgid "Used in signers email template."
 msgstr ""
 
@@ -486,23 +502,23 @@ msgstr ""
 msgid "Users:"
 msgstr ""
 
-#: ../browser/settings.py:52
+#: ../browser/settings.py:56
 msgid "VAT number"
 msgstr ""
 
-#: ../browser/settings.py:26
+#: ../browser/settings.py:30
 msgid "VAT number must be 12 characters (BE + 10 digits)"
 msgstr ""
 
-#: ../browser/settings.py:30
+#: ../browser/settings.py:34
 msgid "VAT number must contain 10 digits after 'BE'"
 msgstr ""
 
-#: ../browser/settings.py:23
+#: ../browser/settings.py:27
 msgid "VAT number must start with 'BE'"
 msgstr ""
 
-#: ../browser/settings.py:53
+#: ../browser/settings.py:57
 msgid "VAT number used for esign billing (BE0123456789)."
 msgstr ""
 

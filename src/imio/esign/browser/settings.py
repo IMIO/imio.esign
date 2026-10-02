@@ -7,9 +7,13 @@ from plone.app.registry.browser.controlpanel import RegistryEditForm
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
 from plone.autoform.directives import widget
 from plone.z3cform import layout
+from z3c.form.browser.orderedselect import OrderedSelectFieldWidget
 from zope import schema
+from zope.interface import implementer
 from zope.interface import Interface
 from zope.interface import Invalid
+from zope.schema.interfaces import IVocabularyFactory
+from zope.schema.vocabulary import SimpleVocabulary
 
 
 def validate_vat_number(va_nb):
@@ -120,6 +124,30 @@ class IImioEsignSettings(Interface):
         constraint=validate_email_addresses,
         required=False,
     )
+
+    enforce_signers_order = schema.Bool(
+        title=_("Enforce signers order?"),
+        description=_("If checked, signers must sign one after the other, following the signers order."),
+        default=False,
+        required=False,
+    )
+
+    widget("signers_order", OrderedSelectFieldWidget, size=10)
+    signers_order = schema.List(
+        title=_("Signers order"),
+        description=_("Order in which signers sign, the first one first. Unlisted signers sign last."),
+        value_type=schema.Choice(vocabulary="imio.esign.signers"),
+        default=[],
+        required=False,
+    )
+
+
+@implementer(IVocabularyFactory)
+class SignersVocabulary(object):
+    """Signers to order, as userid terms. Empty by default: the application overrides it."""
+
+    def __call__(self, context):
+        return SimpleVocabulary([])
 
 
 class ImioEsignSettings(RegistryEditForm):

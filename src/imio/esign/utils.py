@@ -9,6 +9,7 @@ from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
 from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_external_watchers
 from imio.esign.config import get_esign_registry_file_url
 from imio.esign.config import get_esign_registry_max_session_files
@@ -16,6 +17,7 @@ from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.config import get_esign_registry_sign_code
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
@@ -79,7 +81,8 @@ def add_files_to_session(  # noqa C901
     marked as ``draft_full`` (so it will never be reused) and a new session is
     discriminated or created for the remaining files.
 
-    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
+    :param signers: a list of signers, each is a tuple with userid, email, fullname, position text and an optional
+        signer id (the userid by default) used by the signers order
     :param files_uids: files uids list
     :param seal: seal or not
     :param acroform: boolean to indicate if signer tag is in files
@@ -238,12 +241,25 @@ def create_external_session(session_id, esign_root_url=None):
     watchers = list(session.get("watchers", []))
     external_watchers = get_esign_registry_external_watchers()
     watchers.extend([ew for ew in external_watchers if ew not in watchers])
-    signers = [fdic["email"] for fdic in session["signers"]]
+    signers = list(session["signers"])
+    enforce_order = get_esign_registry_enforce_signers_order()
+    if enforce_order:
+        order = list(get_esign_registry_signers_order())
+
+        def rank(sig):
+            signer_id = sig.get("signer_id", sig["userid"])  # sessions created before signer ids
+            return order.index(signer_id) if signer_id in order else len(order)
+
+        # stable sort: unlisted signers sign last, in session order
+        signers.sort(key=rank)
+    signers = [fdic["email"] for fdic in signers]
     if signers:
         data_payload["signData"] = {
-            "users": list(signers),
+            "users": signers,
             "acroform": session["acroform"],
         }
+        if enforce_order:
+            data_payload["signData"]["enforceUsersOrder"] = True
         sign_code = get_esign_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code
@@ -311,7 +327,8 @@ def create_session(
 ):
     """Create a session with the given signers and seal.
 
-    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
+    :param signers: a list of signers, each is a tuple with userid, email, fullname, position text and an optional
+        signer id (the userid by default) used by the signers order
     :param seal: seal boolean
     :param acroform: acroform boolean
     :param title: title of the session
@@ -340,9 +357,16 @@ def create_session(
             "signers": PersistentList(
                 [
                     PersistentMapping(
-                        {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
+                        {
+                            "userid": sg[0],
+                            "email": sg[1],
+                            "fullname": sg[2],
+                            "position": sg[3],
+                            "signer_id": sg[4] if len(sg) > 4 else sg[0],
+                            "status": "",
+                        }
                     )
-                    for userid, email, fullname, position in signers
+                    for sg in signers
                 ]
             ),
             "watchers": PersistentList(watchers),
@@ -360,7 +384,8 @@ def create_session(
 def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None, size=0, files_count=0):
     """Discriminate sessions based on seal value and signers in the same order.
 
-    :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
+    :param signers: a list of signers, each is a tuple with userid, email, fullname, position text and an optional
+        signer id (the userid by default) used by the signers order
     :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
     :param discriminators: optional list of string discriminators
@@ -388,7 +413,8 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
         if set(discriminators) != set(session.get("discriminators", ())):
             continue
         signers_match = all(
-            (userid, email) == (s["userid"], s["email"]) for (userid, email, z, z), s in zip(signers, session_signers)
+            (sg[0], sg[1], sg[4] if len(sg) > 4 else sg[0]) == (s["userid"], s["email"], s.get("signer_id", s["userid"]))
+            for sg, s in zip(signers, session_signers)
         )
         if not signers_match:
             continue

@@ -22,6 +22,11 @@
         permission="cmf.ManagePortal"
         />
 
+    <utility
+        name="imio.esign.signers"
+        factory=".settings.SignersVocabulary"
+        />
+
     <browser:page
             name="parapheo"
             for="Products.CMFPlone.interfaces.IPloneSiteRoot"

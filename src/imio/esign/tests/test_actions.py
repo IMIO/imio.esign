@@ -258,6 +258,7 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
       "email": "user1@sign.com",
       "fullname": "User 1",
       "position": "Position 1",
+      "signer_id": "user1",
       "status": "",
       "userid": "user1",
     }},
@@ -265,6 +266,7 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
       "email": "user2@sign.com",
       "fullname": "User 2",
       "position": "Position 2",
+      "signer_id": "user2",
       "status": "",
       "userid": "user2",
     }},
@@ -294,7 +296,7 @@ class TestRecreateSessionView(BaseEsignTest):
         self.annexes = [self.portal["folder0"]["annex{}".format(i)] for i in (0, 2, 4)]
         self.signers = [
             ("user1", "user1@sign.com", u"User 1", u"Position 1"),
-            ("user2", "user2@sign.com", u"User 2", u"Position 2"),
+            ("user2", "user2@sign.com", u"User 2", u"Position 2", "hp2"),
         ]
 
     def _make_refused_session(self, state="refused", **kwargs):
@@ -383,9 +385,10 @@ class TestRecreateSessionView(BaseEsignTest):
         self.assertEqual([f["uid"] for f in new_session["files"]], old_files_uids)
         for nu, ou in zip(new_session["signers"], old["signers"]):
             self.assertEqual(
-                (nu["userid"], nu["email"], nu["fullname"], nu["position"]),
-                (ou["userid"], ou["email"], ou["fullname"], ou["position"]),
+                (nu["userid"], nu["email"], nu["fullname"], nu["position"], nu["signer_id"]),
+                (ou["userid"], ou["email"], ou["fullname"], ou["position"], ou["signer_id"]),
             )
+        self.assertEqual([sig["signer_id"] for sig in new_session["signers"]], ["user1", "hp2"])
         self.assertEqual(set(new_session["discriminators"]), {u"disc1"})
         self.assertEqual(list(new_session["watchers"]), [u"watcher@sign.com"])
         self.assertEqual(new_session["title"], u"Session 1")

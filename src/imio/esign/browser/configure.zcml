@@ -4,6 +4,7 @@
         xmlns:i18n="http://namespaces.zope.org/i18n"
         xmlns:plone="http://namespaces.plone.org/plone"
         xmlns:browser="http://namespaces.zope.org/browser"
+        xmlns:zcml="http://namespaces.zope.org/zcml"
         i18n_domain="imio.esign">
 
     <include package="eea.facetednavigation" />
@@ -19,6 +20,32 @@
         name="imio_esign_settings"
         for="Products.CMFPlone.interfaces.IPloneSiteRoot"
         class=".settings.ImioEsignSettingsView"
+        permission="cmf.ManagePortal"
+        />
+
+    <utility
+        name="imio.esign.signers"
+        factory=".settings.SignersVocabulary"
+        />
+
+    <!-- signers missing from the signers order (signer ids being held position UIDs) -->
+    <browser:viewlet
+        zcml:condition="installed collective.contact.core"
+        name="imio.esign.signers-order"
+        for="collective.contact.core.interfaces.IHeldPosition"
+        manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+        layer="imio.esign.interfaces.IImioEsignLayer"
+        class=".views.HeldPositionSignersOrderViewlet"
+        permission="cmf.ManagePortal"
+        />
+
+    <browser:viewlet
+        zcml:condition="installed collective.contact.core"
+        name="imio.esign.signers-order"
+        for="collective.contact.core.content.person.IPerson"
+        manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+        layer="imio.esign.interfaces.IImioEsignLayer"
+        class=".views.PersonSignersOrderViewlet"
         permission="cmf.ManagePortal"
         />
 

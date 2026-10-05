@@ -9,6 +9,7 @@ from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
 from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_external_watchers
 from imio.esign.config import get_esign_registry_file_url
 from imio.esign.config import get_esign_registry_max_session_files
@@ -16,6 +17,7 @@ from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.config import get_esign_registry_sign_code
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
@@ -238,12 +240,20 @@ def create_external_session(session_id, esign_root_url=None):
     watchers = list(session.get("watchers", []))
     external_watchers = get_esign_registry_external_watchers()
     watchers.extend([ew for ew in external_watchers if ew not in watchers])
-    signers = [fdic["email"] for fdic in session["signers"]]
+    signers = list(session["signers"])
+    enforce_order = get_esign_registry_enforce_signers_order()
+    if enforce_order:
+        order = list(get_esign_registry_signers_order())
+        # stable sort: unlisted signers sign last, in session order
+        signers.sort(key=lambda sig: order.index(sig["userid"]) if sig["userid"] in order else len(order))
+    signers = [fdic["email"] for fdic in signers]
     if signers:
         data_payload["signData"] = {
-            "users": list(signers),
+            "users": signers,
             "acroform": session["acroform"],
         }
+        if enforce_order:
+            data_payload["signData"]["enforceUsersOrder"] = True
         sign_code = get_esign_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code

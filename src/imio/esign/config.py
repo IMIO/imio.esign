@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from plone import api
+from zope.component import getUtility
+from zope.schema.interfaces import IVocabularyFactory
 
 
 def get_esign_registry_enabled(default=False):
@@ -50,6 +52,14 @@ def get_esign_registry_external_watchers():
     return [ew.strip() for ew in value.split(",") if ew.strip()]
 
 
+def get_esign_registry_enforce_signers_order(default=False):
+    return api.portal.get_registry_record("imio.esign.enforce_signers_order", default=default)
+
+
+def get_esign_registry_signers_order(default=()):
+    return api.portal.get_registry_record("imio.esign.signers_order", default=default) or default
+
+
 def set_esign_registry_enabled(value):
     api.portal.set_registry_record("imio.esign.enabled", value)
 
@@ -92,6 +102,25 @@ def set_esign_registry_max_session_files(value):
 
 def set_esign_registry_external_watchers(value):
     api.portal.set_registry_record("imio.esign.external_watchers", value)
+
+
+def set_esign_registry_enforce_signers_order(value):
+    api.portal.set_registry_record("imio.esign.enforce_signers_order", value)
+
+
+def set_esign_registry_signers_order(value):
+    api.portal.set_registry_record("imio.esign.signers_order", value)
+
+
+def update_esign_registry_signers_order():
+    """Drop from the signers order the signers no longer in the imio.esign.signers vocabulary."""
+    order = api.portal.get_registry_record("imio.esign.signers_order", default=None)
+    if order is None:  # record not installed yet
+        return
+    signers = [term.value for term in getUtility(IVocabularyFactory, "imio.esign.signers")(api.portal.get())]
+    new_order = [uid for uid in order if uid in signers]
+    if new_order != order:
+        set_esign_registry_signers_order(new_order)
 
 
 SIGNERS_EMAIL_CONTENT = u"""

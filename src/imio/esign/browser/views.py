@@ -20,6 +20,7 @@ from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_title
 from imio.esign.utils import remove_session
+from imio.helpers.content import get_vocab
 from imio.helpers.content import uuidToObject
 from imio.helpers.emailer import create_html_email
 from imio.helpers.emailer import send_email
@@ -37,12 +38,10 @@ from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 from zope.cachedescriptors.property import CachedProperty
 from zope.component import getMultiAdapter
-from zope.component import getUtility
 from zope.i18n import translate
 from zope.interface import implementer
 from zope.pagetemplate.pagetemplate import PageTemplate
 from zope.publisher.interfaces import IPublishTraverse
-from zope.schema.interfaces import IVocabularyFactory
 
 import csv
 import html
@@ -727,7 +726,7 @@ class BaseSignersOrderViewlet(ViewletBase):
             return []
         order = get_esign_registry_signers_order()
         signer_ids = self.get_signer_ids()
-        terms = getUtility(IVocabularyFactory, "imio.esign.signers")(self.context)
+        terms = get_vocab(self.context, "imio.esign.signers")
         return [term for term in terms if term.value not in order and (signer_ids is None or term.value in signer_ids)]
 
     def update(self):

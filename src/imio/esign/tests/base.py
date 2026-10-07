@@ -5,6 +5,7 @@ from plone.app.testing import login
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.app.testing import TEST_USER_NAME
+from zope.component import getGlobalSiteManager
 from zope.schema.interfaces import IVocabularyFactory
 from zope.schema.vocabulary import SimpleTerm
 from zope.schema.vocabulary import SimpleVocabulary
@@ -31,6 +32,7 @@ class BaseEsignTest(unittest.TestCase):
     def register_signers(self, *userids):
         """Make the given userids the signers listed by the imio.esign.signers vocabulary."""
         vocab = SimpleVocabulary([SimpleTerm(uid, uid, uid.upper()) for uid in userids])
-        sm = self.portal.getSiteManager()
-        sm.registerUtility(lambda context: vocab, IVocabularyFactory, "imio.esign.signers")
-        self.addCleanup(sm.unregisterUtility, provided=IVocabularyFactory, name="imio.esign.signers")
+        gsm = getGlobalSiteManager()  # not persisted, unlike the site manager, so a lambda can be registered
+        name = "imio.esign.signers"
+        self.addCleanup(gsm.registerUtility, gsm.getUtility(IVocabularyFactory, name), IVocabularyFactory, name)
+        gsm.registerUtility(lambda context: vocab, IVocabularyFactory, name)

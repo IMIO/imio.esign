@@ -7,6 +7,8 @@ from imio.esign.browser.actions import RecreateSessionView
 from imio.esign.browser.actions import RemoveFromSessionView
 from imio.esign.browser.actions import RemoveItemFromSessionView
 from imio.esign.browser.actions import SessionAnnotationInfoView
+from imio.esign.config import set_esign_registry_enforce_signers_order
+from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
@@ -455,6 +457,18 @@ class TestRecreateSessionView(BaseEsignTest):
         self.assertIsNone(view._new_session_id)
         self.assertEqual(len(annot["sessions"]), count_before)
         del self.request.form["file_uids"]
+        del self.request.form["esign_session_id"]
+
+        # --- Signers order enforced since the old session creation: the recreated session follows it ---
+        order_old_id, _ = self._make_refused_session()
+        self.register_signers("user1", "user2")
+        set_esign_registry_signers_order(["user2"])
+        set_esign_registry_enforce_signers_order(True)
+        self.request.form["esign_session_id"] = str(order_old_id)
+        view = RecreateSessionView(self.portal, self.request)
+        view()
+        new_signers = annot["sessions"][view._new_session_id]["signers"]
+        self.assertEqual([s["userid"] for s in new_signers], ["user2", "user1"])
         del self.request.form["esign_session_id"]
 
     def test_get_new_session_title_default(self):

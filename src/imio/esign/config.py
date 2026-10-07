@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from imio.helpers.content import get_vocab_values
 from plone import api
-from zope.component import getUtility
-from zope.schema.interfaces import IVocabularyFactory
 
 
 def get_esign_registry_enabled(default=False):
@@ -114,10 +113,10 @@ def set_esign_registry_signers_order(value):
 
 def update_esign_registry_signers_order():
     """Drop from the signers order the signers no longer in the imio.esign.signers vocabulary."""
-    order = api.portal.get_registry_record("imio.esign.signers_order", default=None)
-    if order is None:  # record not installed yet
+    order = get_esign_registry_signers_order()
+    if not order:  # empty or record not installed yet
         return
-    signers = [term.value for term in getUtility(IVocabularyFactory, "imio.esign.signers")(api.portal.get())]
+    signers = get_vocab_values(api.portal.get(), "imio.esign.signers", attr_name="value")
     new_order = [uid for uid in order if uid in signers]
     if new_order != order:
         set_esign_registry_signers_order(new_order)

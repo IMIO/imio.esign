@@ -9,6 +9,7 @@ from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
 from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_external_watchers
 from imio.esign.config import get_esign_registry_file_url
 from imio.esign.config import get_esign_registry_max_session_files
@@ -16,6 +17,7 @@ from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.config import get_esign_registry_sign_code
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
@@ -91,6 +93,7 @@ def add_files_to_session(  # noqa C901
     :param create_session_custom_data: optional custom dict of custom session data
     :return: list of (session_id, session) tuples, one entry per distinct session used
     """
+    signers = sort_signers(signers)
     annot = get_session_annotation()
     session = None
     if session_id is not None:
@@ -241,9 +244,11 @@ def create_external_session(session_id, esign_root_url=None):
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:
         data_payload["signData"] = {
-            "users": list(signers),
+            "users": signers,
             "acroform": session["acroform"],
         }
+        if get_esign_registry_enforce_signers_order():
+            data_payload["signData"]["enforceUsersOrder"] = True
         sign_code = get_esign_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code
@@ -342,7 +347,7 @@ def create_session(
                     PersistentMapping(
                         {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
                     )
-                    for userid, email, fullname, position in signers
+                    for userid, email, fullname, position in sort_signers(signers)
                 ]
             ),
             "watchers": PersistentList(watchers),
@@ -693,3 +698,11 @@ def get_sessions_for(context_uid, readonly=True):
         if any(f["context_uid"] == context_uid for f in session["files"]):
             sessions[session_id] = deepcopy(session) if readonly else session
     return sessions
+
+
+def sort_signers(signers):
+    """Sort signers quartets on the signers order when it is enforced, unlisted signers last."""
+    if not get_esign_registry_enforce_signers_order():
+        return signers
+    order = list(get_esign_registry_signers_order())
+    return sorted(signers, key=lambda sig: order.index(sig[0]) if sig[0] in order else len(order))

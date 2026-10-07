@@ -1,0 +1,11 @@
+<dl class="portalMessage info" i18n:domain="imio.esign">
+  <dt i18n:translate="" i18n:domain="plone">Info</dt>
+  <dd>
+    <span i18n:translate="">These signers are not in the signers order, they will sign last:</span>
+    <ul>
+      <li tal:repeat="term view/terms" tal:content="term/title">Signer</li>
+    </ul>
+    <a href="#" tal:attributes="href string:${view/site_url}/@@imio_esign_settings"
+       i18n:translate="">Configure the signers order</a>
+  </dd>
+</dl>

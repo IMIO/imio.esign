@@ -10,7 +10,9 @@ from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
 from imio.esign.config import get_esign_registry_enabled
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_parapheo_url
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_signing_users_email_content
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
@@ -18,6 +20,7 @@ from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_title
 from imio.esign.utils import remove_session
+from imio.helpers.content import get_vocab
 from imio.helpers.content import uuidToObject
 from imio.helpers.emailer import create_html_email
 from imio.helpers.emailer import send_email
@@ -706,3 +709,43 @@ class SigningUsersCsv(BrowserView):
 
 class EsignMacros(BrowserView):
     """ """
+
+
+class BaseSignersOrderViewlet(ViewletBase):
+    """Info message listing the signers missing from the enforced signers order."""
+
+    index = ViewPageTemplateFile("templates/signers_order_viewlet.pt")
+
+    def get_signer_ids(self):
+        """Signer ids concerned by the context, None for all."""
+        raise NotImplementedError
+
+    def get_signers_out_of_order(self):
+        """Concerned imio.esign.signers terms missing from the signers order, none when it is not enforced."""
+        if not get_esign_registry_enforce_signers_order():
+            return []
+        order = get_esign_registry_signers_order()
+        signer_ids = self.get_signer_ids()
+        terms = get_vocab(self.context, "imio.esign.signers")
+        return [term for term in terms if term.value not in order and (signer_ids is None or term.value in signer_ids)]
+
+    def update(self):
+        super(BaseSignersOrderViewlet, self).update()
+        self.terms = self.get_signers_out_of_order()
+
+    def render(self):
+        return self.terms and self.index() or u""
+
+
+class HeldPositionSignersOrderViewlet(BaseSignersOrderViewlet):
+    """On a held position: the held position itself, signer ids being held position UIDs."""
+
+    def get_signer_ids(self):
+        return [self.context.UID()]
+
+
+class PersonSignersOrderViewlet(BaseSignersOrderViewlet):
+    """On a person: its held positions."""
+
+    def get_signer_ids(self):
+        return [hp.UID() for hp in self.context.get_held_positions()]

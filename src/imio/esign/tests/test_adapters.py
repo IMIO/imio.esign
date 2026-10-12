@@ -3,6 +3,8 @@
 from imio.esign.adapters import DefaultContextUidProvider
 from imio.esign.adapters import ISignable
 from imio.esign.adapters import SignableAdapter
+from imio.esign.config import set_esign_registry_enforce_signers_order
+from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
 from imio.esign.tests.base import BaseEsignTest
@@ -59,3 +61,15 @@ class TestSignableAdapter(BaseEsignTest):
         )
         annex.file.filename = None
         self.assertEqual(adapter.get_filename(annex), u"no_filename.pdf")
+
+    def test_sort_signers(self):
+        adapter = getAdapter(self.portal["folder0"], ISignable)
+        user1 = ("user1", "user1@sign.com", "User 1", "Position 1")
+        user2 = ("user2", "user2@sign.com", "User 2", "Position 2")
+        user3 = ("user3", "user3@sign.com", "User 3", "Position 3")
+        set_esign_registry_signers_order(["user2"])
+        # order not enforced: unchanged
+        self.assertEqual(adapter.sort_signers([user1, user3, user2]), [user1, user3, user2])
+        # enforced: ordered signers first, unlisted ones in their given order
+        set_esign_registry_enforce_signers_order(True)
+        self.assertEqual(adapter.sort_signers([user1, user3, user2]), [user2, user1, user3])

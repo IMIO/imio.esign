@@ -4,12 +4,15 @@ from AccessControl import Unauthorized
 from collections import OrderedDict
 from datetime import datetime
 from datetime import timedelta
+from imio.esign.browser.views import BaseSignersOrderViewlet
 from imio.esign.browser.views import DownloadFileView
 from imio.esign.browser.views import ExternalSessionCreateView
 from imio.esign.browser.views import FacetedSessionInfoViewlet
 from imio.esign.browser.views import ItemSessionInfoViewlet
 from imio.esign.browser.views import SessionDeleteView
 from imio.esign.browser.views import SigningUsersCsv
+from imio.esign.config import set_esign_registry_enforce_signers_order
+from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.config import set_esign_registry_signing_users_email_content
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
@@ -22,7 +25,6 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.testing import z2
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.statusmessages import STATUSMESSAGEKEY
 from Products.statusmessages.interfaces import IStatusMessage
 from zope.annotation.interfaces import IAnnotations
@@ -618,6 +620,55 @@ class TestItemSessionInfoViewlet(BaseEsignTest):
         sessions = viewlet.sessions
         self.assertEqual(len(sessions), 2)
         self.assertEqual(list(sessions.keys()), [0, 1])
+
+
+class DummySignersOrderViewlet(BaseSignersOrderViewlet):
+    """Concrete viewlet concerned by all the signers."""
+
+    def get_signer_ids(self):
+        return None
+
+
+class TestBaseSignersOrderViewlet(BaseEsignTest):
+    """Tests for BaseSignersOrderViewlet, through DummySignersOrderViewlet."""
+
+    def setUp(self):
+        super(TestBaseSignersOrderViewlet, self).setUp()
+        self.register_signers("dirg", "bourgmestre")
+        set_esign_registry_signers_order(["bourgmestre"])
+        set_esign_registry_enforce_signers_order(True)
+        self.viewlet = DummySignersOrderViewlet(self.portal, self.request, None, None)
+
+    def test_get_signer_ids(self):
+        viewlet = BaseSignersOrderViewlet(self.portal, self.request, None, None)
+        self.assertRaises(NotImplementedError, viewlet.get_signer_ids)
+
+    def test_get_signers_out_of_order(self):
+        # only bourgmestre is ordered, dirg is not
+        self.assertEqual([t.value for t in self.viewlet.get_signers_out_of_order()], ["dirg"])
+        # every signer ordered
+        set_esign_registry_signers_order(["bourgmestre", "dirg"])
+        self.assertEqual(self.viewlet.get_signers_out_of_order(), [])
+        # order not enforced: nothing to report
+        set_esign_registry_signers_order(["bourgmestre"])
+        set_esign_registry_enforce_signers_order(False)
+        self.assertEqual(self.viewlet.get_signers_out_of_order(), [])
+
+    def test_update(self):
+        self.viewlet.update()
+        self.assertEqual([t.value for t in self.viewlet.terms], ["dirg"])
+
+    def test_render(self):
+        self.viewlet.update()
+        html = self.viewlet.render()
+        self.assertIn("portalMessage info", html)
+        self.assertIn("<li>DIRG</li>", html)
+        self.assertNotIn("BOURGMESTRE", html)
+        self.assertIn('href="http://nohost/plone/@@imio_esign_settings"', html)
+        # order not enforced: nothing rendered
+        set_esign_registry_enforce_signers_order(False)
+        self.viewlet.update()
+        self.assertEqual(self.viewlet.render(), u"")
 
 
 class TestSessionsListingView(BaseEsignTest):

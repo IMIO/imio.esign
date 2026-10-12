@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy
 from imio.esign import _
 from imio.helpers.emailer import validate_email_addresses
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
@@ -7,9 +8,13 @@ from plone.app.registry.browser.controlpanel import RegistryEditForm
 from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
 from plone.autoform.directives import widget
 from plone.z3cform import layout
+from z3c.form.browser.orderedselect import OrderedSelectFieldWidget
 from zope import schema
+from zope.interface import implementer
 from zope.interface import Interface
 from zope.interface import Invalid
+from zope.schema.interfaces import IVocabularyFactory
+from zope.schema.vocabulary import SimpleVocabulary
 
 
 def validate_vat_number(va_nb):
@@ -121,11 +126,43 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
+    enforce_signers_order = schema.Bool(
+        title=_("Enforce signers order?"),
+        description=_("If checked, signers must sign one after the other, following the signers order."),
+        default=False,
+        required=False,
+    )
+
+    widget("signers_order", OrderedSelectFieldWidget, size=10)
+    signers_order = schema.List(
+        title=_("Signers order"),
+        description=_("Order in which signers sign, the first one first. Unlisted signers sign last."),
+        # not a Choice: a registry import would reset the whole record when a stored id left the vocabulary
+        value_type=schema.ASCIILine(),
+        default=[],
+        required=False,
+    )
+
+
+@implementer(IVocabularyFactory)
+class SignersVocabulary(object):
+    """Signers to order, as userid terms. Empty by default: the application overrides it."""
+
+    def __call__(self, context):
+        return SimpleVocabulary([])
+
 
 class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings
     schema_prefix = "imio.esign"
     label = _("Imio Esign Settings")
+
+    def updateFields(self):
+        """Choose the signers order among the imio.esign.signers vocabulary."""
+        super(ImioEsignSettings, self).updateFields()
+        field = copy(self.fields["signers_order"].field)
+        field.value_type = schema.Choice(vocabulary="imio.esign.signers")
+        self.fields["signers_order"].field = field
 
 
 ImioEsignSettingsView = layout.wrap_form(

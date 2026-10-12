@@ -5,9 +5,11 @@ from datetime import date
 from datetime import timedelta
 from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
+from imio.esign.config import set_esign_registry_enforce_signers_order
 from imio.esign.config import set_esign_registry_external_watchers
 from imio.esign.config import set_esign_registry_max_session_files
 from imio.esign.config import set_esign_registry_max_session_size
+from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_external_session
@@ -303,6 +305,20 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(annot["sessions"][0]["state"], "draft_full")
         self.assertEqual(sid, 1)
         self.assertEqual(len(annot["sessions"][1]["files"]), 2)
+
+        # --- signers order enforced: signers sorted at creation, unlisted ones last in given order ---
+        self.register_signers("user1", "user2", "user3")
+        set_esign_registry_signers_order(["user2"])
+        set_esign_registry_enforce_signers_order(True)
+        signers3 = [
+            ("user1", "user1@sign.com", "User 1", "P1"),
+            ("user3", "user3@sign.com", "User 3", "P3"),
+            ("user2", "user2@sign.com", "User 2", "P2"),
+        ]
+        sid, session = add_files_to_session(signers3, (self.uids[4],))[-1]
+        self.assertEqual([s["userid"] for s in session["signers"]], ["user2", "user1", "user3"])
+        # the ordered signer given at another place: same session
+        self.assertEqual(add_files_to_session([signers3[0], signers3[2], signers3[1]], (self.uids[5],))[-1][0], sid)
 
     def test_add_files_ordering_by_context(self):
         """add_files_to_session: files are ordered by their sibling position within their context."""
@@ -742,3 +758,28 @@ class TestUtils(BaseEsignTest):
                 result = create_external_session(sid6, esign_root_url="http://test.example.com")
         self.assertEqual(result, "_no_files_")
         mock_requests.post.assert_not_called()
+
+        # --- signers order: enforced only when enabled, users sent in session order ---
+        signers3 = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user3", "user3@sign.com", "User 3", "Position 3"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
+        sid7, _session = add_files_to_session(signers3, (self.uids[6],))[-1]
+        self.register_signers("user1", "user2", "user3")
+        set_esign_registry_signers_order(["user2"])
+
+        def sign_data():
+            with patch("imio.esign.utils.requests.post", return_value=Mock(status_code=200)) as mock_post:  # HTTP
+                with patch("imio.esign.utils.get_auth_token", return_value="test-token"):  # remote OAuth
+                    create_external_session(sid7, esign_root_url="http://test.example.com")
+            return json.loads(mock_post.call_args[1]["data"]["data"])["signData"]
+
+        data = sign_data()
+        self.assertEqual(data["users"], [u"user1@sign.com", u"user3@sign.com", u"user2@sign.com"])
+        self.assertNotIn("enforceUsersOrder", data)
+        set_esign_registry_enforce_signers_order(True)
+        data = sign_data()
+        # the order is applied at the session creation, not when sending it
+        self.assertEqual(data["users"], [u"user1@sign.com", u"user3@sign.com", u"user2@sign.com"])
+        self.assertIs(data["enforceUsersOrder"], True)

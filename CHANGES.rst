@@ -4,7 +4,8 @@ Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added setting to enforce signers order (PARAF-527).
+  [chris-adam]
 
 
 1.0.3 (2026-09-14)

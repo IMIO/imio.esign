@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from imio.esign.config import get_esign_registry_enforce_signers_order
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
 from imio.helpers.transmogrifier import get_correct_id
@@ -86,6 +88,13 @@ class SignableAdapter(object):
         filename, ext = path.splitext(annex.file.filename or u"no_filename.pdf")
         return get_correct_id(existing_files, filename) + ext
 
+    def sort_signers(self, signers):
+        """Sort on the userids signers order when it is enforced, unlisted signers last."""
+        if not get_esign_registry_enforce_signers_order():
+            return signers
+        order = list(get_esign_registry_signers_order())
+        return sorted(signers, key=lambda sig: order.index(sig[0]) if sig[0] in order else len(order))
+
 
 class ISignable(Interface):
     def get_signers(self):
@@ -133,3 +142,9 @@ class ISignable(Interface):
         session, to keep them unique.
         """
         return u""
+
+    def sort_signers(self, signers):
+        """
+        Return the signers quartets in signing order, applied when a session is created.
+        """
+        return signers

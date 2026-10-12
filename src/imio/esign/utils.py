@@ -130,7 +130,10 @@ def add_files_to_session(  # noqa C901
                     watchers=watchers,
                     create_session_custom_data=create_session_custom_data,
                 )
-                audit("create_session", "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers])))
+                audit(
+                    "create_session",
+                    "session={} signers={}".format(session_id, "|".join([sg[1] for sg in sorted_signers])),
+                )
 
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()

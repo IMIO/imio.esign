@@ -301,15 +301,6 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         """
         return u""
 
-    def get_signers(self, old, old_session_id):
-        """Signers of the recreated session. Override in consuming apps, e.g. to re-evaluate their order.
-
-        :param old: the source session dict being recreated
-        :param old_session_id: the source session id
-        :return: a list of (userid, email, fullname, position) quartets
-        """
-        return [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
-
     def get_create_session_custom_data(self, old, old_session_id):
         """Manage custom data when recreating session.
 
@@ -330,7 +321,10 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
         annot = get_session_annotation()
         # Extract all data from old session before deleting it
         title = self.get_new_session_title(old, session_id)
-        signers = self.get_signers(old, session_id)
+        # the signers order may have changed since the old session creation
+        signers = ISignable(uuidToObject(old["files"][0]["context_uid"])).sort_signers(
+            [(s["userid"], s["email"], s["fullname"], s["position"]) for s in old["signers"]]
+        )
         files_uids = [f["uid"] for f in old["files"]]
         raw_selection = self.request.form.get("file_uids")
         if raw_selection is not None:

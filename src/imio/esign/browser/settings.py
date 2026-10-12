@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy
 from imio.esign import _
 from imio.helpers.emailer import validate_email_addresses
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
@@ -136,7 +137,8 @@ class IImioEsignSettings(Interface):
     signers_order = schema.List(
         title=_("Signers order"),
         description=_("Order in which signers sign, the first one first. Unlisted signers sign last."),
-        value_type=schema.Choice(vocabulary="imio.esign.signers"),
+        # not a Choice: a registry import would reset the whole record when a stored id left the vocabulary
+        value_type=schema.ASCIILine(),
         default=[],
         required=False,
     )
@@ -154,6 +156,13 @@ class ImioEsignSettings(RegistryEditForm):
     schema = IImioEsignSettings
     schema_prefix = "imio.esign"
     label = _("Imio Esign Settings")
+
+    def updateFields(self):
+        """Choose the signers order among the imio.esign.signers vocabulary."""
+        super(ImioEsignSettings, self).updateFields()
+        field = copy(self.fields["signers_order"].field)
+        field.value_type = schema.Choice(vocabulary="imio.esign.signers")
+        self.fields["signers_order"].field = field
 
 
 ImioEsignSettingsView = layout.wrap_form(

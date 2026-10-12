@@ -17,7 +17,6 @@ from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
 from imio.esign.config import get_esign_registry_seal_email
 from imio.esign.config import get_esign_registry_sign_code
-from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_vat_number
 from imio.esign.interfaces import IContextUidProvider
 from imio.esign.interfaces import IItemOrderProvider
@@ -93,7 +92,6 @@ def add_files_to_session(  # noqa C901
     :param create_session_custom_data: optional custom dict of custom session data
     :return: list of (session_id, session) tuples, one entry per distinct session used
     """
-    signers = sort_signers(signers)
     annot = get_session_annotation()
     session = None
     if session_id is not None:
@@ -108,10 +106,13 @@ def add_files_to_session(  # noqa C901
 
     for uid in files_uids:
         file_size = get_filesize(uid)
+        annex = uuidToObject(uuid=uid, unrestricted=True)
+        signable = ISignable(aq_parent(annex))
 
         if dispatch:
+            sorted_signers = signable.sort_signers(signers)
             session_id, session = discriminate_sessions(
-                signers,
+                sorted_signers,
                 seal,
                 acroform,
                 discriminators=discriminators,
@@ -120,7 +121,7 @@ def add_files_to_session(  # noqa C901
             )
             if not session:
                 session_id, session = create_session(
-                    signers,
+                    sorted_signers,
                     seal,
                     acroform=acroform,
                     title=title,
@@ -131,7 +132,6 @@ def add_files_to_session(  # noqa C901
                 )
                 audit("create_session", "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers])))
 
-        annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
         # update data if adding same file to same session
@@ -143,7 +143,7 @@ def add_files_to_session(  # noqa C901
         file_dict = PersistentMapping(
             {
                 "scan_id": annex.scan_id,
-                "filename": ISignable(aq_parent(annex)).get_filename(annex, existing_files=existing_files),
+                "filename": signable.get_filename(annex, existing_files=existing_files),
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
@@ -347,7 +347,7 @@ def create_session(
                     PersistentMapping(
                         {"userid": userid, "email": email, "fullname": fullname, "position": position, "status": ""}
                     )
-                    for userid, email, fullname, position in sort_signers(signers)
+                    for userid, email, fullname, position in signers
                 ]
             ),
             "watchers": PersistentList(watchers),
@@ -698,11 +698,3 @@ def get_sessions_for(context_uid, readonly=True):
         if any(f["context_uid"] == context_uid for f in session["files"]):
             sessions[session_id] = deepcopy(session) if readonly else session
     return sessions
-
-
-def sort_signers(signers):
-    """Sort signers quartets on the signers order when it is enforced, unlisted signers last."""
-    if not get_esign_registry_enforce_signers_order():
-        return signers
-    order = list(get_esign_registry_signers_order())
-    return sorted(signers, key=lambda sig: order.index(sig[0]) if sig[0] in order else len(order))

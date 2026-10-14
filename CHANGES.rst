@@ -4,8 +4,8 @@ Changelog
 1.0.4 (unreleased)
 ------------------
 
-- Nothing changed yet.
-
+- Updated `plone.restapi: Use REST API` permission roles.
+  [sgeulette]
 
 1.0.3 (2026-09-14)
 ------------------

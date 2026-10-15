@@ -27,7 +27,8 @@ import subprocess
 import zipfile
 
 
-ACROFORM_TAG_RE = re.compile(r"\{\{#(.*?)#\}\}")
+# DOTALL: in a raw extracted text, a tag can be wrapped over lines
+ACROFORM_TAG_RE = re.compile(r"\{\{#(.*?)#\}\}", re.DOTALL)
 POSITIVE_INT_STRING = {"type": "string", "pattern": "^[1-9][0-9]*$"}
 # what the signing service expects between {{# and #}}, once wrapped in braces
 TAG_VALIDATOR = Draft4Validator(

@@ -6,6 +6,7 @@ from imio.esign.acroform import extract_text
 from imio.esign.acroform import format_errors
 from imio.esign.acroform import get_session_acroform_errors
 from imio.esign.acroform import get_tag_ids
+from imio.esign.acroform import remove_acroform_tags
 from imio.esign.acroform import validate_seal_count
 from imio.esign.acroform import validate_signer_numbers
 from imio.esign.tests.base import BaseEsignTest
@@ -214,3 +215,19 @@ class TestAcroform(BaseEsignTest):
         self.assertTrue(summary.startswith(u"Annex 0: "))
         self.assertIn(u"Signer2", summary)
         self.assertEqual(format_errors([], self.request), u"")
+
+    def test_remove_acroform_tags(self):
+        """Every tag, valid or not, gives way to a space; the text around it is kept."""
+        self.assertEqual(remove_acroform_tags(u"no tag here"), u"no tag here")
+        # --- an acroform tag, as pdftotext reads it from a generated mail ---
+        self.assertEqual(
+            remove_acroform_tags(u"Maxime DG\n\n" + tag(1) + u"\n\nBourgmestre"), u"Maxime DG\n\n \n\nBourgmestre"
+        )
+        # --- seal and malformed tags ---
+        self.assertEqual(remove_acroform_tags(seal_tag() + u'{{#"ID":"Signer1"#}}'), u"  ")
+        # --- the words around a tag stay apart ---
+        self.assertEqual(remove_acroform_tags(u"before" + tag(1) + u"after"), u"before after")
+        # --- a tag wrapped across lines by the text extraction ---
+        self.assertEqual(remove_acroform_tags(u'{{#"ID":"Signer1","Size":{"Height":"70",\n"Width":"200"}#}}'), u" ")
+        # --- utf-8 bytes, as the document viewer reads its page texts ---
+        self.assertEqual(remove_acroform_tags("D\xc3\xa9but " + tag(2).encode("utf-8")), "D\xc3\xa9but  ")

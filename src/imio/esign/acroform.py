@@ -27,7 +27,7 @@ import subprocess
 import zipfile
 
 
-ACROFORM_TAG_RE = re.compile(r"\{\{#(.*?)#\}\}")
+ACROFORM_TAG_RE = re.compile(r"\{\{#(.*?)#\}\}", re.DOTALL)
 POSITIVE_INT_STRING = {"type": "string", "pattern": "^[1-9][0-9]*$"}
 # what the signing service expects between {{# and #}}, once wrapped in braces
 TAG_VALIDATOR = Draft4Validator(
@@ -216,3 +216,8 @@ def format_errors(pairs, request):
             for obj, messages in pairs
         ]
     )
+
+
+def remove_acroform_tags(text):
+    """Return the text with each acroform tag, valid or not, replaced by a space."""
+    return ACROFORM_TAG_RE.sub(" ", text)

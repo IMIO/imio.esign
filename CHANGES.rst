@@ -6,6 +6,8 @@ Changelog
 
 - Added acroform signature and seal tags validation (PARAF-503).
   [chris-adam]
+- Added `remove_acroform_tags`, to keep the acroform tags out of the searchable texts (PARAF-183).
+  [chris-adam]
 
 
 1.0.3 (2026-09-14)

@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from imio.esign import _
+from imio.esign import PLONE_VERSION
 from imio.helpers.emailer import validate_email_addresses
 from plone.app.registry.browser.controlpanel import ControlPanelFormWrapper
 from plone.app.registry.browser.controlpanel import RegistryEditForm
-from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
 from plone.autoform.directives import widget
 from plone.z3cform import layout
 from zope import schema
 from zope.interface import Interface
 from zope.interface import Invalid
+
+
+if PLONE_VERSION < 5:
+    from plone.app.z3cform.wysiwyg import WysiwygFieldWidget
 
 
 def validate_vat_number(va_nb):
@@ -86,7 +90,8 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
-    widget("signing_users_email_content", WysiwygFieldWidget)
+    if PLONE_VERSION < 5:  # Plone 5+ wysiwyg widget needs a RichText field and TinyMCE strips TAL: textarea
+        widget("signing_users_email_content", WysiwygFieldWidget)
     signing_users_email_content = schema.Text(
         title=_("Email content model for signing users"),
         description=_(

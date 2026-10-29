@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """browser/settings tests for this package."""
+from imio.esign import PLONE_VERSION
 from imio.esign.browser.settings import validate_vat_number
+from imio.esign.tests.base import BaseEsignTest
 from zope.interface import Invalid
 
 import unittest
@@ -34,3 +36,13 @@ class TestValidateVatNumber(unittest.TestCase):
 
         # valid: 97 - (2022399 % 97) = 97 - 46 = 51
         self.assertTrue(validate_vat_number(u"BE0202239951"))
+
+
+class TestSettingsForm(BaseEsignTest):
+
+    def test_render(self):
+        """The control panel renders, with a wysiwyg editor on the email content."""
+        html = self.portal.restrictedTraverse("@@imio_esign_settings")()
+        self.assertIn("form.widgets.signing_users_email_content", html)
+        if PLONE_VERSION >= 5:
+            self.assertIn("pat-tinymce", html)

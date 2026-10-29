@@ -6,6 +6,8 @@ Changelog
 
 - Updated `plone.restapi: Use REST API` permission roles.
   [sgeulette]
+- Fixed the settings control panel on Plone 6: TinyMCE on the `signing_users_email_content` Text field.
+  [chris-adam]
 
 1.0.3 (2026-09-14)
 ------------------

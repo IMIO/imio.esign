@@ -90,10 +90,8 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
-    if PLONE_VERSION < 5:
+    if PLONE_VERSION < 5:  # Plone 5+ wysiwyg widget needs a RichText field and TinyMCE strips TAL: textarea
         widget("signing_users_email_content", WysiwygFieldWidget)
-    else:  # the Plone 6 wysiwyg widget needs a RichText field: TinyMCE on the Text field textarea
-        widget("signing_users_email_content", klass="pat-tinymce")
     signing_users_email_content = schema.Text(
         title=_("Email content model for signing users"),
         description=_(

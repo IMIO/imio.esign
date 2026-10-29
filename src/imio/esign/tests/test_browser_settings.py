@@ -3,6 +3,7 @@
 from imio.esign import PLONE_VERSION
 from imio.esign.browser.settings import validate_vat_number
 from imio.esign.tests.base import BaseEsignTest
+from plone import api
 from zope.interface import Invalid
 
 import unittest
@@ -40,9 +41,31 @@ class TestValidateVatNumber(unittest.TestCase):
 
 class TestSettingsForm(BaseEsignTest):
 
+    template = u'<p>Bonjour <span tal:content="python: user_data[\'fullname\']">FULLNAME</span></p>'
+
     def test_render(self):
-        """The control panel renders, with a wysiwyg editor on the email content."""
+        """The control panel renders, the email content (a TAL template) in a plain textarea."""
+        api.portal.set_registry_record("imio.esign.signing_users_email_content", self.template)
         html = self.portal.restrictedTraverse("@@imio_esign_settings")()
         self.assertIn("form.widgets.signing_users_email_content", html)
         if PLONE_VERSION >= 5:
-            self.assertIn("pat-tinymce", html)
+            # TinyMCE would strip the TAL on save
+            self.assertNotIn("pat-tinymce", html)
+            self.assertIn("tal:content=", html)
+
+    def test_save(self):
+        """Saving the form keeps the TAL template unchanged."""
+        self.request.form.update({
+            "form.widgets.enabled": [u"selected"],
+            "form.widgets.enabled-empty-marker": u"1",
+            "form.widgets.vat_number": u"BE0202239951",
+            "form.widgets.max_session_size": u"100",
+            "form.widgets.max_session_files": u"25",
+            "form.widgets.signing_users_email_content": self.template,
+            "form.buttons.save": u"Save",
+        })
+        form = self.portal.restrictedTraverse("@@imio_esign_settings").form_instance
+        form.update()
+        self.assertFalse(form.widgets.errors)
+        self.assertEqual(api.portal.get_registry_record("imio.esign.signing_users_email_content"), self.template)
+        self.assertEqual(api.portal.get_registry_record("imio.esign.vat_number"), u"BE0202239951")

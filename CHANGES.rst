@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.4 (unreleased)
+1.0.4 (2026-11-16)
 ------------------
 
 - Updated `plone.restapi: Use REST API` permission roles.

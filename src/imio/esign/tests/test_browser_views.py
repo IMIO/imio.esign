@@ -664,7 +664,7 @@ class TestBaseSignersOrderViewlet(BaseEsignTest):
         self.assertIn("portalMessage info", html)
         self.assertIn("<li>DIRG</li>", html)
         self.assertNotIn("BOURGMESTRE", html)
-        self.assertIn('href="http://nohost/plone/@@imio_esign_settings"', html)
+        self.assertIn('href="http://nohost/plone/@@imio_esign_settings#form-widgets-signers_order"', html)
         # order not enforced: nothing rendered
         set_esign_registry_enforce_signers_order(False)
         self.viewlet.update()

@@ -3,6 +3,7 @@
 from eea.facetednavigation.interfaces import IFacetedNavigable
 from html import escape
 from imio.esign import _
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import get_esign_registry_seal_code
@@ -98,10 +99,29 @@ class SealColumn(Column):
 
 
 class SignersColumn(Column):
-    header = _("Signers")
     weight = 50
     cssClasses = {"th": "th_header_sessions_signers",
                   "td": "signers-column"}
+
+    @property
+    def header(self):
+        """When the signers order is enforced, specify that signers are listed
+        in signing order, that is often different from the order on the document."""
+        if get_esign_registry_enforce_signers_order():
+            return _("Signers (signing order)")
+        return _("Signers")
+
+    def renderHeadCell(self):
+        """When the signers order is enforced, add a help icon explaining it."""
+        res = super(SignersColumn, self).renderHeadCell()
+        if get_esign_registry_enforce_signers_order():
+            help_msg = translate(
+                _("Signers are listed in the enforced signing order, "
+                  "it may be different from the order of the signers on the document."),
+                context=self.request)
+            res += u" <span class='far fa-question-circle' title='{0}'></span>".format(
+                html.escape(safe_unicode(help_msg), quote=True))
+        return res
 
     def renderCell(self, item):
         signers = item.get("signers") or []

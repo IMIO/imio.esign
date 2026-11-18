@@ -392,6 +392,14 @@ msgstr ""
 msgid "Signers"
 msgstr ""
 
+#: ../browser/table.py:111
+msgid "Signers (signing order)"
+msgstr ""
+
+#: ../browser/table.py:119
+msgid "Signers are listed in the enforced signing order, it may be different from the order of the signers on the document."
+msgstr ""
+
 #: ../browser/settings.py:137
 msgid "Signers order"
 msgstr ""

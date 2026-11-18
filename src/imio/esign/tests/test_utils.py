@@ -308,6 +308,7 @@ class TestUtils(BaseEsignTest):
 
         # --- signers order enforced: signers sorted at creation, unlisted ones last in given order ---
         self.register_signers("user1", "user2", "user3")
+        self.fake_signers_held_positions()
         set_esign_registry_signers_order(["user2"])
         set_esign_registry_enforce_signers_order(True)
         signers3 = [

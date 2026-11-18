@@ -6,6 +6,15 @@ Changelog
 
 - Added setting to enforce signers order (PARAF-527).
   [chris-adam]
+- The signers order (`imio.esign.signers` vocabulary) holds held position UIDs instead of userids,
+  `SignableAdapter.sort_signers` matches signers on the userids of the persons of these held
+  positions, see `SignableAdapter.get_signers_order_userids` (PARAF-527).
+  [gbastien]
+- When the signers order is enforced, the `Signers` column header of the sessions
+  table (`@@parapheo`) is `Signers (signing order)` with a help icon explaining
+  that the signing order may be different from the order of the signers
+  on the document (PARAF-527).
+  [gbastien]
 
 
 1.0.4 (2026-11-16)

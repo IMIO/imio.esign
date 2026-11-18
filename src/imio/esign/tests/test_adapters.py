@@ -62,14 +62,28 @@ class TestSignableAdapter(BaseEsignTest):
         annex.file.filename = None
         self.assertEqual(adapter.get_filename(annex), u"no_filename.pdf")
 
+    def test_get_signers_order_userids(self):
+        """Signers order held position UIDs are turned into their persons userids."""
+        adapter = getAdapter(self.portal["folder0"], ISignable)
+        self.fake_signers_held_positions(
+            {"hp1": "user1", "hp2": "user2", "hp2bis": "user2", "hp3": "user3", "hp_no_userid": None})
+        self.assertEqual(adapter.get_signers_order_userids(), [])
+        # a person with several held positions is ranked on the first one,
+        # unknown held positions and persons without userid are ignored
+        set_esign_registry_signers_order(["hp3", "unknown", "hp2bis", "hp_no_userid", "hp1", "hp2"])
+        self.assertEqual(adapter.get_signers_order_userids(), ["user3", "user2", "user1"])
+
     def test_sort_signers(self):
         adapter = getAdapter(self.portal["folder0"], ISignable)
         user1 = ("user1", "user1@sign.com", "User 1", "Position 1")
         user2 = ("user2", "user2@sign.com", "User 2", "Position 2")
         user3 = ("user3", "user3@sign.com", "User 3", "Position 3")
-        set_esign_registry_signers_order(["user2"])
+        self.fake_signers_held_positions({"hp1": "user1", "hp2": "user2", "hp3": "user3"})
+        set_esign_registry_signers_order(["hp2"])
         # order not enforced: unchanged
         self.assertEqual(adapter.sort_signers([user1, user3, user2]), [user1, user3, user2])
         # enforced: ordered signers first, unlisted ones in their given order
         set_esign_registry_enforce_signers_order(True)
         self.assertEqual(adapter.sort_signers([user1, user3, user2]), [user2, user1, user3])
+        set_esign_registry_signers_order(["hp3", "hp2", "hp1"])
+        self.assertEqual(adapter.sort_signers([user1, user3, user2]), [user3, user2, user1])

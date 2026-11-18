@@ -462,6 +462,7 @@ class TestRecreateSessionView(BaseEsignTest):
         # --- Signers order enforced since the old session creation: the recreated session follows it ---
         order_old_id, _ = self._make_refused_session()
         self.register_signers("user1", "user2")
+        self.fake_signers_held_positions()
         set_esign_registry_signers_order(["user2"])
         set_esign_registry_enforce_signers_order(True)
         self.request.form["esign_session_id"] = str(order_old_id)

@@ -393,6 +393,14 @@ msgstr "Téléchargement du fichier signé"
 msgid "Signers"
 msgstr "Signataires"
 
+#: ../browser/table.py:111
+msgid "Signers (signing order)"
+msgstr "Signataires (ordre de signature)"
+
+#: ../browser/table.py:119
+msgid "Signers are listed in the enforced signing order, it may be different from the order of the signers on the document."
+msgstr "Les signataires sont listés dans l'ordre de signature imposé, il peut être différent de l'ordre des signataires sur le document."
+
 #: ../browser/settings.py:137
 msgid "Signers order"
 msgstr "Ordre des signataires"

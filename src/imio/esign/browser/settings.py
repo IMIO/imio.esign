@@ -146,7 +146,7 @@ class IImioEsignSettings(Interface):
 
 @implementer(IVocabularyFactory)
 class SignersVocabulary(object):
-    """Signers to order, as userid terms. Empty by default: the application overrides it."""
+    """Signers to order, as held position UID terms. Empty by default: the application overrides it."""
 
     def __call__(self, context):
         return SimpleVocabulary([])

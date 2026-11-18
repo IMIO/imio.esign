@@ -5,7 +5,7 @@
     <ul>
       <li tal:repeat="term view/terms" tal:content="term/title">Signer</li>
     </ul>
-    <a href="#" tal:attributes="href string:${view/site_url}/@@imio_esign_settings"
+    <a href="#" tal:attributes="href string:${view/site_url}/@@imio_esign_settings#form-widgets-signers_order"
        i18n:translate="">Configure the signers order</a>
   </dd>
 </dl>

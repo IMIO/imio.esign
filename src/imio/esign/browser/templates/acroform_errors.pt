@@ -1,17 +1,24 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"
-      xmlns:tal="http://xml.zope.org/namespaces/tal"
-      xmlns:metal="http://xml.zope.org/namespaces/metal"
-      xmlns:i18n="http://xml.zope.org/namespaces/i18n"
-      lang="en"
-      i18n:domain="imio.esign">
-  <div class="portalMessage error acroform-errors">
-    <strong i18n:translate="">Wrong signature or seal tags</strong>
-    <ul>
-      <li tal:repeat="item python: view.errors.values()">
-        <a tal:attributes="href python: item[0].absolute_url()"
-           tal:content="python: item[0].Title()">file title</a>
-        <div tal:repeat="message python: item[1]" tal:content="message">error message</div>
-      </li>
-    </ul>
-  </div>
-</html>
+<tal:comment replace="nothing">Same markup as portal messages of the running Plone version</tal:comment>
+<dl class="portalMessage error acroform-errors"
+    i18n:domain="imio.esign"
+    tal:condition="python: view.plone_major_version < 5">
+  <dt i18n:translate="" i18n:domain="plone">Error</dt>
+  <dd>
+    <metal:errors define-macro="errors">
+      <strong i18n:translate="">Wrong signature or seal tags</strong>
+      <ul>
+        <li tal:repeat="item python: view.errors.values()"><tal:errors
+            replace="python: view.join_errors(item[1])">error messages</tal:errors>: <a
+            tal:attributes="href python: item[0].absolute_url()"
+            tal:content="python: item[0].Title()">file title</a></li>
+      </ul>
+      <strong i18n:translate="">The session can not be created in Parapheo as long as these errors are not fixed.</strong>
+    </metal:errors>
+  </dd>
+</dl>
+<div class="portalMessage statusmessage statusmessage-error alert alert-danger acroform-errors"
+     role="alert"
+     i18n:domain="imio.esign"
+     tal:condition="python: view.plone_major_version >= 5">
+  <metal:errors use-macro="template/macros/errors" />
+</div>

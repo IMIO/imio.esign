@@ -102,6 +102,7 @@ def add_files_to_session(  # noqa C901
             session = annot["sessions"][session_id]
     dispatch = session_id is None
     sessions_used = []
+    from imio.esign.acroform import update_file_acroform_tags  # avoid circular import
     from imio.esign.adapters import ISignable  # avoid circular import
 
     for uid in files_uids:
@@ -153,6 +154,8 @@ def add_files_to_session(  # noqa C901
                 "status": "",
             }
         )
+        # store the acroform tags so the file is not read again when its errors are displayed
+        update_file_acroform_tags(file_dict, annex)
         # Find the range of files already belonging to this context (if any)
         context_start_idx, context_end_idx = None, None
         for i, f in enumerate(session["files"]):

@@ -31,6 +31,8 @@ from plone.testing import z2
 from Products.statusmessages import STATUSMESSAGEKEY
 from Products.statusmessages.interfaces import IStatusMessage
 from zope.annotation.interfaces import IAnnotations
+from zope.event import notify
+from zope.lifecycleevent import ObjectModifiedEvent
 
 import json
 import unittest
@@ -132,15 +134,24 @@ class TestExternalSessionCreateView(BaseEsignTest):
         self.request.form["session_id"] = str(self.session_id)
 
         # --- wrong signature tags: the session is not sent (PARAF-503) ---
-        annex = self.portal["folder0"]["annex0"]
+        # the annex in error is the second file of the session
+        annex = self.portal["folder0"]["annex2"]
+        add_files_to_session([("user1", "user1@sign.com", "User 1", "Position 1")], (annex.UID(),))
+        self.assertEqual(
+            [f["uid"] for f in get_session_annotation()["sessions"][self.session_id]["files"]],
+            [self.portal["folder0"]["annex0"].UID(), annex.UID()])
         original_file = annex.file
         annex.file = pdf_file(tag(2))  # a tag for a signer the session does not have
         with patch("imio.esign.browser.views.create_external_session") as mock_create:
             result = ExternalSessionCreateView(self.folder, self.request)()
         self.assertFalse(mock_create.called)
         messages = IStatusMessage(self.request).show()
+        # a first message then one message by file in error, the file being located
+        # by its position in the session, the title of its container and its title
+        self.assertEqual(len(messages), 2)
         self.assertIn("not sent because signature or seal tags are wrong", messages[0].message)
-        self.assertEqual(messages[0].type, "error")
+        self.assertTrue(messages[1].message.endswith(u": 2. {} - {}".format(self.folder.Title(), annex.Title())))
+        self.assertEqual([msg.type for msg in messages], ["error", "error"])
         self.assertEqual("http://nohost/plone/folder0/@@parapheo", result)
         annex.file = original_file
         _clear_status_messages(self.request)
@@ -644,6 +655,18 @@ class TestItemSessionInfoViewlet(BaseEsignTest):
         self.assertEqual(list(sessions.keys()), [0, 1])
 
 
+class HiddenSessionInfoViewlet(ItemSessionInfoViewlet):
+    """Session info viewlet the current user may not see."""
+
+    def available(self):
+        return False
+
+
+class HiddenSessionInfoAcroformErrorsViewlet(AcroformErrorsViewlet):
+
+    session_info_viewlet_class = HiddenSessionInfoViewlet
+
+
 class TestAcroformErrorsViewlet(BaseEsignTest):
     """Tests for AcroformErrorsViewlet."""
 
@@ -687,10 +710,70 @@ class TestAcroformErrorsViewlet(BaseEsignTest):
         session["state"] = "draft_full"
         self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
 
-        # --- a complete set of tags ---
+        # --- the tags stored in the session are used, the files are not read ---
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
+            self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
+            self.assertEqual(len(AcroformErrorsViewlet(self.folder, self.request, None, None).errors), 1)
+        self.assertFalse(mock_get_tag_ids.called)
+
+        # --- a complete set of tags, the stored tags are updated when the annex is modified ---
         self.annex.file = pdf_file(tag(1), tag(2))
+        self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
+        notify(ObjectModifiedEvent(self.annex))
         self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).errors, OrderedDict())
         self.assertEqual(get_session_annotation()["uids"][self.annex.UID()], session_id)
+
+        # --- files without stored tags (sessions created before tags were stored) are read ---
+        for file_data in session["files"]:
+            del file_data["acroform_tags"]
+        self.annex.file = pdf_file(tag(1))
+        self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
+        self.assertNotIn("acroform_tags", session["files"][0])
+
+    def test_render(self):
+        """Nothing rendered without errors, else a portal message using the markup
+        of the Plone version, without any html wrapper."""
+        self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).render(), "")
+        self.annex.file = pdf_file(tag(1))
+        add_files_to_session(self.signers, (self.annex.UID(),))
+        expected_starts = {
+            4: u'<dl class="portalMessage error acroform-errors">',
+            6: u'<div class="portalMessage statusmessage statusmessage-error alert alert-danger acroform-errors" role="alert">',
+        }
+        for plone_major_version, expected_start in expected_starts.items():
+            viewlet = AcroformErrorsViewlet(self.annex, self.request, None, None)
+            viewlet.plone_major_version = plone_major_version
+            html = viewlet.render().strip()
+            self.assertTrue(html.startswith(expected_start), html)
+            self.assertEqual(html.count(u"portalMessage"), 1)
+            self.assertNotIn(u"<html", html)
+            self.assertEqual(u"<dt>Error</dt>" in html, plone_major_version == 4)
+            self.assertIn(u"<strong>Wrong signature or seal tags</strong>", html)
+            # "error message: link to the file", like the errors displayed when the session is sent
+            self.assertIn(
+                u'<li>The signature tag of Signer2 is missing: <a href="{}">{}</a></li>'.format(
+                    self.annex.absolute_url(), self.annex.Title()),
+                html)
+            self.assertIn(
+                u"<strong>The session can not be created in Parapheo as long as these errors are not fixed.</strong>", html)
+
+    def test_may_view_session_info(self):
+        """Errors are only available when the session info viewlet is available on the container."""
+        self.annex.file = pdf_file(tag(1))
+        # not in a session, the annex is its own container
+        viewlet = AcroformErrorsViewlet(self.annex, self.request, None, None)
+        self.assertEqual(viewlet.get_container(), self.annex)
+        add_files_to_session(self.signers, (self.annex.UID(),))
+        # in a session, the container is the file context
+        for context in (self.annex, self.folder):
+            viewlet = AcroformErrorsViewlet(context, self.request, None, None)
+            self.assertEqual(viewlet.get_container(), self.folder)
+            self.assertTrue(viewlet.may_view_session_info())
+            self.assertTrue(viewlet.available())
+            viewlet = HiddenSessionInfoAcroformErrorsViewlet(context, self.request, None, None)
+            self.assertFalse(viewlet.may_view_session_info())
+            self.assertFalse(viewlet.available())
+            self.assertEqual(viewlet.render(), "")
 
 
 class DummySignersOrderViewlet(BaseSignersOrderViewlet):

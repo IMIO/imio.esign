@@ -17,6 +17,28 @@ Changelog
   [gbastien]
 - Added acroform signature and seal tags validation (PARAF-503).
   [chris-adam]
+- Acroform tags (PARAF-503):
+  the tags found in a file are stored with its md5 in the session file data (`acroform_tags`),
+  when the file is added to the session and when the annex is modified (file only read again
+  if its md5 changed), errors are computed from these tags against the session signers and seal.
+  The `esign-acroform-errors` viewlet uses the stored tags, is only displayed to users able
+  to see the session info viewlet (`AcroformErrorsViewlet.session_info_viewlet_class`),
+  uses the portal message markup of the running Plone version and lists
+  `error: link to the file`, telling that the session can not be created in Parapheo.
+  When a session can not be sent, one error message is displayed by file, the file being
+  located by its position in the session, its container title
+  (`ExternalSessionCreateView.get_container_title`, may be overridden) and its title.
+  The tags found are only displayed for annexes to sign (when created, set to sign or modified),
+  the file of other annexes is not read anymore. For annexes to sign that are not in a session yet,
+  this may be disabled with the new `check_annexes_tags_outside_session` setting (enabled by default,
+  upgrade step to 1004) when a lot of annexes to sign are added at once, annexes in a session
+  are always checked. Files generated from a template are not checked, they are recognized
+  by the `conv_from_uid` attribute (set before the creation events, like
+  `collective.documentgenerator` `convert_and_save_file` does), the `documentgenerator`
+  annotation or the published document-generation view.
+  `@@session-annotation-info` only renders `uid`/`context_uid` as links and displays
+  the md5 of the current file.
+  [gbastien]
 
 
 1.0.4 (2026-11-16)

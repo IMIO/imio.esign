@@ -15,6 +15,10 @@ Changelog
   that the signing order may be different from the order of the signers
   on the document (PARAF-527).
   [gbastien]
+- Fixed `events.on_categorized_annex_updated` that updated the size of every session
+  of the annex container when the size of an annex changed, only the size of the session
+  holding the annex is updated now.
+  [gbastien]
 
 
 1.0.4 (2026-11-16)

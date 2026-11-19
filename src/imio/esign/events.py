@@ -47,13 +47,14 @@ def on_categorized_annex_updated(annex, event):
                 break
 
     if update is True:
+        size_diff = new_values["filesize"] - old_values["filesize"]
         for session_id, session in sessions.items():
-            # size
-            size_diff = new_values["filesize"] - old_values["filesize"]
-            session["size"] += size_diff
-            # title and filename
             for file_data in session["files"]:
                 if file_data["uid"] == annex_uid:
+                    # size, only of the session holding the annex,
+                    # other sessions of the same container are not concerned
+                    session["size"] += size_diff
+                    # title and filename
                     file_data["title"] = new_values["title"]
                     file_data["scan_id"] = annex.scan_id
                     # filename changed, need to make sure new filename is unique

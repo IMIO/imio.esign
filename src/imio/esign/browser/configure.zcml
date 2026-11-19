@@ -132,6 +132,16 @@
             permission="imio.esign.ManageSessions"
     /-->
 
+    <browser:viewlet
+            zcml:condition="installed imio.annex"
+            for="imio.annex.content.annex.IAnnex"
+            manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+            name="esign-acroform-errors"
+            template="templates/acroform_errors.pt"
+            class=".views.AcroformErrorsViewlet"
+            permission="zope2.View"
+    />
+
     <browser:view
             name="add-to-esign-session"
             for="*"

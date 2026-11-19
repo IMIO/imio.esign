@@ -5,4 +5,8 @@
                   collective.iconifiedcategory.interfaces.ICategorizedElementUpdatedEvent"
              handler=".events.on_categorized_annex_updated" />
 
+ <subscriber for="imio.annex.content.annex.IAnnex
+                  zope.lifecycleevent.interfaces.IObjectAddedEvent"
+             handler=".events.on_annex_added" />
+
 </configure>

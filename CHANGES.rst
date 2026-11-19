@@ -15,6 +15,8 @@ Changelog
   that the signing order may be different from the order of the signers
   on the document (PARAF-527).
   [gbastien]
+- Added acroform signature and seal tags validation (PARAF-503).
+  [chris-adam]
 
 
 1.0.4 (2026-11-16)

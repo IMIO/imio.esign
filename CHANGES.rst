@@ -15,6 +15,11 @@ Changelog
   that the signing order may be different from the order of the signers
   on the document (PARAF-527).
   [gbastien]
+- When the signers order is enforced, the `Signers` label of the session info
+  viewlet displayed on an element is also `Signers (signing order)` with the same
+  help icon as the `Signers` column of the sessions table, see `table.signers_label`
+  and `table.signers_order_help_icon` (PARAF-527).
+  [gbastien]
 
 
 1.0.4 (2026-11-16)

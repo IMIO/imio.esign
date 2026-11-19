@@ -98,6 +98,28 @@ class SealColumn(Column):
                 u"aria-label='{label}'></img>".format(label=label))
 
 
+def signers_label():
+    """Label of the signers of a session (sessions table, session info viewlet).
+    When the signers order is enforced, specify that signers are listed
+    in signing order, that is often different from the order on the document."""
+    if get_esign_registry_enforce_signers_order():
+        return _("Signers (signing order)")
+    return _("Signers")
+
+
+def signers_order_help_icon(request):
+    """When the signers order is enforced, return a help icon to display after the
+    signers label explaining the signing order, an empty string otherwise."""
+    if not get_esign_registry_enforce_signers_order():
+        return u""
+    help_msg = translate(
+        _("Signers are listed in the enforced signing order, "
+          "it may be different from the order of the signers on the document."),
+        context=request)
+    return u"<span class='far fa-question-circle' title='{0}'></span>".format(
+        html.escape(safe_unicode(help_msg), quote=True))
+
+
 class SignersColumn(Column):
     weight = 50
     cssClasses = {"th": "th_header_sessions_signers",
@@ -105,22 +127,14 @@ class SignersColumn(Column):
 
     @property
     def header(self):
-        """When the signers order is enforced, specify that signers are listed
-        in signing order, that is often different from the order on the document."""
-        if get_esign_registry_enforce_signers_order():
-            return _("Signers (signing order)")
-        return _("Signers")
+        return signers_label()
 
     def renderHeadCell(self):
         """When the signers order is enforced, add a help icon explaining it."""
         res = super(SignersColumn, self).renderHeadCell()
-        if get_esign_registry_enforce_signers_order():
-            help_msg = translate(
-                _("Signers are listed in the enforced signing order, "
-                  "it may be different from the order of the signers on the document."),
-                context=self.request)
-            res += u" <span class='far fa-question-circle' title='{0}'></span>".format(
-                html.escape(safe_unicode(help_msg), quote=True))
+        help_icon = signers_order_help_icon(self.request)
+        if help_icon:
+            res += u" " + help_icon
         return res
 
     def renderCell(self, item):

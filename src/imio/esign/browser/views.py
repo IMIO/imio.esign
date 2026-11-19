@@ -9,6 +9,8 @@ from imio.esign import manage_session_perm
 from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
+from imio.esign.browser.table import signers_label
+from imio.esign.browser.table import signers_order_help_icon
 from imio.esign.config import get_esign_registry_enabled
 from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_parapheo_url
@@ -269,6 +271,14 @@ class FacetedSessionInfoViewlet(ViewletBase):
         """Get the table rows following the column"""
         return {1: ["session_id", "state", "update_date", "sealed"],
                 2: ["external_link", "signers"]}.get(column, [])
+
+    def get_signers_label(self):
+        """Translated label of the signers, the same as in the sessions table."""
+        return translate(signers_label(), context=self.request)
+
+    def get_signers_order_help_icon(self):
+        """Help icon explaining the signing order when it is enforced, the same as in the sessions table."""
+        return signers_order_help_icon(self.request)
 
     def ext_session_link(self, session):
         return external_session_link(session)

@@ -9,6 +9,7 @@ from imio.esign import _tr as _
 from imio.esign import API_ROOT_URL
 from imio.esign import logger
 from imio.esign.audit import audit
+from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_external_watchers
 from imio.esign.config import get_esign_registry_file_url
 from imio.esign.config import get_esign_registry_max_session_files
@@ -105,10 +106,13 @@ def add_files_to_session(  # noqa C901
 
     for uid in files_uids:
         file_size = get_filesize(uid)
+        annex = uuidToObject(uuid=uid, unrestricted=True)
+        signable = ISignable(aq_parent(annex))
 
         if dispatch:
+            sorted_signers = signable.sort_signers(signers)
             session_id, session = discriminate_sessions(
-                signers,
+                sorted_signers,
                 seal,
                 acroform,
                 discriminators=discriminators,
@@ -117,7 +121,7 @@ def add_files_to_session(  # noqa C901
             )
             if not session:
                 session_id, session = create_session(
-                    signers,
+                    sorted_signers,
                     seal,
                     acroform=acroform,
                     title=title,
@@ -126,9 +130,11 @@ def add_files_to_session(  # noqa C901
                     watchers=watchers,
                     create_session_custom_data=create_session_custom_data,
                 )
-                audit("create_session", "session={} signers={}".format(session_id, "|".join([sg[1] for sg in signers])))
+                audit(
+                    "create_session",
+                    "session={} signers={}".format(session_id, "|".join([sg[1] for sg in sorted_signers])),
+                )
 
-        annex = uuidToObject(uuid=uid, unrestricted=True)
         context_uid_provider = getAdapter(annex, IContextUidProvider)
         context_uid = context_uid_provider.get_context_uid()
         # update data if adding same file to same session
@@ -140,7 +146,7 @@ def add_files_to_session(  # noqa C901
         file_dict = PersistentMapping(
             {
                 "scan_id": annex.scan_id,
-                "filename": ISignable(aq_parent(annex)).get_filename(annex, existing_files=existing_files),
+                "filename": signable.get_filename(annex, existing_files=existing_files),
                 "title": annex.title or "no_title",
                 "uid": uid,
                 "context_uid": context_uid,
@@ -241,9 +247,11 @@ def create_external_session(session_id, esign_root_url=None):
     signers = [fdic["email"] for fdic in session["signers"]]
     if signers:
         data_payload["signData"] = {
-            "users": list(signers),
+            "users": signers,
             "acroform": session["acroform"],
         }
+        if get_esign_registry_enforce_signers_order():
+            data_payload["signData"]["enforceUsersOrder"] = True
         sign_code = get_esign_registry_sign_code()
         if sign_code:
             data_payload["signData"]["signCode"] = sign_code

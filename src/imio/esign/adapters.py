@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from imio.esign.config import get_esign_registry_enforce_signers_order
+from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
+from imio.helpers.content import uuidToObject
 from imio.helpers.transmogrifier import get_correct_id
 from os import path
 from plone.memoize import ram
@@ -86,6 +89,29 @@ class SignableAdapter(object):
         filename, ext = path.splitext(annex.file.filename or u"no_filename.pdf")
         return get_correct_id(existing_files, filename) + ext
 
+    def get_signers_order_userids(self):
+        """The signers order holds held position UIDs, return the userids of their persons
+        in the same order. A person having several held positions in the order is ranked
+        on the first one, held positions that are not found or whose person has no userid
+        are ignored."""
+        userids = []
+        for hp_uid in get_esign_registry_signers_order():
+            held_position = uuidToObject(hp_uid, unrestricted=True)
+            if held_position is None:
+                continue
+            userid = getattr(held_position.get_person(), "userid", None)
+            if userid and userid not in userids:
+                userids.append(userid)
+        return userids
+
+    def sort_signers(self, signers):
+        """Sort on the signers order when it is enforced, unlisted signers last.
+        Signers quartets start with the userid, matched against get_signers_order_userids."""
+        if not get_esign_registry_enforce_signers_order():
+            return signers
+        order = self.get_signers_order_userids()
+        return sorted(signers, key=lambda sig: order.index(sig[0]) if sig[0] in order else len(order))
+
 
 class ISignable(Interface):
     def get_signers(self):
@@ -133,3 +159,9 @@ class ISignable(Interface):
         session, to keep them unique.
         """
         return u""
+
+    def sort_signers(self, signers):
+        """
+        Return the signers quartets in signing order, applied when a session is created.
+        """
+        return signers

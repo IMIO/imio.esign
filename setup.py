@@ -24,23 +24,22 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Plone",
         "Framework :: Plone :: Addon",
-        "Framework :: Plone :: 5.2",
-        "Framework :: Plone :: 6.0",
+        "Framework :: Plone :: 4.3",
+        "Framework :: Plone :: 6.1",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.13",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     ],
     keywords="Python Plone CMS",
     author="Stephan Geulette",
     author_email="s.geulette@imio.be",
-    url="https://github.com/collective/imio.esign",
+    url="https://github.com/IMIO/imio.esign",
     project_urls={
         "PyPI": "https://pypi.org/project/imio.esign/",
-        "Source": "https://github.com/collective/imio.esign",
-        "Tracker": "https://github.com/collective/imio.esign/issues",
+        "Source": "https://github.com/IMIO/imio.esign",
+        "Tracker": "https://github.com/IMIO/imio.esign/issues",
         # 'Documentation': 'https://imio.esign.readthedocs.io/en/latest/',
     },
     license="GPL version 2",
@@ -54,15 +53,21 @@ setup(
         # -*- Extra requirements: -*-
         "collective.compoundcriterion",
         "collective.eeafaceted.z3ctable",
+        "collective.iconifiedcategory",
         "eea.facetednavigation",
+        # "html" module on Python 2
+        "future",
+        "imio.annex",
         "imio.fpaudit",
-        "imio.helpers>1.3.10",
+        # path.is_test_url
+        "imio.helpers>=1.3.14",
         "imio.prettylink",
         "imio.pyutils",
         "plone.api>=1.8.4",
         "plone.app.dexterity",
         "plone.restapi",
         "requests",
+        "six",
         # "z3c.jbot",
         "z3c.table",
     ],
@@ -76,15 +81,12 @@ setup(
             "plone.app.contenttypes",
             "plone.app.robotframework[debug]",
             "mock",
-            "imio.annex",
-            "mock",
         ],
     },
     entry_points="""
     [z3c.autoinclude.plugin]
     target = plone
     [console_scripts]
-    update_locale = imio.esign.locales.update:update_locale
     cosi_esign_push_acroform = imio.esign.scripts.cosi_esign_push_acroform:main
     """,
 )

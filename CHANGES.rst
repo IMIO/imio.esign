@@ -15,6 +15,12 @@ Changelog
   that the signing order may be different from the order of the signers
   on the document (PARAF-527).
   [gbastien]
+- Cleaned `setup.py`: required `imio.helpers>=1.3.14` (`path.is_test_url`),
+  declared `imio.annex` (moved from test extra), `collective.iconifiedcategory`,
+  `future` (`html` module on Python 2) and `six` dependencies, removed duplicated `mock`
+  test dependency and the `update_locale` console script (module does not exist),
+  updated classifiers (Plone 4.3/6.1, Python 2.7/3.13) and project urls (`IMIO/imio.esign`).
+  [gbastien]
 
 
 1.0.4 (2026-11-16)

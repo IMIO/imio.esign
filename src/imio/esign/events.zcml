@@ -9,4 +9,12 @@
                   zope.lifecycleevent.interfaces.IObjectAddedEvent"
              handler=".events.on_annex_added" />
 
+ <subscriber for="imio.annex.content.annex.IAnnex
+                  collective.iconifiedcategory.interfaces.IIconifiedAttrChangedEvent"
+             handler=".events.on_annex_to_sign_changed" />
+
+ <subscriber for="imio.annex.content.annex.IAnnex
+                  zope.lifecycleevent.interfaces.IObjectModifiedEvent"
+             handler=".events.on_annex_modified" />
+
 </configure>

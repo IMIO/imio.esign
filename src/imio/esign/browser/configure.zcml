@@ -142,6 +142,22 @@
             permission="zope2.View"
     />
 
+    <!-- The esign-acroform-errors viewlet also shows the errors of the files of a container,
+         the container being the context returned by the IContextUidProvider adapter
+         (by default the parent of the file). Register it in the package defining
+         the container content type, the class template is used.
+         Errors are only shown to users able to see the session info viewlet on the container,
+         when this viewlet is overridden, subclass AcroformErrorsViewlet to set its
+         session_info_viewlet_class and register it for the files too -->
+    <!--browser:viewlet
+            for="example.content.ISchema"
+            manager="plone.app.layout.viewlets.interfaces.IAboveContentTitle"
+            view="plone.app.layout.globals.interfaces.IViewView"
+            name="esign-acroform-errors"
+            class="example.browser.viewlets.ExampleAcroformErrorsViewlet"
+            permission="zope2.View"
+    /-->
+
     <browser:view
             name="add-to-esign-session"
             for="*"

@@ -21,6 +21,7 @@ from xml.sax.saxutils import unescape
 from zope.component import getAdapter
 from zope.i18n import translate
 
+import hashlib
 import json
 import re
 import subprocess
@@ -167,6 +168,18 @@ def validate_seal_count(count, seal):
     return []
 
 
+def check_tags(numbers, seal_count, malformed, nb_signers, seal=False):
+    """Return the acroform tag error messages of tags found in a file, see get_tag_ids.
+
+    :param nb_signers: number of signers, or None when the signature tags are unused
+    :param seal: whether a seal is defined on the container
+    """
+    errors = [_("The tag ${tag} is malformed.", mapping={"tag": tag}) for tag in malformed]
+    if nb_signers is not None:
+        errors += validate_signer_numbers(numbers, nb_signers)
+    return errors + validate_seal_count(seal_count, seal)
+
+
 def check_file(obj, nb_signers, seal=False):
     """Return the acroform tag error messages of a content object holding a file.
 
@@ -174,16 +187,42 @@ def check_file(obj, nb_signers, seal=False):
     :param seal: whether a seal is defined on the container
     """
     numbers, seal_count, malformed = get_tag_ids(getattr(obj, "file", None))
-    errors = [_("The tag ${tag} is malformed.", mapping={"tag": tag}) for tag in malformed]
-    if nb_signers is not None:
-        errors += validate_signer_numbers(numbers, nb_signers)
-    return errors + validate_seal_count(seal_count, seal)
+    return check_tags(numbers, seal_count, malformed, nb_signers, seal)
 
 
-def get_session_acroform_errors(session_id):
+def get_file_fingerprint(nbf):
+    """Return the md5 of the data of a file field, None when there is no data."""
+    data = nbf is not None and getattr(nbf, "data", None) or None
+    if not data:
+        return None
+    return hashlib.md5(data).hexdigest()
+
+
+def update_file_acroform_tags(file_data, obj):
+    """Store in the session file data the acroform tags of the file of p_obj, see get_tag_ids.
+
+    The tags are stored with the md5 of the file, the file text is only read again when the file changed.
+    Errors are not stored, they depend on the session signers and seal and are computed when needed.
+
+    :param file_data: the (persistent) data of the file in the session
+    :return: True if the tags were (re)computed
+    """
+    nbf = getattr(obj, "file", None)
+    md5 = get_file_fingerprint(nbf)
+    stored = file_data.get("acroform_tags")
+    if stored is not None and stored["md5"] == md5:
+        return False
+    numbers, seal_count, malformed = get_tag_ids(nbf)
+    file_data["acroform_tags"] = {"md5": md5, "signers": numbers, "seals": seal_count, "malformed": malformed}
+    return True
+
+
+def get_session_acroform_errors(session_id, stored=False):
     """Return the acroform tag errors of the files of a session, checked against its signers.
 
     :param session_id: internal session id
+    :param stored: use the acroform tags stored in the session (see update_file_acroform_tags)
+                   instead of reading the files, files without stored tags are read
     :return: OrderedDict {file uid: (file object, context uid, [error messages])}, holding
              only the files in error
     """
@@ -192,28 +231,38 @@ def get_session_acroform_errors(session_id):
     if not session:
         return res
     nb_signers = len(session.get("signers", []))
+    seal = session.get("seal", False)
     for file_info in session["files"]:
         obj = uuidToObject(uuid=file_info["uid"], unrestricted=True)
         if obj is None:
             continue
-        errors = check_file(obj, nb_signers, session.get("seal", False))
+        tags = stored and file_info.get("acroform_tags") or None
+        if tags is not None:
+            errors = check_tags(tags["signers"], tags["seals"], tags["malformed"], nb_signers, seal)
+        else:
+            errors = check_file(obj, nb_signers, seal)
         if errors:
             context_uid = getAdapter(obj, IContextUidProvider).get_context_uid()
             res[file_info["uid"]] = (obj, context_uid, errors)
     return res
 
 
-def format_errors(pairs, request):
-    """Return a one line readable summary of acroform tag errors.
+def join_errors(messages):
+    """Return the translated error messages of a file on one line, without the final period,
+    to be followed by ": " and the file, "error: file", not "error.: file".
 
-    :param pairs: iterable of (file object, [error messages])
+    :param messages: translated error messages of the file
+    """
+    return u" ".join([safe_unicode(msg) for msg in messages]).rstrip(u".")
+
+
+def format_errors(label, messages, request):
+    """Return a one line readable summary of the acroform tag errors of a file,
+    the errors followed by the label identifying the file.
+
+    :param label: label identifying the file
+    :param messages: error messages of the file
     :param request: used to translate the messages
     """
-    return u" / ".join(
-        [
-            u"{}: {}".format(
-                safe_unicode(obj.Title()), u" ".join([translate(msg, context=request) for msg in messages])
-            )
-            for obj, messages in pairs
-        ]
-    )
+    errors = join_errors([translate(msg, context=request) for msg in messages])
+    return u"{}: {}".format(errors, safe_unicode(label))

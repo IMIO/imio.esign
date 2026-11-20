@@ -55,6 +55,12 @@ def get_esign_registry_enforce_signers_order(default=False):
     return api.portal.get_registry_record("imio.esign.enforce_signers_order", default=default)
 
 
+def get_esign_registry_check_annexes_tags_outside_session(default=True):
+    value = api.portal.get_registry_record("imio.esign.check_annexes_tags_outside_session", default=default)
+    # record not registered yet (upgrade step not applied) or None
+    return default if value is None else value
+
+
 def get_esign_registry_signers_order(default=()):
     return api.portal.get_registry_record("imio.esign.signers_order", default=default) or default
 
@@ -105,6 +111,10 @@ def set_esign_registry_external_watchers(value):
 
 def set_esign_registry_enforce_signers_order(value):
     api.portal.set_registry_record("imio.esign.enforce_signers_order", value)
+
+
+def set_esign_registry_check_annexes_tags_outside_session(value):
+    api.portal.set_registry_record("imio.esign.check_annexes_tags_outside_session", value)
 
 
 def set_esign_registry_signers_order(value):

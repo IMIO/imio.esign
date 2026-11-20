@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2026-11-19 07:27+0000\n"
+"POT-Creation-Date: 2026-11-19 12:42+0000\n"
 "PO-Revision-Date: 2016-02-22 15:20+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -16,19 +16,19 @@ msgstr ""
 "Language: fr\n"
 "X-Generator: Poedit 1.8.4\n"
 
-#: ../utils.py:685
+#: ../utils.py:688
 msgid "${fullname} refused the session with comment: \"${reason}\""
 msgstr "${fullname} a refusé la session avec le commentaire : \"${reason}\""
 
-#: ../utils.py:690
+#: ../utils.py:693
 msgid "${fullname} refused the session without comment"
 msgstr "${fullname} a refusé la session sans commentaire"
 
-#: ../browser/views.py:402
+#: ../browser/views.py:453
 msgid "A file identifier must be passed in the url !"
 msgstr "Un identifiant de fichier doit être inclus dans l'URL !"
 
-#: ../events.py:95
+#: ../events.py:169
 msgid "Acroform tags detected in '${title}': ${tags}"
 msgstr "Balises acroform détectées dans '${title}' : ${tags}"
 
@@ -49,9 +49,13 @@ msgstr "Avant d'envoyer les emails, assurez-vous que tous les utilisateurs séle
 msgid "Cancel"
 msgstr "Annuler"
 
-#: ../browser/actions.py:278
+#: ../browser/actions.py:286
 msgid "Cannot recreate a draft session!"
 msgstr "On ne peut pas recréer une session en création !"
+
+#: ../browser/settings.py:147
+msgid "Check the signature and seal tags of annexes to sign that are not in a session yet?"
+msgstr "Vérifier les balises de signature et de sceau des annexes à signer qui ne sont pas encore dans une session ?"
 
 #: ../browser/templates/signers_order_viewlet.pt:8
 msgid "Configure the signers order"
@@ -73,7 +77,7 @@ msgstr "Effacer la session"
 msgid "Deselect All"
 msgstr "Désélectionner tout"
 
-#: ../browser/actions.py:113
+#: ../browser/actions.py:114
 msgid "Element removed from session!"
 msgstr "Élément retiré de la session !"
 
@@ -82,7 +86,7 @@ msgstr "Élément retiré de la session !"
 msgid "Email"
 msgstr "E-mail"
 
-#: ../browser/views.py:671
+#: ../browser/views.py:722
 msgid "Email content is not configured in the settings."
 msgstr "Le modèle d'email n'est pas configuré dans les paramètres."
 
@@ -102,7 +106,7 @@ msgstr "Email du compte du fournisseur eidas contenant l'image du sceau."
 msgid "Email:"
 msgstr "Email:"
 
-#: ../browser/views.py:731
+#: ../browser/views.py:782
 msgid "Emails sent successfully to ${count} users."
 msgstr "Emails envoyés avec succès à ${count} utilisateurs."
 
@@ -114,11 +118,11 @@ msgstr "Activé?"
 msgid "Enforce signers order?"
 msgstr "Imposer l'ordre des signataires ?"
 
-#: ../browser/views.py:240
+#: ../browser/views.py:264
 msgid "Error while sending session: ${error}"
 msgstr "Erreur lors de l'envoi de la session : ${error}"
 
-#: ../browser/views.py:235
+#: ../browser/views.py:259
 msgid "External session sent successfully!"
 msgstr "Session externe envoyée avec succès !"
 
@@ -126,11 +130,11 @@ msgstr "Session externe envoyée avec succès !"
 msgid "External watchers emails"
 msgstr "Liste d'emails d'observateurs externes"
 
-#: ../browser/views.py:718
+#: ../browser/views.py:769
 msgid "Failed to send email to ${userid}."
 msgstr "Échec de l'envoi de l'email pour ${userid}."
 
-#: ../browser/views.py:738
+#: ../browser/views.py:789
 msgid "Failed to send emails to ${count} users."
 msgstr "Échec de l'envoi des emails pour ${count} utilisateurs."
 
@@ -158,7 +162,11 @@ msgstr "Nom"
 msgid "If checked, signers must sign one after the other, following the signers order."
 msgstr "Si coché, les signataires doivent signer l'un après l'autre, selon l'ordre des signataires."
 
-#: ../browser/settings.py:158
+#: ../browser/settings.py:148
+msgid "If checked, when an annex to sign that is not in a session yet is added, set to sign or modified, its file is read and the signature and seal tags found are displayed. Reading the files may slow down adding a lot of annexes to sign at once, uncheck it in this case. This does not disable the checks of the annexes that are in a session: their wrong tags are still displayed on the annex and on its container and a session with wrong tags can not be sent."
+msgstr "Si coché, lorsqu'une annexe à signer qui n'est pas encore dans une session est ajoutée, mise à signer ou modifiée, son fichier est lu et les balises de signature et de sceau trouvées sont affichées. La lecture des fichiers peut ralentir l'ajout de nombreuses annexes à signer en une fois, décochez-le dans ce cas. Cela ne désactive pas les vérifications des annexes qui sont dans une session : leurs balises incorrectes sont toujours affichées sur l'annexe et sur son conteneur et une session avec des balises incorrectes ne peut pas être envoyée."
+
+#: ../browser/settings.py:171
 #: ../profiles/default/controlpanel.xml
 msgid "Imio Esign Settings"
 msgstr "Configuration du module de signature externe"
@@ -175,7 +183,7 @@ msgstr "Installs the imio.esign add-on."
 msgid "Invalid VAT number: checksum verification failed"
 msgstr "Numéro de TVA invalide : échec de la vérification de la somme de contrôle"
 
-#: ../browser/actions.py:272
+#: ../browser/actions.py:280
 msgid "Invalid session ID!"
 msgstr "Identifiant de session invalide !"
 
@@ -196,7 +204,7 @@ msgstr "Dernière mise à jour"
 msgid "List of electronic signing sessions"
 msgstr "Paraphéo: Liste des sessions de signatures électroniques"
 
-#: ../events.py:101
+#: ../events.py:175
 msgid "Malformed acroform tags in '${title}': ${tags}"
 msgstr "Balises acroform mal formées dans '${title}' : ${tags}"
 
@@ -220,7 +228,7 @@ msgstr "Si la taille totale des fichiers à signer dépasse cette limite, une no
 msgid "Multiple values must be separated by a comma."
 msgstr "Les valeurs multiples doivent être séparées par une virgule."
 
-#: ../browser/actions.py:368
+#: ../browser/actions.py:376
 msgid "New session ${nid} created from session ${oid}"
 msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 
@@ -228,7 +236,7 @@ msgstr "Une nouvelle session ${nid} a été créée à partir de la ${oid}"
 msgid "No"
 msgstr "Non"
 
-#: ../browser/actions.py:337
+#: ../browser/actions.py:345
 msgid "No file selected!"
 msgstr "Aucun fichier sélectionné !"
 
@@ -236,28 +244,28 @@ msgstr "Aucun fichier sélectionné !"
 msgid "No files"
 msgstr "Aucun fichier"
 
-#: ../browser/views.py:229
+#: ../browser/views.py:253
 msgid "No files found to be sent ! Session ${id} not sent."
 msgstr "Aucun fichier référencé n'a été trouvé ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:215
+#: ../browser/views.py:239
 msgid "No seal code defined in configuration ! Session ${id} not sent."
 msgstr "Aucun code de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/views.py:222
+#: ../browser/views.py:246
 msgid "No seal email defined in configuration ! Session ${id} not sent."
 msgstr "Aucun email de sceau défini dans la configuration ! La session ${id} n'a pas été envoyée."
 
-#: ../browser/actions.py:270
-#: ../browser/views.py:157
+#: ../browser/actions.py:278
+#: ../browser/views.py:160
 msgid "No session ID provided!"
 msgstr "Aucun identifiant de session fourni !"
 
-#: ../browser/views.py:626
+#: ../browser/views.py:677
 msgid "No users selected for CSV download."
 msgstr "Aucun utilisateur sélectionné pour le téléchargement du CSV."
 
-#: ../browser/views.py:665
+#: ../browser/views.py:716
 msgid "No users selected for email sending."
 msgstr "Aucun utilisateur sélectionné pour l'envoi d'emails."
 
@@ -273,11 +281,11 @@ msgstr "Ordre dans lequel les signataires signent, le premier en premier. Les si
 msgid "Parapheo url"
 msgstr "Url de Paraphéo"
 
-#: ../browser/actions.py:403
+#: ../browser/actions.py:411
 msgid "Please select at least one file."
 msgstr "Veuillez sélectionner au moins 1 fichier."
 
-#: ../browser/views.py:680
+#: ../browser/views.py:731
 msgid "Portal from email is not configured."
 msgstr "L'adresse d'expéditeur du site n'est pas configurée"
 
@@ -285,7 +293,7 @@ msgstr "L'adresse d'expéditeur du site n'est pas configurée"
 msgid "Position"
 msgstr "Fonction"
 
-#: ../browser/actions.py:77
+#: ../browser/actions.py:78
 msgid "Problem getting signers: \"${error}\")!"
 msgstr "Problème pour obtenir les signataires : \"${error}\" !"
 
@@ -347,13 +355,13 @@ msgstr "Sélectionnés:"
 msgid "Send Emails"
 msgstr "Envoyer des emails"
 
-#: ../utils.py:224
+#: ../utils.py:227
 msgid "Session ${id}"
 msgstr "Session ${id}"
 
-#: ../browser/views.py:191
-msgid "Session ${id} not sent because signature or seal tags are wrong: ${details}"
-msgstr "La session ${id} n'a pas été envoyée car des balises de signature ou de sceau sont incorrectes : ${details}"
+#: ../browser/views.py:214
+msgid "Session ${id} not sent because signature or seal tags are wrong:"
+msgstr "La session ${id} n'a pas été envoyée car des balises de signature ou de sceau sont incorrectes :"
 
 #: ../browser/templates/macros.pt:2
 msgid "Session ID"
@@ -363,7 +371,7 @@ msgstr "Identifiant"
 msgid "Session can contain max ${max_session_files} elements and have a max size of ${max_session_size} MB."
 msgstr "Une session peut contenir maximum ${max_session_files} éléments pour une taille totale maximum de ${max_session_size} MB."
 
-#: ../browser/views.py:165
+#: ../browser/views.py:168
 msgid "Session deleted successfully!"
 msgstr "Session effacée avec succès !"
 
@@ -371,8 +379,8 @@ msgstr "Session effacée avec succès !"
 msgid "Session information (${icon_url} Parapheo)"
 msgstr "Session de signature électronique (${icon_url} Paraphéo)"
 
-#: ../browser/actions.py:276
-#: ../browser/views.py:167
+#: ../browser/actions.py:284
+#: ../browser/views.py:170
 msgid "Session not found!"
 msgstr "Session non trouvée !"
 
@@ -380,7 +388,7 @@ msgstr "Session non trouvée !"
 msgid "Session not yet sent."
 msgstr "La session n'a pas encore été envoyée."
 
-#: ../browser/views.py:208
+#: ../browser/views.py:232
 msgid "Session with ID ${id} doesn't exist anymore !"
 msgstr "La session avec l'ID ${id} n'existe plus !"
 
@@ -396,7 +404,7 @@ msgstr "Méthode de signature utilisée pour spécifier la méthode de signature
 msgid "Sign url not yet received."
 msgstr "Le lien de la session de signature n'a pas encore été reçu."
 
-#: ../browser/views.py:454
+#: ../browser/views.py:505
 msgid "Signed file download"
 msgstr "Téléchargement du fichier signé"
 
@@ -430,21 +438,25 @@ msgstr "État"
 msgid "Status"
 msgstr "Statut"
 
-#: ../browser/views.py:430
+#: ../browser/views.py:481
 msgid "The corresponding file content cannot be retrieved (${uid}) !"
 msgstr "Le contenu du fichier correspondant ne peut pas être récupéré (${uid}) !"
 
-#: ../browser/views.py:410
+#: ../browser/views.py:461
 msgid "The corresponding file identifier cannot be retrieved (${uid}) !"
 msgstr "L'identifiant du fichier n'a pas été trouvé (${uid}) !"
 
-#: ../browser/views.py:422
+#: ../browser/views.py:473
 msgid "The download period for this file has expired (was ${valid_date}) !"
 msgstr "La période de téléchargement de ce fichier a expiré le ${valid_date} !"
 
-#: ../acroform.py:166
+#: ../acroform.py:167
 msgid "The seal tag is present ${count} times."
 msgstr "La balise du sceau est présente ${count} fois."
+
+#: ../browser/templates/acroform_errors.pt:15
+msgid "The session can not be created in Parapheo as long as these errors are not fixed."
+msgstr "La session ne pourra pas être créée dans Paraphéo tant que ces erreurs ne sont pas corrigées."
 
 #: ../utils.py
 msgid "The session encountered an error during its processing."
@@ -478,7 +490,7 @@ msgstr "La session est remplie (taille ou nombre de fichiers maximum atteint) et
 msgid "The session is getting ready to be sent to Paraphéo by a signing manager."
 msgstr "La session est en préparation pour être envoyée dans Paraphéo par un gestionnaire de signatures."
 
-#: ../browser/actions.py:281
+#: ../browser/actions.py:289
 msgid "The session is in a state in which it cannot be recreated!"
 msgstr "La session est dans un état dans lequel elle ne peut pas être recréée !"
 
@@ -486,11 +498,11 @@ msgstr "La session est dans un état dans lequel elle ne peut pas être recréé
 msgid "The session is ready to be signed in Paraphéo."
 msgstr "La session est prête pour signature dans Paraphéo."
 
-#: ../acroform.py:152
+#: ../acroform.py:153
 msgid "The signature tag of Signer${nb} is missing."
 msgstr "La balise de signature de Signer${nb} est manquante."
 
-#: ../acroform.py:145
+#: ../acroform.py:146
 msgid "The signature tag of Signer${nb} is present ${count} times."
 msgstr "La balise de signature de Signer${nb} est présente ${count} fois."
 
@@ -498,11 +510,11 @@ msgstr "La balise de signature de Signer${nb} est présente ${count} fois."
 msgid "The tag ${tag} is malformed."
 msgstr "La balise ${tag} est mal formée."
 
-#: ../acroform.py:164
+#: ../acroform.py:165
 msgid "There is a seal tag but no seal is defined."
 msgstr "Il y a une balise de sceau mais aucun sceau n'est défini."
 
-#: ../acroform.py:148
+#: ../acroform.py:149
 msgid "There is a signature tag for Signer${nb} but ${count} signer(s) are defined."
 msgstr "Il y a une balise de signature pour Signer${nb} alors que le nombre de signataires définis est ${count}."
 
@@ -510,7 +522,7 @@ msgstr "Il y a une balise de signature pour Signer${nb} alors que le nombre de s
 msgid "These signers are not in the signers order, they will sign last:"
 msgstr "Ces signataires ne sont pas dans l'ordre des signataires, ils signeront en dernier :"
 
-#: ../browser/views.py:406
+#: ../browser/views.py:457
 msgid "This file identifier is not correct !"
 msgstr "Le format de cet identifiant de fichier n'est pas correct !"
 
@@ -543,7 +555,7 @@ msgstr "Uninstalls the imio.esign add-on."
 msgid "Used in signers email template."
 msgstr "Utilisée dans le template d'email pour les signataires."
 
-#: ../browser/views.py:689
+#: ../browser/views.py:740
 msgid "User ${userid} has no email address configured. Skipping."
 msgstr "L'utilisateur ${userid} n'a pas d'adresse e-mail configurée. Ignoré."
 
@@ -595,7 +607,7 @@ msgstr "Oui"
 msgid "You are about to send emails to"
 msgstr "Vous êtes sur le point d'envoyer des emails à"
 
-#: ../browser/views.py:704
+#: ../browser/views.py:755
 msgid "You have been invited to Paraphéo"
 msgstr "Vous êtes invité à activer votre compte sur Paraphéo"
 

@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
+from Acquisition import aq_base
 from datetime import datetime
 from html import escape
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.acroform import get_file_fingerprint
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
 from imio.esign.browser.views import SessionFilesMixin
@@ -25,7 +27,6 @@ from zope.i18n import translate
 
 import json
 import pprint
-import re
 
 
 class AddToSessionView(BrowserView):
@@ -159,6 +160,8 @@ class SessionAnnotationInfoView(BrowserView):
     """Admin-only view displaying imio.esign session annotations for a specific context item."""
 
     index = ViewPageTemplateFile("templates/session_annotation_info.pt")
+    # keys holding a UID, rendered as a link to the object
+    UID_KEYS = ("uid", "context_uid")
 
     def __call__(self):
         if not self.available():
@@ -166,13 +169,18 @@ class SessionAnnotationInfoView(BrowserView):
         return self.index()
 
     def _uid_to_link(self, uid):
-        """Return an HTML link for an object UID, or the UID if not found."""
+        """Return an HTML link for an object UID, or the UID if not found.
+        For a file, the md5 of its current file is displayed too, to be compared
+        with the md5 of the stored acroform tags."""
         obj = uuidToObject(uid, unrestricted=True)
         if obj is None:
             return u"<span title='not found'>{}</span>".format(safe_unicode(uid))
         url = escape(obj.absolute_url() + "/view", quote=True)
         path = escape(u"/".join(obj.getPhysicalPath()))
         title = escape(safe_unicode(getattr(obj, "title", "") or path))
+        md5 = get_file_fingerprint(getattr(aq_base(obj), "file", None))
+        if md5:
+            return u"<a href='{}' title='{}'>{}</a> ({}, md5: {})".format(url, path, title, uid, md5)
         return u"<a href='{}' title='{}'>{}</a> ({})".format(url, path, title, uid)
 
     def _format_leaf(self, value):
@@ -183,16 +191,17 @@ class SessionAnnotationInfoView(BrowserView):
             return u"datetime({})".format(safe_unicode(value.strftime("%d/%m/%Y %H:%M:%S")))
         return safe_unicode(pprint.pformat(value))
 
-    def _render_value(self, value, indent=u""):
-        """Render a value, replacing UIDs with links where possible."""
+    def _render_value(self, value, indent=u"", key=None):
+        """Render a value, replacing UIDs with links where possible.
+        p_key is the dict key of the value, only values of UID_KEYS are UIDs."""
         inner = indent + u"  "
         if isinstance(value, dict):
             if not value:
                 return u"{}"
             lines = [u"{"]
             for k, v in sorted(value.items()):
-                key = escape(self._format_leaf(k))
-                lines.append(u"{}{}: {},".format(inner, key, self._render_value(v, inner)))
+                rendered_key = escape(self._format_leaf(k))
+                lines.append(u"{}{}: {},".format(inner, rendered_key, self._render_value(v, inner, key=k)))
             lines.append(u"{}}}".format(indent))
             return u"\n".join(lines)
         elif isinstance(value, (list, tuple)):
@@ -203,8 +212,7 @@ class SessionAnnotationInfoView(BrowserView):
                 lines.append(u"{}{},".format(inner, self._render_value(item, inner)))
             lines.append(u"{}]".format(indent))
             return u"\n".join(lines)
-        elif isinstance(value, string_types) and re.match(r"^[0-9a-f]{32}$", value):
-            # Looks like a UUID
+        elif key in self.UID_KEYS and isinstance(value, string_types):
             return self._uid_to_link(value)
         else:
             return escape(self._format_leaf(value))

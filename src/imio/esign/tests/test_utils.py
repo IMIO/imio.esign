@@ -3,6 +3,7 @@
 from collections import OrderedDict
 from datetime import date
 from datetime import timedelta
+from imio.esign.acroform import get_file_fingerprint
 from imio.esign.config import get_esign_registry_max_session_files
 from imio.esign.config import get_esign_registry_max_session_size
 from imio.esign.config import set_esign_registry_enforce_signers_order
@@ -87,6 +88,13 @@ class TestUtils(BaseEsignTest):
                     "uid": self.uids[0],
                     "status": "",
                     "filename": u"annex0.pdf",
+                    # this file holds no tag
+                    "acroform_tags": {
+                        "md5": get_file_fingerprint(uuidToObject(uuid=self.uids[0], unrestricted=True).file),
+                        "signers": [],
+                        "seals": 0,
+                        "malformed": [],
+                    },
                 }
             ],
         )

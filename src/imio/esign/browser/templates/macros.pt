@@ -39,7 +39,8 @@
     </td>
 </tr>
 <tr metal:define-macro="signers" i18n:domain="imio.esign">
-    <td class="table_widget_label"><label i18n:translate="">Signers</label></td>
+    <td class="table_widget_label"><label tal:content="python: view.get_signers_label()">Signers</label>
+        <span tal:replace="structure python: view.get_signers_order_help_icon()">help icon</span></td>
     <td class="table_widget_value">
         <table class="context_viewlet_signers_table no-border no-style-table listing"
                  tal:define="signers python:session.get('signers', [])">

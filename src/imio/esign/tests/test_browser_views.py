@@ -28,13 +28,16 @@ from plone.app.testing import logout
 from plone.app.testing import setRoles
 from plone.app.testing import TEST_USER_ID
 from plone.testing import z2
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from Products.statusmessages import STATUSMESSAGEKEY
 from Products.statusmessages.interfaces import IStatusMessage
 from zope.annotation.interfaces import IAnnotations
 from zope.event import notify
 from zope.lifecycleevent import ObjectModifiedEvent
 
+import imio.esign.browser
 import json
+import os
 import unittest
 
 
@@ -621,6 +624,13 @@ class TestFacetedSessionInfoViewlet(BaseEsignTest):
         self.assertEqual(result, u'<a href="https://sign.example.com/s/1" target="_blank">My Session</a>')
 
 
+class TemplatedItemSessionInfoViewlet(ItemSessionInfoViewlet):
+    """The template is given when the viewlet is registered."""
+
+    index = ViewPageTemplateFile(
+        "templates/session_info.pt", _prefix=os.path.dirname(imio.esign.browser.__file__))
+
+
 class TestItemSessionInfoViewlet(BaseEsignTest):
     """Tests for ItemSessionInfoViewlet."""
 
@@ -653,6 +663,27 @@ class TestItemSessionInfoViewlet(BaseEsignTest):
         sessions = viewlet.sessions
         self.assertEqual(len(sessions), 2)
         self.assertEqual(list(sessions.keys()), [0, 1])
+
+    def test_render_signers_label(self):
+        """The signers label is the same as the Signers column of the sessions table:
+        when the signers order is enforced, it specifies the signing order with a help icon."""
+        add_files_to_session(self.signers, [self.annexes[0].UID()])
+
+        def render():
+            viewlet = TemplatedItemSessionInfoViewlet(self.folder, self.request, None, None)
+            viewlet.update()
+            return viewlet.render()
+
+        html = render()
+        self.assertIn(u"<label>Signers</label>", html)
+        self.assertNotIn(u"Signers are listed in the enforced signing order", html)
+        set_esign_registry_enforce_signers_order(True)
+        html = render()
+        self.assertIn(u"<label>Signers (signing order)</label>", html)
+        self.assertIn(
+            u"<span class='far fa-question-circle' title='Signers are listed in the enforced signing order, "
+            u"it may be different from the order of the signers on the document.'></span>",
+            html)
 
 
 class HiddenSessionInfoViewlet(ItemSessionInfoViewlet):

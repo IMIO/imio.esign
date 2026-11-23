@@ -1,20 +1,9 @@
 Changelog
 =========
 
-1.0.5 (unreleased)
+1.0.6 (unreleased)
 ------------------
 
-- Added setting to enforce signers order (PARAF-527).
-  [chris-adam]
-- The signers order (`imio.esign.signers` vocabulary) holds held position UIDs instead of userids,
-  `SignableAdapter.sort_signers` matches signers on the userids of the persons of these held
-  positions, see `SignableAdapter.get_signers_order_userids` (PARAF-527).
-  [gbastien]
-- When the signers order is enforced, the `Signers` column header of the sessions
-  table (`@@parapheo`) is `Signers (signing order)` with a help icon explaining
-  that the signing order may be different from the order of the signers
-  on the document (PARAF-527).
-  [gbastien]
 - Added acroform signature and seal tags validation (PARAF-503).
   [chris-adam]
 - Acroform tags (PARAF-503):
@@ -38,6 +27,27 @@ Changelog
   annotation or the published document-generation view.
   `@@session-annotation-info` only renders `uid`/`context_uid` as links and displays
   the md5 of the current file.
+  [gbastien]
+
+
+1.0.5 (2026-11-19)
+------------------
+
+- Added setting to enforce signers order (PARAF-527).
+  [chris-adam]
+- The signers order (`imio.esign.signers` vocabulary) holds held position UIDs instead of userids,
+  `SignableAdapter.sort_signers` matches signers on the userids of the persons of these held
+  positions, see `SignableAdapter.get_signers_order_userids` (PARAF-527).
+  [gbastien]
+- When the signers order is enforced, the `Signers` column header of the sessions
+  table (`@@parapheo`) is `Signers (signing order)` with a help icon explaining
+  that the signing order may be different from the order of the signers
+  on the document (PARAF-527).
+  [gbastien]
+- When the signers order is enforced, the `Signers` label of the session info
+  viewlet displayed on an element is also `Signers (signing order)` with the same
+  help icon as the `Signers` column of the sessions table, see `table.signers_label`
+  and `table.signers_order_help_icon` (PARAF-527).
   [gbastien]
 
 

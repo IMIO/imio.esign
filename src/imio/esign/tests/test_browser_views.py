@@ -741,7 +741,7 @@ class TestAcroformErrorsViewlet(BaseEsignTest):
         session["state"] = "draft_full"
         self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
 
-        # --- the tags stored in the session are used, the files are not read ---
+        # --- the tags stored on the files are used, the files are not read ---
         with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
             self.assertEqual(len(AcroformErrorsViewlet(self.folder, self.request, None, None).errors), 1)
@@ -754,12 +754,11 @@ class TestAcroformErrorsViewlet(BaseEsignTest):
         self.assertEqual(AcroformErrorsViewlet(self.annex, self.request, None, None).errors, OrderedDict())
         self.assertEqual(get_session_annotation()["uids"][self.annex.UID()], session_id)
 
-        # --- files without stored tags (sessions created before tags were stored) are read ---
-        for file_data in session["files"]:
-            del file_data["acroform_tags"]
+        # --- files without stored tags are read, their tags are stored ---
+        del IAnnotations(self.annex)["imio.esign"]
         self.annex.file = pdf_file(tag(1))
         self.assertEqual(len(AcroformErrorsViewlet(self.annex, self.request, None, None).errors), 1)
-        self.assertNotIn("acroform_tags", session["files"][0])
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"]["acroform_tags"]["signers"], [1])
 
     def test_render(self):
         """Nothing rendered without errors, else a portal message using the markup

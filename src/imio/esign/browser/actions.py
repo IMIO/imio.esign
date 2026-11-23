@@ -5,6 +5,7 @@ from datetime import datetime
 from html import escape
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.acroform import FILE_ANNOTATION_KEY
 from imio.esign.acroform import get_file_fingerprint
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
@@ -19,10 +20,12 @@ from imio.esign.utils import remove_files_from_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.security import check_zope_admin
 from plone import api
+from Products.CMFCore.interfaces import IFolderish
 from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from six import string_types
+from zope.annotation.interfaces import IAnnotations
 from zope.i18n import translate
 
 import json
@@ -169,18 +172,13 @@ class SessionAnnotationInfoView(BrowserView):
         return self.index()
 
     def _uid_to_link(self, uid):
-        """Return an HTML link for an object UID, or the UID if not found.
-        For a file, the md5 of its current file is displayed too, to be compared
-        with the md5 of the stored acroform tags."""
+        """Return an HTML link for an object UID, or the UID if not found."""
         obj = uuidToObject(uid, unrestricted=True)
         if obj is None:
             return u"<span title='not found'>{}</span>".format(safe_unicode(uid))
         url = escape(obj.absolute_url() + "/view", quote=True)
         path = escape(u"/".join(obj.getPhysicalPath()))
         title = escape(safe_unicode(getattr(obj, "title", "") or path))
-        md5 = get_file_fingerprint(getattr(aq_base(obj), "file", None))
-        if md5:
-            return u"<a href='{}' title='{}'>{}</a> ({}, md5: {})".format(url, path, title, uid, md5)
         return u"<a href='{}' title='{}'>{}</a> ({})".format(url, path, title, uid)
 
     def _format_leaf(self, value):
@@ -246,6 +244,25 @@ class SessionAnnotationInfoView(BrowserView):
     def esign_session_html(self, session_data):
         """Renders esign session annot in HTML"""
         return self._render_value(session_data)
+
+    def sections(self):
+        """Return the (title, html) of the annotations to display, to be extended by subclasses:
+        the sessions, then the esign annotation of the context and of its files, with the md5
+        of their current file to compare with the stored one."""
+        sections = [(u"Session {}".format(sid), self.esign_session_html(session)) for sid, session in self.esign_sessions]
+        objs = [self.context]
+        if IFolderish.providedBy(self.context):
+            objs += self.context.objectValues()
+        files = []
+        for obj in objs:
+            nbf = getattr(aq_base(obj), "file", None)
+            annotation = IAnnotations(obj, {}).get(FILE_ANNOTATION_KEY)
+            # the portal annotation under the same key holds the sessions
+            if nbf is not None and annotation is not None:
+                files.append({"uid": obj.UID(), "current_md5": get_file_fingerprint(nbf), FILE_ANNOTATION_KEY: annotation})
+        if files:
+            sections.append((u"File annotations", self._render_value(files)))
+        return sections
 
     def available(self):
         """Defines if the action is available or not."""

@@ -409,7 +409,7 @@ class AcroformErrorsViewlet(ViewletBase):
         for session_id in session_ids:
             if get_session_info(session_id).get("state") not in self.draft_states:
                 continue
-            # use the acroform tags stored in the session, the files are not read
+            # use the acroform tags stored on the files, the files are not read
             for f_uid, (obj, context_uid, messages) in get_session_acroform_errors(session_id, stored=True).items():
                 if uid not in (f_uid, context_uid):
                     continue

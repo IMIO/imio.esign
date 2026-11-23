@@ -7,9 +7,9 @@ Changelog
 - Added acroform signature and seal tags validation (PARAF-503).
   [chris-adam]
 - Acroform tags (PARAF-503):
-  the tags found in a file are stored with its md5 in the session file data (`acroform_tags`),
-  when the file is added to the session and when the annex is modified (file only read again
-  if its md5 changed), errors are computed from these tags against the session signers and seal.
+  the tags found in a file are stored with its md5 in the `imio.esign` annotation of the file
+  (`acroform_tags`), updated when the annex is modified (file only read again if its md5 changed),
+  errors are computed from these tags against the signers and seal.
   The `esign-acroform-errors` viewlet uses the stored tags, is only displayed to users able
   to see the session info viewlet (`AcroformErrorsViewlet.session_info_viewlet_class`),
   uses the portal message markup of the running Plone version and lists
@@ -25,9 +25,10 @@ Changelog
   by the `conv_from_uid` attribute (set before the creation events, like
   `collective.documentgenerator` `convert_and_save_file` does), the `documentgenerator`
   annotation or the published document-generation view.
-  `@@session-annotation-info` only renders `uid`/`context_uid` as links and displays
-  the md5 of the current file.
+  `@@session-annotation-info` only renders `uid`/`context_uid` as links.
   [gbastien]
+- Stored the acroform tags on the file instead of the session, displayed by `@@session-annotation-info` (PARAF-503).
+  [chris-adam]
 
 
 1.0.5 (2026-11-19)

@@ -4,8 +4,8 @@ from Acquisition import aq_base
 from Acquisition import aq_parent
 from collective.iconifiedcategory.utils import get_category_object
 from imio.esign import _
-from imio.esign.acroform import get_tag_ids
-from imio.esign.acroform import update_file_acroform_tags
+from imio.esign.acroform import FILE_ANNOTATION_KEY
+from imio.esign.acroform import get_file_acroform_tags
 from imio.esign.adapters import ISignable
 from imio.esign.config import get_esign_registry_check_annexes_tags_outside_session
 from imio.esign.utils import get_file_info
@@ -76,22 +76,6 @@ def on_categorized_annex_updated(annex, event):
                     # file_uid is only there one time per session
                     break
 
-    # the file may have changed, update its stored acroform tags, the file is only read
-    # again if its md5 changed. Limited updates (to_print, to_sign, ...) do not change the file
-    if not event.limited:
-        _update_acroform_tags(annex, sessions)
-
-
-def _update_acroform_tags(annex, sessions):
-    """Update the acroform tags stored for p_annex in the given p_sessions."""
-    annex_uid = annex.UID()
-    for session in sessions.values():
-        for file_data in session["files"]:
-            if file_data["uid"] == annex_uid:
-                update_file_acroform_tags(file_data, annex)
-                # file_uid is only there one time per session
-                break
-
 
 def _is_generated_from_template(obj):
     """Is the file of p_obj generated from a template?
@@ -151,7 +135,11 @@ def on_annex_modified(annex, event):
     An annex is mainly a title and a file, when it is edited, it is very often the file that changed,
     so any modification is considered (edit form, file uploaded again, ...).
     Changing to_print, to_sign, confidential, ... does not notify an IObjectModifiedEvent.
+    The stored acroform tags of a file that is not signed are updated first, even if generated from a template.
     """
+    if not getattr(aq_base(annex), "signed", False) and \
+            "acroform_tags" in IAnnotations(annex).get(FILE_ANNOTATION_KEY, {}):
+        get_file_acroform_tags(annex)
     if _is_to_sign(annex):
         _show_acroform_tags(annex)
 
@@ -168,9 +156,10 @@ def _show_acroform_tags(annex):
     if not get_esign_registry_check_annexes_tags_outside_session() and \
             annex.UID() not in get_session_annotation()["uids"]:
         return
-    numbers, seal_count, malformed = get_tag_ids(getattr(annex, "file", None))
+    found = get_file_acroform_tags(annex, stored=True)
+    malformed = found["malformed"]
     title = safe_unicode(annex.Title())
-    tags = [u"Signer{}".format(nb) for nb in numbers] + seal_count * [u"SCEAU"]
+    tags = [u"Signer{}".format(nb) for nb in found["signers"]] + found["seals"] * [u"SCEAU"]
     if tags:
         api.portal.show_message(
             _("Acroform tags detected in '${title}': ${tags}", mapping={"title": title, "tags": u", ".join(tags)}),

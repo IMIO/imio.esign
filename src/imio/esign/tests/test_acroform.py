@@ -4,11 +4,11 @@ from collections import OrderedDict
 from imio.esign.acroform import check_file
 from imio.esign.acroform import extract_text
 from imio.esign.acroform import format_errors
+from imio.esign.acroform import get_file_acroform_tags
 from imio.esign.acroform import get_file_fingerprint
 from imio.esign.acroform import get_session_acroform_errors
 from imio.esign.acroform import get_tag_ids
 from imio.esign.acroform import join_errors
-from imio.esign.acroform import update_file_acroform_tags
 from imio.esign.acroform import validate_seal_count
 from imio.esign.acroform import validate_signer_numbers
 from imio.esign.tests.base import BaseEsignTest
@@ -21,6 +21,7 @@ from imio.esign.tests.base import TESTS_DIR
 from imio.esign.utils import add_files_to_session
 from mock import patch
 from plone.namedfile.file import NamedBlobFile
+from zope.annotation.interfaces import IAnnotations
 
 import os
 
@@ -221,40 +222,45 @@ class TestAcroform(BaseEsignTest):
         self.assertIsNone(get_file_fingerprint(None))
         self.assertIsNone(get_file_fingerprint(NamedBlobFile(data=b"", filename=u"empty.pdf")))
 
-    def test_update_file_acroform_tags(self):
-        """Tags are stored with the md5 of the file, the file is only read again when it changed."""
-        file_data = {}
+    def test_get_file_acroform_tags(self):
+        """Tags are stored with the md5 of the file in its annotation, the file is only read
+        again when it changed, the stored tags are trusted with stored=True."""
         self.annex.file = pdf_file(tag(1), seal_tag(), u'{{#"ID":"Signer2"#}}')
-        self.assertTrue(update_file_acroform_tags(file_data, self.annex))
-        self.assertEqual(
-            file_data["acroform_tags"],
-            {
-                "md5": get_file_fingerprint(self.annex.file),
-                "signers": [1],
-                "seals": 1,
-                "malformed": [u'{{#"ID":"Signer2"#}}'],
-            },
-        )
+        expected = {
+            "md5": get_file_fingerprint(self.annex.file),
+            "signers": [1],
+            "seals": 1,
+            "malformed": [u'{{#"ID":"Signer2"#}}'],
+        }
+        self.assertEqual(get_file_acroform_tags(self.annex), expected)
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"], {"acroform_tags": expected})
         # same file: not read again
         with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
-            self.assertFalse(update_file_acroform_tags(file_data, self.annex))
+            self.assertEqual(get_file_acroform_tags(self.annex), expected)
         self.assertFalse(mock_get_tag_ids.called)
-        # file changed: read again
+        # file changed: the stored tags are trusted with stored=True, read again otherwise
         self.annex.file = pdf_file(tag(1), tag(2))
-        self.assertTrue(update_file_acroform_tags(file_data, self.annex))
-        self.assertEqual(file_data["acroform_tags"]["signers"], [1, 2])
-        self.assertEqual(file_data["acroform_tags"]["seals"], 0)
-        self.assertEqual(file_data["acroform_tags"]["malformed"], [])
+        self.assertEqual(get_file_acroform_tags(self.annex, stored=True), expected)
+        tags = get_file_acroform_tags(self.annex)
+        self.assertEqual((tags["signers"], tags["seals"], tags["malformed"]), ([1, 2], 0, []))
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"]["acroform_tags"], tags)
+        # nothing stored yet: the file is read with stored=True too
+        del IAnnotations(self.annex)["imio.esign"]
+        self.assertEqual(get_file_acroform_tags(self.annex, stored=True)["signers"], [1, 2])
+        # no file: nothing found, nothing stored
+        self.assertEqual(
+            get_file_acroform_tags(self.folder), {"md5": None, "signers": [], "seals": 0, "malformed": []})
+        self.assertNotIn("imio.esign", IAnnotations(self.folder))
 
     def test_get_session_acroform_errors_stored(self):
-        """With stored=True, the tags stored in the session are checked against the session
+        """With stored=True, the tags stored on the files are checked against the session
         signers and seal, the files are not read, files without stored tags are read."""
         self.annex.file = pdf_file(tag(1))
         session_id, session = add_files_to_session(self.signers, (self.annex.UID(),))[-1]
-        self.assertEqual(session["files"][0]["acroform_tags"]["signers"], [1])
+        self.assertEqual(len(get_session_acroform_errors(session_id, stored=True)), 1)  # read and stored
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"]["acroform_tags"]["signers"], [1])
         # the file changed without updating the stored tags: stored and live results differ
         self.annex.file = pdf_file(tag(1), tag(2))
-        self.assertEqual(get_session_acroform_errors(session_id), OrderedDict())
         with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             errors = get_session_acroform_errors(session_id, stored=True)
         self.assertFalse(mock_get_tag_ids.called)
@@ -263,8 +269,8 @@ class TestAcroform(BaseEsignTest):
         session["signers"] = session["signers"][:1]
         self.assertEqual(get_session_acroform_errors(session_id, stored=True), OrderedDict())
         session["signers"] = session["signers"] * 2
-        # no stored tags: the file is read
-        del session["files"][0]["acroform_tags"]
+        # live check: the file is read again, its stored tags are updated
+        self.assertEqual(get_session_acroform_errors(session_id), OrderedDict())
         self.assertEqual(get_session_acroform_errors(session_id, stored=True), OrderedDict())
 
     def test_format_errors(self):

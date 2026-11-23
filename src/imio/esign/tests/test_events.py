@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """events tests for this package."""
-from collective.iconifiedcategory.event import CategorizedElementUpdatedEvent
 from collective.iconifiedcategory.event import IconifiedAttrChangedEvent
 from collective.iconifiedcategory.utils import calculate_category_id
-from imio.esign.acroform import get_file_fingerprint
 from imio.esign.acroform import get_tag_ids
 from imio.esign.config import get_esign_registry_check_annexes_tags_outside_session
 from imio.esign.config import set_esign_registry_check_annexes_tags_outside_session
@@ -90,7 +88,7 @@ class TestEvents(BaseEsignTest):
         notified at creation but only one of them reads the file."""
 
         def get_tag_ids_calls(create):
-            with patch("imio.esign.events.get_tag_ids", side_effect=get_tag_ids) as mock_get_tag_ids:
+            with patch("imio.esign.acroform.get_tag_ids", side_effect=get_tag_ids) as mock_get_tag_ids:
                 annex = create()
             self.assertTrue(annex.to_sign)
             IStatusMessage(self.request).show()
@@ -128,11 +126,10 @@ class TestEvents(BaseEsignTest):
     def test_check_annexes_tags_outside_session_disabled(self):
         """When the check_annexes_tags_outside_session setting is disabled, the file of an annex to sign
         that is not in a session is not read when it is added, set to sign or modified.
-        Annexes in a session are still checked: tags stored when added to the session
-        and displayed when modified."""
+        Annexes in a session are still checked: tags displayed when modified."""
         self.assertTrue(get_esign_registry_check_annexes_tags_outside_session())
         set_esign_registry_check_annexes_tags_outside_session(False)
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             # to_sign default value of the category
             annex = self._add_annex("annex-default", pdf_file(tag(1)))
             # to_sign given at creation
@@ -145,11 +142,8 @@ class TestEvents(BaseEsignTest):
             notify(ObjectModifiedEvent(annex))
         self.assertFalse(mock_get_tag_ids.called)
         self.assertEqual(IStatusMessage(self.request).show(), [])
-        # files added to a session are still checked
-        sid, session = add_files_to_session(
-            [("user1", "user1@sign.com", "User 1", "Position 1")], (annex.UID(),))[-1]
-        self.assertEqual(session["files"][0]["acroform_tags"]["signers"], [1])
-        # and the tags of an annex in a session are displayed when it is modified
+        # the tags of an annex in a session are still displayed when it is modified
+        add_files_to_session([("user1", "user1@sign.com", "User 1", "Position 1")], (annex.UID(),))
         notify(ObjectModifiedEvent(annex))
         messages = IStatusMessage(self.request).show()
         self.assertEqual(len(messages), 1)
@@ -158,7 +152,7 @@ class TestEvents(BaseEsignTest):
     def test_on_annex_added_not_to_sign(self):
         """The file of an annex that is not to sign is not read."""
         self.category.to_sign = False
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             annex = self._add_annex("annex-not-to-sign", pdf_file(tag(1)))
         self.assertFalse(annex.to_sign)
         self.assertFalse(mock_get_tag_ids.called)
@@ -167,7 +161,7 @@ class TestEvents(BaseEsignTest):
         # --- nor when signing is not activated, even if to_sign by default in the category ---
         self.category.to_sign = True
         self.category_group.signed_activated = False
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             annex = self._add_annex("annex-not-activated", pdf_file(tag(1)))
         self.assertFalse(annex.to_sign)
         self.assertFalse(mock_get_tag_ids.called)
@@ -187,7 +181,7 @@ class TestEvents(BaseEsignTest):
         self.assertEqual(len(messages), 1)
         self.assertIn(u"Signer1", messages[0].message)
         # --- already to sign (signed changed), set signed directly, no more to sign, another attribute: nothing said ---
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             self.assertEqual(changed("to_sign", {"to_sign": True, "signed": False}, {"to_sign": True, "signed": True}), [])
             self.assertEqual(changed("to_sign", {"to_sign": False, "signed": False}, {"to_sign": True, "signed": True}), [])
             self.assertEqual(changed("to_sign", {"to_sign": True, "signed": False}, {"to_sign": False, "signed": False}), [])
@@ -195,7 +189,9 @@ class TestEvents(BaseEsignTest):
         self.assertFalse(mock_get_tag_ids.called)
 
     def test_on_annex_modified(self):
-        """Any modification of an annex to sign (not signed yet) lists the tags of its file."""
+        """Any modification of an annex to sign (not signed yet) lists the tags of its file.
+        The stored tags of a file are updated when it changed, even when it is not to sign
+        or generated from a template, not once it is signed."""
         annex = self._add_annex("annex-tags", pdf_file(tag(1)))
         IStatusMessage(self.request).show()  # consume the message of the creation
         # --- file changed ---
@@ -211,8 +207,8 @@ class TestEvents(BaseEsignTest):
         self.assertEqual(len(messages), 1)
         self.assertIn(u"New title", messages[0].message)
 
-        # --- signed or not to sign: the file is not read ---
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        # --- signed or not to sign: nothing said, the unchanged file is not read again ---
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             annex.signed = True
             notify(ObjectModifiedEvent(annex))
             annex.signed = False
@@ -220,6 +216,32 @@ class TestEvents(BaseEsignTest):
             notify(ObjectModifiedEvent(annex))
         self.assertFalse(mock_get_tag_ids.called)
         self.assertEqual(IStatusMessage(self.request).show(), [])
+
+        def stored_signers(obj):
+            return IAnnotations(obj)["imio.esign"]["acroform_tags"]["signers"]
+
+        # --- not to sign: the stored tags are updated when the file changed ---
+        annex.file = pdf_file(tag(2))
+        notify(ObjectModifiedEvent(annex))
+        self.assertEqual(stored_signers(annex), [2])
+        self.assertEqual(IStatusMessage(self.request).show(), [])
+        # --- generated from a template, edited to fix its tags: updated, nothing said ---
+        annex.to_sign = True
+        IAnnotations(annex)["documentgenerator"] = {"template_uid": "some-uid"}
+        annex.file = pdf_file(tag(1))
+        notify(ObjectModifiedEvent(annex))
+        self.assertEqual(stored_signers(annex), [1])
+        self.assertEqual(IStatusMessage(self.request).show(), [])
+        # --- signed: not updated anymore ---
+        annex.signed = True
+        annex.file = pdf_file(tag(3))
+        notify(ObjectModifiedEvent(annex))
+        self.assertEqual(stored_signers(annex), [1])
+        # --- nothing stored and not to sign: the file is not read ---
+        self.category.to_sign = False
+        other = self._add_annex("annex-other", pdf_file(tag(1)))
+        notify(ObjectModifiedEvent(other))
+        self.assertNotIn("imio.esign", IAnnotations(other))
 
     def test_on_annex_added_generated_file(self):
         """A file produced from a template says nothing: its tags come from the template."""
@@ -242,7 +264,7 @@ class TestEvents(BaseEsignTest):
 
         # --- created with conv_from_uid (collective.documentgenerator convert_and_save_file),
         # it is set before the creation events so the file is not read, whatever the published view ---
-        with patch("imio.esign.events.get_tag_ids") as mock_get_tag_ids:
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
             self._add_annex("annex-converted", pdf_file(tag(1)), conv_from_uid="some-uid")
             self._add_annex("annex-converted-to-sign-given", pdf_file(tag(1)), conv_from_uid="some-uid", to_sign=True)
         self.assertFalse(mock_get_tag_ids.called)
@@ -267,27 +289,3 @@ class TestEvents(BaseEsignTest):
         notify(ObjectModifiedEvent(annex2))
         self.assertEqual([f["filename"] for f in session["files"]], [u"annex0.pdf", u"annex0-1.pdf"])
         self.assertEqual(session["files"][1]["title"], "New Annex 2")
-
-    def test_on_categorized_annex_updated_acroform_tags(self):
-        """The acroform tags stored in the session are updated when the file of an annex changed."""
-        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
-        annex0 = self.portal["folder0"]["annex0"]
-        annex0.file = pdf_file(tag(1))
-        sid, session = add_files_to_session(signers, (annex0.UID(),))[-1]
-        self.assertEqual(session["files"][0]["acroform_tags"]["signers"], [1])
-        # modified but same file: not read again
-        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
-            notify(ObjectModifiedEvent(annex0))
-        self.assertFalse(mock_get_tag_ids.called)
-        # file changed: tags updated
-        annex0.file = pdf_file(tag(1), seal_tag())
-        notify(ObjectModifiedEvent(annex0))
-        self.assertEqual(session["files"][0]["acroform_tags"]["seals"], 1)
-        self.assertEqual(
-            session["files"][0]["acroform_tags"]["md5"], get_file_fingerprint(annex0.file))
-        # limited updates (to_print, to_sign, ...) do not change the file, tags not updated
-        annex0.file = pdf_file(tag(2))
-        values = dict(annex0.aq_parent.categorized_elements[annex0.UID()])
-        notify(CategorizedElementUpdatedEvent(
-            annex0, annex0.aq_parent, old_values=values, new_values=dict(values), limited=True))
-        self.assertEqual(session["files"][0]["acroform_tags"]["signers"], [1])

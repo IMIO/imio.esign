@@ -2,6 +2,7 @@
 """actions tests for this package."""
 from AccessControl import Unauthorized
 from datetime import datetime
+from imio.esign.acroform import get_file_acroform_tags
 from imio.esign.acroform import get_file_fingerprint
 from imio.esign.browser.actions import RecreateSessionFormView
 from imio.esign.browser.actions import RecreateSessionView
@@ -11,6 +12,8 @@ from imio.esign.browser.actions import SessionAnnotationInfoView
 from imio.esign.config import set_esign_registry_enforce_signers_order
 from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import pdf_file
+from imio.esign.tests.base import tag
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from plone import api
@@ -235,32 +238,20 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
   "discriminators": [],
   "files": [
     {{
-      "acroform_tags": {{
-        "malformed": [],
-        "md5": "{5}",
-        "seals": 0,
-        "signers": [],
-      }},
       "context_uid": <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({0}),
       "filename": "annex0.pdf",
       "scan_id": "012345600000000",
       "status": "",
       "title": "Annex 0",
-      "uid": <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}, md5: {5}),
+      "uid": <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
     }},
     {{
-      "acroform_tags": {{
-        "malformed": [],
-        "md5": "{6}",
-        "seals": 0,
-        "signers": [],
-      }},
       "context_uid": <a href='http://nohost/plone/folder0/view' title='/plone/folder0'>Folder 0</a> ({2}),
       "filename": "annex2.pdf",
       "scan_id": "012345600000002",
       "status": "",
       "title": "Annex 2",
-      "uid": <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a> ({3}, md5: {6}),
+      "uid": <a href='http://nohost/plone/folder0/annex2/view' title='/plone/folder0/annex2'>Annex 2</a> ({3}),
     }},
   ],
   "last_update": {4},
@@ -294,10 +285,44 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
     folder_uid,
     self.annexes[1].UID(),
     "datetime({})".format(esign_session[1]["last_update"].strftime("%d/%m/%Y %H:%M:%S")),
-    get_file_fingerprint(self.annexes[0].file),
-    get_file_fingerprint(self.annexes[1].file),
             ),
         )
+
+    def test_sections(self):
+        """The sessions, then the esign annotation of the context and of its files, with the md5
+        of their current file to compare with the stored one."""
+        annex = self.annexes[0]
+        add_files_to_session(self.signers, [annex.UID()], title=u"Session {sign_id}")
+        self.assertEqual([title for title, html in self.view.sections()], [u"Session 0"])
+        get_file_acroform_tags(annex)
+        sections = self.view.sections()
+        self.assertEqual([title for title, html in sections], [u"Session 0", u"File annotations"])
+        md5 = get_file_fingerprint(annex.file)
+        expected = u"""[
+  {{
+    "current_md5": "{0}",
+    "imio.esign": {{
+      "acroform_tags": {{
+        "malformed": [],
+        "md5": "{0}",
+        "seals": 0,
+        "signers": [],
+      }},
+    }},
+    "uid": <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
+  }},
+]""".format(md5, annex.UID())
+        self.assertEqual(unescape(sections[1][1]), expected)
+        # on the file itself
+        sections = SessionAnnotationInfoView(annex, self.request).sections()
+        self.assertEqual(unescape(sections[1][1]), expected)
+        # the file changed since its tags were stored
+        annex.file = pdf_file(tag(1))
+        self.assertIn(u'"current_md5": "{}"'.format(get_file_fingerprint(annex.file)),
+                      unescape(self.view.sections()[1][1]))
+        # on the portal (link of the sessions listing), its session annotation is not a file one
+        self.assertEqual([title for title, html in SessionAnnotationInfoView(self.portal, self.request).sections()],
+                         [u"Session 0"])
 
 
 class TestRecreateSessionView(BaseEsignTest):

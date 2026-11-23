@@ -7,6 +7,7 @@ and one seal tag, for the seal image, like
 {{#"ID":"SCEAU","Size":{"Height":"200","Width":"200"}#}}
 """
 
+from Acquisition import aq_base
 from collections import OrderedDict
 from imio.esign import _
 from imio.esign import logger
@@ -18,6 +19,7 @@ from jsonschema import Draft4Validator
 from jsonschema import ValidationError
 from Products.CMFPlone.utils import safe_unicode
 from xml.sax.saxutils import unescape
+from zope.annotation.interfaces import IAnnotations
 from zope.component import getAdapter
 from zope.i18n import translate
 
@@ -26,6 +28,14 @@ import json
 import re
 import subprocess
 import zipfile
+
+
+try:
+    from plone.protect.utils import safeWrite
+except ImportError:  # plone.protect < 3
+
+    def safeWrite(obj, request=None):
+        pass
 
 
 # DOTALL: in a raw extracted text, a tag can be wrapped over lines
@@ -50,6 +60,8 @@ TAG_VALIDATOR = Draft4Validator(
 XML_TAG_RE = re.compile(r"<[^>]*>")
 WHITESPACE_RE = re.compile(r"\s+")
 PDFTOTEXT = "pdftotext"
+# annotation of a file holding its esign data, like its acroform tags
+FILE_ANNOTATION_KEY = "imio.esign"
 
 # content type -> path, inside the zipped document, of the xml part holding the text
 ZIPPED_XML_PARTS = {
@@ -180,14 +192,15 @@ def check_tags(numbers, seal_count, malformed, nb_signers, seal=False):
     return errors + validate_seal_count(seal_count, seal)
 
 
-def check_file(obj, nb_signers, seal=False):
+def check_file(obj, nb_signers, seal=False, stored=False):
     """Return the acroform tag error messages of a content object holding a file.
 
     :param nb_signers: number of signers, or None when the signature tags are unused
     :param seal: whether a seal is defined on the container
+    :param stored: trust the stored acroform tags, see get_file_acroform_tags
     """
-    numbers, seal_count, malformed = get_tag_ids(getattr(obj, "file", None))
-    return check_tags(numbers, seal_count, malformed, nb_signers, seal)
+    tags = get_file_acroform_tags(obj, stored)
+    return check_tags(tags["signers"], tags["seals"], tags["malformed"], nb_signers, seal)
 
 
 def get_file_fingerprint(nbf):
@@ -198,31 +211,38 @@ def get_file_fingerprint(nbf):
     return hashlib.md5(data).hexdigest()
 
 
-def update_file_acroform_tags(file_data, obj):
-    """Store in the session file data the acroform tags of the file of p_obj, see get_tag_ids.
+def get_file_acroform_tags(obj, stored=False):
+    """Return the acroform tags of the file of p_obj, stored with its md5 in the annotation of p_obj,
+    the file is only read again when its md5 changed.
 
-    The tags are stored with the md5 of the file, the file text is only read again when the file changed.
-    Errors are not stored, they depend on the session signers and seal and are computed when needed.
-
-    :param file_data: the (persistent) data of the file in the session
-    :return: True if the tags were (re)computed
+    :param stored: trust the stored tags, without computing the md5
+    :return: {"md5": ..., "signers": [...], "seals": ..., "malformed": [...]}
     """
+    annotation = IAnnotations(obj).get(FILE_ANNOTATION_KEY, {})
+    tags = annotation.get("acroform_tags")
+    if tags is not None and stored:
+        return tags
     nbf = getattr(obj, "file", None)
     md5 = get_file_fingerprint(nbf)
-    stored = file_data.get("acroform_tags")
-    if stored is not None and stored["md5"] == md5:
-        return False
+    if tags is not None and tags["md5"] == md5:
+        return tags
     numbers, seal_count, malformed = get_tag_ids(nbf)
-    file_data["acroform_tags"] = {"md5": md5, "signers": numbers, "seals": seal_count, "malformed": malformed}
-    return True
+    tags = {"md5": md5, "signers": numbers, "seals": seal_count, "malformed": malformed}
+    if md5 is None:  # no file
+        return tags
+    # the dict is replaced, never changed in place, so it is persisted
+    IAnnotations(obj)[FILE_ANNOTATION_KEY] = dict(annotation, acroform_tags=tags)
+    # a cache, also written when the errors are displayed
+    safeWrite(obj)
+    safeWrite(aq_base(obj).__annotations__)
+    return tags
 
 
 def get_session_acroform_errors(session_id, stored=False):
     """Return the acroform tag errors of the files of a session, checked against its signers.
 
     :param session_id: internal session id
-    :param stored: use the acroform tags stored in the session (see update_file_acroform_tags)
-                   instead of reading the files, files without stored tags are read
+    :param stored: trust the acroform tags stored on the files, see get_file_acroform_tags
     :return: OrderedDict {file uid: (file object, context uid, [error messages])}, holding
              only the files in error
     """
@@ -236,11 +256,7 @@ def get_session_acroform_errors(session_id, stored=False):
         obj = uuidToObject(uuid=file_info["uid"], unrestricted=True)
         if obj is None:
             continue
-        tags = stored and file_info.get("acroform_tags") or None
-        if tags is not None:
-            errors = check_tags(tags["signers"], tags["seals"], tags["malformed"], nb_signers, seal)
-        else:
-            errors = check_file(obj, nb_signers, seal)
+        errors = check_file(obj, nb_signers, seal, stored)
         if errors:
             context_uid = getAdapter(obj, IContextUidProvider).get_context_uid()
             res[file_info["uid"]] = (obj, context_uid, errors)

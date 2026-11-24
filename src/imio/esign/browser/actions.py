@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
 from Acquisition import aq_base
+from collections import OrderedDict
 from datetime import datetime
 from html import escape
 from imio.esign import _
@@ -247,21 +248,24 @@ class SessionAnnotationInfoView(BrowserView):
 
     def sections(self):
         """Return the (title, html) of the annotations to display, to be extended by subclasses:
-        the sessions, then the esign annotation of the context and of its files, with the md5
-        of their current file to compare with the stored one."""
-        sections = [(u"Session {}".format(sid), self.esign_session_html(session)) for sid, session in self.esign_sessions]
+        the sessions, then the esign annotation of the context, of its files and of the session files,
+        with the md5 of their current file to compare with the stored one."""
+        sessions = self.esign_sessions
+        sections = [(u"Session {}".format(sid), self.esign_session_html(session)) for sid, session in sessions]
         objs = [self.context]
         if IFolderish.providedBy(self.context):
             objs += self.context.objectValues()
-        files = []
+        objs += [uuidToObject(f["uid"], unrestricted=True) for sid, session in sessions for f in session["files"]]
+        files = OrderedDict()
         for obj in objs:
-            nbf = getattr(aq_base(obj), "file", None)
-            annotation = IAnnotations(obj, {}).get(FILE_ANNOTATION_KEY)
             # the portal annotation under the same key holds the sessions
-            if nbf is not None and annotation is not None:
-                files.append({"uid": obj.UID(), "current_md5": get_file_fingerprint(nbf), FILE_ANNOTATION_KEY: annotation})
+            annotation = obj is not None and IAnnotations(obj, {}).get(FILE_ANNOTATION_KEY) or {}
+            if "acroform_tags" in annotation:
+                nbf = getattr(aq_base(obj), "file", None)
+                files[obj.UID()] = {"uid": obj.UID(), "current_md5": get_file_fingerprint(nbf),
+                                    FILE_ANNOTATION_KEY: annotation}
         if files:
-            sections.append((u"File annotations", self._render_value(files)))
+            sections.append((u"File annotations", self._render_value(list(files.values()))))
         return sections
 
     def available(self):

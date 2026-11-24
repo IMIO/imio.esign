@@ -320,9 +320,12 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
         annex.file = pdf_file(tag(1))
         self.assertIn(u'"current_md5": "{}"'.format(get_file_fingerprint(annex.file)),
                       unescape(self.view.sections()[1][1]))
-        # on the portal (link of the sessions listing), its session annotation is not a file one
-        self.assertEqual([title for title, html in SessionAnnotationInfoView(self.portal, self.request).sections()],
-                         [u"Session 0"])
+        # on the portal (link of the sessions listing): the files of the displayed sessions,
+        # its own annotation holds the sessions
+        self.request.form["session_id"] = "0"
+        sections = SessionAnnotationInfoView(self.portal, self.request).sections()
+        self.assertEqual([title for title, html in sections], [u"Session 0", u"File annotations"])
+        self.assertIn(annex.UID(), sections[1][1])
 
 
 class TestRecreateSessionView(BaseEsignTest):

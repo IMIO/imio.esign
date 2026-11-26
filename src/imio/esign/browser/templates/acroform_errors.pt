@@ -1,0 +1,24 @@
+<tal:comment replace="nothing">Same markup as portal messages of the running Plone version</tal:comment>
+<dl class="portalMessage error acroform-errors"
+    i18n:domain="imio.esign"
+    tal:condition="python: view.plone_major_version < 5">
+  <dt i18n:translate="" i18n:domain="plone">Error</dt>
+  <dd>
+    <metal:errors define-macro="errors">
+      <strong i18n:translate="">Wrong signature or seal tags</strong>
+      <ul>
+        <li tal:repeat="item python: view.errors.values()"><tal:errors
+            replace="python: view.join_errors(item[1])">error messages</tal:errors>: <a
+            tal:attributes="href python: item[0].absolute_url()"
+            tal:content="python: item[0].Title()">file title</a></li>
+      </ul>
+      <strong i18n:translate="">The session can not be created in Parapheo as long as these errors are not fixed.</strong>
+    </metal:errors>
+  </dd>
+</dl>
+<div class="portalMessage statusmessage statusmessage-error alert alert-danger acroform-errors"
+     role="alert"
+     i18n:domain="imio.esign"
+     tal:condition="python: view.plone_major_version >= 5">
+  <metal:errors use-macro="template/macros/errors" />
+</div>

@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from AccessControl import Unauthorized
+from collections import OrderedDict
 from copy import deepcopy
 from datetime import datetime
 from datetime import timedelta
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.acroform import format_errors
+from imio.esign.acroform import get_session_acroform_errors
+from imio.esign.acroform import join_errors
 from imio.esign.audit import audit
 from imio.esign.browser.table import external_session_link
 from imio.esign.browser.table import SessionsTable
@@ -16,6 +20,7 @@ from imio.esign.config import get_esign_registry_enforce_signers_order
 from imio.esign.config import get_esign_registry_parapheo_url
 from imio.esign.config import get_esign_registry_signers_order
 from imio.esign.config import get_esign_registry_signing_users_email_content
+from imio.esign.interfaces import IContextUidProvider
 from imio.esign.utils import create_external_session
 from imio.esign.utils import get_session_annotation
 from imio.esign.utils import get_session_info
@@ -39,6 +44,7 @@ from Products.Five import BrowserView
 from Products.PageTemplates.Expressions import SecureModuleImporter
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 from zope.cachedescriptors.property import CachedProperty
+from zope.component import getAdapter
 from zope.component import getMultiAdapter
 from zope.i18n import translate
 from zope.interface import implementer
@@ -175,6 +181,26 @@ class SessionDeleteView(BrowserView):
 class ExternalSessionCreateView(BrowserView):
     """View to create a session in Luxtrust."""
 
+    def get_container_title(self, container):
+        """Return the title of the container of a file, displayed before the file title
+        in the acroform errors so the file can be located. May be overridden."""
+        return safe_unicode(container.Title())
+
+    def get_file_label(self, obj, context_uid, position=None):
+        """Return the label identifying a file in the acroform errors: its position
+        in the session (like in the files list of the session), its container title
+        and its own title.
+
+        :param position: position (1 based) of the file in the session files
+        """
+        label = safe_unicode(obj.Title())
+        container = context_uid and uuidToObject(context_uid, unrestricted=True) or None
+        if container is not None:
+            label = u"{} - {}".format(self.get_container_title(container), label)
+        if position is not None:
+            label = u"{}. {}".format(position, label)
+        return label
+
     def __call__(self, session_id=None):
         if not self.may_create_external_sessions():
             raise Unauthorized
@@ -182,6 +208,24 @@ class ExternalSessionCreateView(BrowserView):
             session_id = self.request.get("session_id", None)
         if session_id is None:
             api.portal.show_message(_("No session ID provided!"), request=self.request, type="error")
+            return self.context.absolute_url() + "/@@parapheo"
+        acroform_errors = get_session_acroform_errors(int(session_id))
+        if acroform_errors:
+            audit("send_to_external_service", "session={} error=acroform".format(session_id))
+            api.portal.show_message(
+                _("Session ${id} not sent because signature or seal tags are wrong:", mapping={"id": session_id}),
+                request=self.request,
+                type="error",
+            )
+            # position of the files in the session, like in the files list of the session
+            positions = {f["uid"]: i for i, f in enumerate(get_session_info(int(session_id))["files"], 1)}
+            # one message by file, portal messages can not hold line breaks
+            for uid, (obj, context_uid, messages) in acroform_errors.items():
+                api.portal.show_message(
+                    format_errors(self.get_file_label(obj, context_uid, positions.get(uid)), messages, self.request),
+                    request=self.request,
+                    type="error",
+                )
             return self.context.absolute_url() + "/@@parapheo"
         resp = create_external_session(int(session_id))
         if resp == "_session_not_found_":
@@ -319,6 +363,72 @@ class ItemSessionInfoViewlet(FacetedSessionInfoViewlet):
     def sessions(self):
         """Return all sessions that contain files from this context."""
         return get_sessions_for(self.context.UID())
+
+
+class AcroformErrorsViewlet(ViewletBase):
+    """Show the signature tag errors of the files of a draft session.
+
+    Works both on a file and on its container:
+    - a file reports its own errors
+    - a container reports the errors of the files it owns.
+    Errors are only shown to users able to see the session info viewlet on the container.
+    """
+
+    index = ViewPageTemplateFile("templates/acroform_errors.pt")
+    draft_states = ("draft", "draft_full")
+    # the portal message markup differs in Plone 4
+    plone_major_version = int(api.env.plone_version().split(".")[0])
+    # session info viewlet displayed on the container, to be overridden in subclass
+    session_info_viewlet_class = ItemSessionInfoViewlet
+
+    def get_container(self):
+        """Return the container of the files, the context itself when it is not a file.
+        None is returned when the container of a file is not accessible."""
+        if self.context.UID() not in get_session_annotation()["uids"]:
+            return self.context
+        context_uid = getAdapter(self.context, IContextUidProvider).get_context_uid()
+        return context_uid and uuidToObject(context_uid) or None
+
+    def may_view_session_info(self):
+        """Is the session info viewlet available on the container?"""
+        container = self.get_container()
+        if container is None:
+            return False
+        return self.session_info_viewlet_class(container, self.request, self.view, self.manager).available()
+
+    @CachedProperty
+    def errors(self):
+        """Return OrderedDict {file uid: (file object, [translated error messages])}."""
+        uid = self.context.UID()
+        annot = get_session_annotation()
+        if uid in annot["uids"]:  # the context is a file itself
+            session_ids = [annot["uids"][uid]]
+        else:                     # the context is a container
+            session_ids = list(get_sessions_for(uid).keys())
+        res = OrderedDict()
+        for session_id in session_ids:
+            if get_session_info(session_id).get("state") not in self.draft_states:
+                continue
+            # use the acroform tags stored on the files, the files are not read
+            for f_uid, (obj, context_uid, messages) in get_session_acroform_errors(session_id, stored=True).items():
+                if uid not in (f_uid, context_uid):
+                    continue
+                res[f_uid] = (obj, [translate(msg, context=self.request) for msg in messages])
+        return res
+
+    def available(self):
+        # check access first, files without stored acroform tags are read
+        return self.may_view_session_info() and bool(self.errors)
+
+    def join_errors(self, messages):
+        """Translated error messages of a file on one line, followed by ": " and a link
+        to the file, like the errors displayed when the session is sent."""
+        return join_errors(messages)
+
+    def render(self):
+        if not self.available():
+            return ""
+        return self.index()
 
 
 @implementer(IPublishTraverse)

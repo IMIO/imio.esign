@@ -143,6 +143,19 @@ class IImioEsignSettings(Interface):
         required=False,
     )
 
+    check_annexes_tags_outside_session = schema.Bool(
+        title=_("Check the signature and seal tags of annexes to sign that are not in a session yet?"),
+        description=_(
+            "If checked, when an annex to sign that is not in a session yet is added, set to sign or modified, "
+            "its file is read and the signature and seal tags found are displayed. "
+            "Reading the files may slow down adding a lot of annexes to sign at once, uncheck it in this case. "
+            "This does not disable the checks of the annexes that are in a session: their wrong tags are still "
+            "displayed on the annex and on its container and a session with wrong tags can not be sent."
+        ),
+        default=True,
+        required=False,
+    )
+
 
 @implementer(IVocabularyFactory)
 class SignersVocabulary(object):

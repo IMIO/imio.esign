@@ -2,6 +2,8 @@
 """actions tests for this package."""
 from AccessControl import Unauthorized
 from datetime import datetime
+from imio.esign.acroform import get_file_acroform_tags
+from imio.esign.acroform import get_file_fingerprint
 from imio.esign.browser.actions import RecreateSessionFormView
 from imio.esign.browser.actions import RecreateSessionView
 from imio.esign.browser.actions import RemoveFromSessionView
@@ -10,6 +12,8 @@ from imio.esign.browser.actions import SessionAnnotationInfoView
 from imio.esign.config import set_esign_registry_enforce_signers_order
 from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import pdf_file
+from imio.esign.tests.base import tag
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import get_session_annotation
 from plone import api
@@ -283,6 +287,45 @@ class TestSessionAnnotationInfoView(BaseEsignTest):
     "datetime({})".format(esign_session[1]["last_update"].strftime("%d/%m/%Y %H:%M:%S")),
             ),
         )
+
+    def test_sections(self):
+        """The sessions, then the esign annotation of the context and of its files, with the md5
+        of their current file to compare with the stored one."""
+        annex = self.annexes[0]
+        add_files_to_session(self.signers, [annex.UID()], title=u"Session {sign_id}")
+        self.assertEqual([title for title, html in self.view.sections()], [u"Session 0"])
+        get_file_acroform_tags(annex)
+        sections = self.view.sections()
+        self.assertEqual([title for title, html in sections], [u"Session 0", u"File annotations"])
+        md5 = get_file_fingerprint(annex.file)
+        expected = u"""[
+  {{
+    "current_md5": "{0}",
+    "imio.esign": {{
+      "acroform_tags": {{
+        "malformed": [],
+        "md5": "{0}",
+        "seals": 0,
+        "signers": [],
+      }},
+    }},
+    "uid": <a href='http://nohost/plone/folder0/annex0/view' title='/plone/folder0/annex0'>Annex 0</a> ({1}),
+  }},
+]""".format(md5, annex.UID())
+        self.assertEqual(unescape(sections[1][1]), expected)
+        # on the file itself
+        sections = SessionAnnotationInfoView(annex, self.request).sections()
+        self.assertEqual(unescape(sections[1][1]), expected)
+        # the file changed since its tags were stored
+        annex.file = pdf_file(tag(1))
+        self.assertIn(u'"current_md5": "{}"'.format(get_file_fingerprint(annex.file)),
+                      unescape(self.view.sections()[1][1]))
+        # on the portal (link of the sessions listing): the files of the displayed sessions,
+        # its own annotation holds the sessions
+        self.request.form["session_id"] = "0"
+        sections = SessionAnnotationInfoView(self.portal, self.request).sections()
+        self.assertEqual([title for title, html in sections], [u"Session 0", u"File annotations"])
+        self.assertIn(annex.UID(), sections[1][1])
 
 
 class TestRecreateSessionView(BaseEsignTest):

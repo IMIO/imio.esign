@@ -1,0 +1,286 @@
+# -*- coding: utf-8 -*-
+"""acroform tests for this package."""
+from collections import OrderedDict
+from imio.esign.acroform import check_file
+from imio.esign.acroform import extract_text
+from imio.esign.acroform import format_errors
+from imio.esign.acroform import get_file_acroform_tags
+from imio.esign.acroform import get_file_fingerprint
+from imio.esign.acroform import get_session_acroform_errors
+from imio.esign.acroform import get_tag_ids
+from imio.esign.acroform import join_errors
+from imio.esign.acroform import validate_seal_count
+from imio.esign.acroform import validate_signer_numbers
+from imio.esign.tests.base import BaseEsignTest
+from imio.esign.tests.base import ODT_CONTENT_TYPE
+from imio.esign.tests.base import odt_file
+from imio.esign.tests.base import pdf_file
+from imio.esign.tests.base import seal_tag
+from imio.esign.tests.base import tag
+from imio.esign.tests.base import TESTS_DIR
+from imio.esign.utils import add_files_to_session
+from mock import patch
+from plone.namedfile.file import NamedBlobFile
+from zope.annotation.interfaces import IAnnotations
+
+import os
+
+
+class TestAcroform(BaseEsignTest):
+    """Tests for the acroform module."""
+
+    def setUp(self):
+        super(TestAcroform, self).setUp()
+        self.folder = self.portal["folder0"]
+        self.annex = self.folder["annex0"]
+        self.signers = [
+            ("user1", "user1@sign.com", "User 1", "Position 1"),
+            ("user2", "user2@sign.com", "User 2", "Position 2"),
+        ]
+
+    def test_extract_text(self):
+        """pdf and odt are read, whitespace is dropped, unreadable files give u""."""
+        # --- pdf ---
+        self.assertEqual(extract_text(pdf_file(u"hello world")), u"helloworld")
+        self.assertEqual(extract_text(pdf_file(tag(1), u"text")), u'{{#"ID":"Signer1","Size":{"Height":"70","Width":"200"}#}}text')
+
+        # --- odt ---
+        self.assertEqual(extract_text(odt_file(u"hello world")), u"helloworld")
+        self.assertEqual(extract_text(odt_file(tag(2))), u'{{#"ID":"Signer2","Size":{"Height":"70","Width":"200"}#}}')
+
+        # --- the quotes stored as xml entities, as appy/POD writes them ---
+        escaped = odt_file(tag(1).replace(u'"', u"&quot;"), u"l&apos;essai")
+        self.assertEqual(extract_text(escaped), u'{{#"ID":"Signer1","Size":{"Height":"70","Width":"200"}#}}l\'essai')
+        self.assertEqual(get_tag_ids(escaped), ([1], 0, []))
+
+        # --- a real pdf produced by LibreOffice: its embedded fonts defeat PyPDF2 ---
+        with open(os.path.join(TESTS_DIR, "signer_tags.pdf"), "rb") as fh:
+            real_pdf = NamedBlobFile(data=fh.read(), filename=u"signer_tags.pdf", contentType="application/pdf")
+        self.assertIn(tag(1) + tag(2), extract_text(real_pdf))
+        self.assertEqual(get_tag_ids(real_pdf), ([1, 2], 0, []))
+
+        # --- unreadable: no file, no data, unsupported type, corrupt data ---
+        self.assertEqual(extract_text(None), u"")
+        self.assertEqual(extract_text(NamedBlobFile(data="", filename=u"f.pdf", contentType="application/pdf")), u"")
+        self.assertEqual(
+            extract_text(NamedBlobFile(data="plain text", filename=u"f.txt", contentType="text/plain")), u""
+        )
+        self.assertEqual(
+            extract_text(NamedBlobFile(data="not a pdf", filename=u"f.pdf", contentType="application/pdf")), u""
+        )
+        self.assertEqual(extract_text(NamedBlobFile(data="not a zip", filename=u"f.odt",
+                                                    contentType=ODT_CONTENT_TYPE)), u"")
+
+    def test_get_tag_ids(self):
+        """Signer numbers come in document order, seal tags are counted, malformed tags are listed."""
+        self.assertEqual(get_tag_ids(pdf_file(u"no tag here")), ([], 0, []))
+        self.assertEqual(get_tag_ids(pdf_file(tag(2), tag(1))), ([2, 1], 0, []))
+        self.assertEqual(get_tag_ids(odt_file(tag(1), tag(1))), ([1, 1], 0, []))
+        self.assertEqual(get_tag_ids(odt_file(tag(10))), ([10], 0, []))
+
+        # --- the seal tag, alone, beside a signer and twice ---
+        self.assertEqual(get_tag_ids(odt_file(seal_tag())), ([], 1, []))
+        self.assertEqual(get_tag_ids(pdf_file(tag(1), seal_tag())), ([1], 1, []))
+        self.assertEqual(get_tag_ids(odt_file(seal_tag(), seal_tag())), ([], 2, []))
+
+        # --- a brace after the closing #}} is plain text, not part of the tag ---
+        self.assertEqual(get_tag_ids(odt_file(tag(1) + u"}")), ([1], 0, []))
+
+        # --- malformed tags are listed apart, the valid ones are still read ---
+        for malformed in (
+            u'{{#"ID":"Signer1","Size"{"Height":"70","Width":"200"}#}}',  # not json
+            u'{{#"ID":"SIGNER1","SIZE":{"HEIGHT":"70","WIDTH":"200"}#}}',
+            u'{{#"ID":"Signer1"#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"70"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"70","Width":"200"},"Page":"1"#}}',
+            u'{{#"ID":"WRONG","Size":{"Height":"70","Width":"200"}#}}',
+            tag(0),
+            u'{{#"ID":"Signer01","Size":{"Height":"70","Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":70,"Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":{"Height":"7O","Width":"200"}#}}',
+            u'{{#"ID":"Signer1","Size":"70x200"#}}',
+        ):
+            self.assertEqual(get_tag_ids(odt_file(malformed, tag(2))), ([2], 0, [malformed]))
+
+    def test_validate_signer_numbers(self):
+        """No tag is valid; a complete set is valid; duplicate, unknown and missing are errors."""
+        # --- no tag at all is always valid ---
+        self.assertEqual(validate_signer_numbers([], 2), [])
+        self.assertEqual(validate_signer_numbers([], 0), [])
+
+        # --- one tag per signer, any order ---
+        self.assertEqual(validate_signer_numbers([1, 2], 2), [])
+        self.assertEqual(validate_signer_numbers([2, 1], 2), [])
+
+        # --- the same signer twice ---
+        errors = validate_signer_numbers([1, 1, 2], 2)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"is present ${count} times", errors[0])
+        self.assertEqual(errors[0].mapping, {"nb": 1, "count": 2})
+
+        # --- a signer that does not exist ---
+        errors = validate_signer_numbers([1, 2, 3], 2)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"but ${count} signer(s) are defined", errors[0])
+        self.assertEqual(errors[0].mapping, {"nb": 3, "count": 2})
+
+        # --- an incomplete set ---
+        errors = validate_signer_numbers([1], 2)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"is missing", errors[0])
+        self.assertEqual(errors[0].mapping, {"nb": 2})
+
+        # --- a tag while no signer is defined ---
+        errors = validate_signer_numbers([1], 0)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0].mapping, {"nb": 1, "count": 0})
+
+    def test_validate_seal_count(self):
+        """No seal tag is valid; one is valid with a seal; more than one and no seal are errors."""
+        # --- no seal tag at all is always valid ---
+        self.assertEqual(validate_seal_count(0, True), [])
+        self.assertEqual(validate_seal_count(0, False), [])
+
+        # --- exactly one tag while a seal is defined ---
+        self.assertEqual(validate_seal_count(1, True), [])
+
+        # --- the tag while no seal is defined ---
+        errors = validate_seal_count(1, False)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"no seal is defined", errors[0])
+
+        # --- the tag several times ---
+        errors = validate_seal_count(2, True)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"is present ${count} times", errors[0])
+        self.assertEqual(errors[0].mapping, {"count": 2})
+
+        # --- several tags and no seal: only the missing seal is reported ---
+        errors = validate_seal_count(2, False)
+        self.assertEqual(len(errors), 1)
+        self.assertIn(u"no seal is defined", errors[0])
+
+    def test_check_file(self):
+        """The errors of the file field of a content object."""
+        self.annex.file = pdf_file(tag(1), tag(2))
+        self.assertEqual(check_file(self.annex, 2), [])
+        self.assertEqual(len(check_file(self.annex, 1)), 1)
+        self.assertEqual(check_file(self.folder, 2), [])  # no file field at all
+
+        # --- the signature tags are ignored when nb_signers is None ---
+        self.assertEqual(check_file(self.annex, None), [])
+
+        # --- the seal tag, with and without a seal on the container ---
+        self.annex.file = pdf_file(tag(1), seal_tag())
+        self.assertEqual(check_file(self.annex, 1, True), [])
+        self.assertEqual(len(check_file(self.annex, 1, False)), 1)
+
+        # --- a wrong signature tag and a wrong seal tag are both reported ---
+        self.assertEqual(len(check_file(self.annex, 2, False)), 2)
+
+        # --- a malformed tag is reported, even when the signature tags are ignored ---
+        self.annex.file = pdf_file(u'{{#"ID":"Signer1"#}}')
+        errors = check_file(self.annex, None)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(errors[0].mapping, {"tag": u'{{#"ID":"Signer1"#}}'})
+
+    def test_get_session_acroform_errors(self):
+        """Session files are checked against the number of signers of their session."""
+        self.annex.file = pdf_file(tag(1))
+        session_id, _session = add_files_to_session(self.signers, (self.annex.UID(),))[-1]
+
+        # --- unknown session ---
+        self.assertEqual(get_session_acroform_errors(9999), OrderedDict())
+
+        # --- one tag but two signers: the missing one is reported ---
+        errors = get_session_acroform_errors(session_id)
+        self.assertEqual(list(errors.keys()), [self.annex.UID()])
+        obj, context_uid, messages = errors[self.annex.UID()]
+        self.assertEqual(obj, self.annex)
+        self.assertEqual(context_uid, self.folder.UID())
+        self.assertEqual(len(messages), 1)
+
+        # --- a complete set of tags: nothing reported ---
+        self.annex.file = pdf_file(tag(1), tag(2))
+        self.assertEqual(get_session_acroform_errors(session_id), OrderedDict())
+
+        # --- the seal tag is checked against the seal of the session ---
+        self.annex.file = pdf_file(tag(1), tag(2), seal_tag())
+        self.assertEqual(len(get_session_acroform_errors(session_id)), 1)  # this session has no seal
+        sealed_id, _sealed = add_files_to_session(self.signers, (self.annex.UID(),), seal=True)[-1]
+        self.assertEqual(get_session_acroform_errors(sealed_id), OrderedDict())
+        self.annex.file = pdf_file(tag(1), tag(2), seal_tag(), seal_tag())
+        self.assertEqual(len(get_session_acroform_errors(sealed_id)), 1)
+
+    def test_get_file_fingerprint(self):
+        """The md5 of the file data, None without data."""
+        self.annex.file = pdf_file(tag(1))
+        md5 = get_file_fingerprint(self.annex.file)
+        self.assertEqual(len(md5), 32)
+        self.assertEqual(get_file_fingerprint(pdf_file(tag(1))), md5)
+        self.assertNotEqual(get_file_fingerprint(pdf_file(tag(2))), md5)
+        self.assertIsNone(get_file_fingerprint(None))
+        self.assertIsNone(get_file_fingerprint(NamedBlobFile(data=b"", filename=u"empty.pdf")))
+
+    def test_get_file_acroform_tags(self):
+        """Tags are stored with the md5 of the file in its annotation, the file is only read
+        again when it changed, the stored tags are trusted with stored=True."""
+        self.annex.file = pdf_file(tag(1), seal_tag(), u'{{#"ID":"Signer2"#}}')
+        expected = {
+            "md5": get_file_fingerprint(self.annex.file),
+            "signers": [1],
+            "seals": 1,
+            "malformed": [u'{{#"ID":"Signer2"#}}'],
+        }
+        self.assertEqual(get_file_acroform_tags(self.annex), expected)
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"], {"acroform_tags": expected})
+        # same file: not read again
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
+            self.assertEqual(get_file_acroform_tags(self.annex), expected)
+        self.assertFalse(mock_get_tag_ids.called)
+        # file changed: the stored tags are trusted with stored=True, read again otherwise
+        self.annex.file = pdf_file(tag(1), tag(2))
+        self.assertEqual(get_file_acroform_tags(self.annex, stored=True), expected)
+        tags = get_file_acroform_tags(self.annex)
+        self.assertEqual((tags["signers"], tags["seals"], tags["malformed"]), ([1, 2], 0, []))
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"]["acroform_tags"], tags)
+        # nothing stored yet: the file is read with stored=True too
+        del IAnnotations(self.annex)["imio.esign"]
+        self.assertEqual(get_file_acroform_tags(self.annex, stored=True)["signers"], [1, 2])
+        # no file: nothing found, nothing stored
+        self.assertEqual(
+            get_file_acroform_tags(self.folder), {"md5": None, "signers": [], "seals": 0, "malformed": []})
+        self.assertNotIn("imio.esign", IAnnotations(self.folder))
+
+    def test_get_session_acroform_errors_stored(self):
+        """With stored=True, the tags stored on the files are checked against the session
+        signers and seal, the files are not read, files without stored tags are read."""
+        self.annex.file = pdf_file(tag(1))
+        session_id, session = add_files_to_session(self.signers, (self.annex.UID(),))[-1]
+        self.assertEqual(len(get_session_acroform_errors(session_id, stored=True)), 1)  # read and stored
+        self.assertEqual(IAnnotations(self.annex)["imio.esign"]["acroform_tags"]["signers"], [1])
+        # the file changed without updating the stored tags: stored and live results differ
+        self.annex.file = pdf_file(tag(1), tag(2))
+        with patch("imio.esign.acroform.get_tag_ids") as mock_get_tag_ids:
+            errors = get_session_acroform_errors(session_id, stored=True)
+        self.assertFalse(mock_get_tag_ids.called)
+        self.assertEqual(len(errors[self.annex.UID()][2]), 1)
+        # errors depend on the session signers, not stored with the tags
+        session["signers"] = session["signers"][:1]
+        self.assertEqual(get_session_acroform_errors(session_id, stored=True), OrderedDict())
+        session["signers"] = session["signers"] * 2
+        # live check: the file is read again, its stored tags are updated
+        self.assertEqual(get_session_acroform_errors(session_id), OrderedDict())
+        self.assertEqual(get_session_acroform_errors(session_id, stored=True), OrderedDict())
+
+    def test_format_errors(self):
+        """The summary names each file and its messages."""
+        messages = validate_signer_numbers([1], 2)
+        summary = format_errors(u"Folder 0 - Annex 0", messages, self.request)
+        self.assertEqual(summary, u"The signature tag of Signer2 is missing: Folder 0 - Annex 0")
+
+    def test_join_errors(self):
+        """Messages on one line, without the final period, to be followed by ": " and the file."""
+        self.assertEqual(join_errors([u"First error.", u"Second error."]), u"First error. Second error")
+        self.assertEqual(join_errors([u"No period"]), u"No period")
+        self.assertEqual(join_errors([]), u"")

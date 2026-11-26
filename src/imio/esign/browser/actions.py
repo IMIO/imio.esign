@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 from AccessControl import Unauthorized
+from Acquisition import aq_base
+from collections import OrderedDict
 from datetime import datetime
 from html import escape
 from imio.esign import _
 from imio.esign import manage_session_perm
+from imio.esign.acroform import FILE_ANNOTATION_KEY
+from imio.esign.acroform import get_file_fingerprint
 from imio.esign.adapters import ISignable
 from imio.esign.audit import audit
 from imio.esign.browser.views import SessionFilesMixin
@@ -18,15 +22,16 @@ from imio.esign.utils import remove_files_from_session
 from imio.helpers.content import uuidToObject
 from imio.helpers.security import check_zope_admin
 from plone import api
+from Products.CMFCore.interfaces import IFolderish
 from Products.CMFPlone.utils import safe_unicode
 from Products.Five import BrowserView
 from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
 from six import string_types
+from zope.annotation.interfaces import IAnnotations
 from zope.i18n import translate
 
 import json
 import pprint
-import re
 
 
 class AddToSessionView(BrowserView):
@@ -160,6 +165,8 @@ class SessionAnnotationInfoView(BrowserView):
     """Admin-only view displaying imio.esign session annotations for a specific context item."""
 
     index = ViewPageTemplateFile("templates/session_annotation_info.pt")
+    # keys holding a UID, rendered as a link to the object
+    UID_KEYS = ("uid", "context_uid")
 
     def __call__(self):
         if not self.available():
@@ -184,16 +191,17 @@ class SessionAnnotationInfoView(BrowserView):
             return u"datetime({})".format(safe_unicode(value.strftime("%d/%m/%Y %H:%M:%S")))
         return safe_unicode(pprint.pformat(value))
 
-    def _render_value(self, value, indent=u""):
-        """Render a value, replacing UIDs with links where possible."""
+    def _render_value(self, value, indent=u"", key=None):
+        """Render a value, replacing UIDs with links where possible.
+        p_key is the dict key of the value, only values of UID_KEYS are UIDs."""
         inner = indent + u"  "
         if isinstance(value, dict):
             if not value:
                 return u"{}"
             lines = [u"{"]
             for k, v in sorted(value.items()):
-                key = escape(self._format_leaf(k))
-                lines.append(u"{}{}: {},".format(inner, key, self._render_value(v, inner)))
+                rendered_key = escape(self._format_leaf(k))
+                lines.append(u"{}{}: {},".format(inner, rendered_key, self._render_value(v, inner, key=k)))
             lines.append(u"{}}}".format(indent))
             return u"\n".join(lines)
         elif isinstance(value, (list, tuple)):
@@ -204,8 +212,7 @@ class SessionAnnotationInfoView(BrowserView):
                 lines.append(u"{}{},".format(inner, self._render_value(item, inner)))
             lines.append(u"{}]".format(indent))
             return u"\n".join(lines)
-        elif isinstance(value, string_types) and re.match(r"^[0-9a-f]{32}$", value):
-            # Looks like a UUID
+        elif key in self.UID_KEYS and isinstance(value, string_types):
             return self._uid_to_link(value)
         else:
             return escape(self._format_leaf(value))
@@ -239,6 +246,28 @@ class SessionAnnotationInfoView(BrowserView):
     def esign_session_html(self, session_data):
         """Renders esign session annot in HTML"""
         return self._render_value(session_data)
+
+    def sections(self):
+        """Return the (title, html) of the annotations to display, to be extended by subclasses:
+        the sessions, then the esign annotation of the context, of its files and of the session files,
+        with the md5 of their current file to compare with the stored one."""
+        sessions = self.esign_sessions
+        sections = [(u"Session {}".format(sid), self.esign_session_html(session)) for sid, session in sessions]
+        objs = [self.context]
+        if IFolderish.providedBy(self.context):
+            objs += self.context.objectValues()
+        objs += [uuidToObject(f["uid"], unrestricted=True) for sid, session in sessions for f in session["files"]]
+        files = OrderedDict()
+        for obj in objs:
+            # the portal annotation under the same key holds the sessions
+            annotation = obj is not None and IAnnotations(obj, {}).get(FILE_ANNOTATION_KEY) or {}
+            if "acroform_tags" in annotation:
+                nbf = getattr(aq_base(obj), "file", None)
+                files[obj.UID()] = {"uid": obj.UID(), "current_md5": get_file_fingerprint(nbf),
+                                    FILE_ANNOTATION_KEY: annotation}
+        if files:
+            sections.append((u"File annotations", self._render_value(list(files.values()))))
+        return sections
 
     def available(self):
         """Defines if the action is available or not."""

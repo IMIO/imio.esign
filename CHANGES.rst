@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.6 (unreleased)
+1.0.6 (2026-11-26)
 ------------------
 
 - Discriminators must be a tuple of strings, this is checked by `utils.check_discriminators`

@@ -12,13 +12,16 @@ from imio.esign.config import set_esign_registry_max_session_size
 from imio.esign.config import set_esign_registry_signers_order
 from imio.esign.tests.base import BaseEsignTest
 from imio.esign.utils import add_files_to_session
+from imio.esign.utils import check_discriminators
 from imio.esign.utils import create_external_session
 from imio.esign.utils import create_session
+from imio.esign.utils import discriminate_sessions
 from imio.esign.utils import get_file_download_url
 from imio.esign.utils import get_file_info
 from imio.esign.utils import get_filesize
 from imio.esign.utils import get_max_download_date
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_discriminators
 from imio.esign.utils import get_session_info
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import get_state_title
@@ -320,6 +323,41 @@ class TestUtils(BaseEsignTest):
         self.assertEqual([s["userid"] for s in session["signers"]], ["user2", "user1", "user3"])
         # the ordered signer given at another place: same session
         self.assertEqual(add_files_to_session([signers3[0], signers3[2], signers3[1]], (self.uids[5],))[-1][0], sid)
+
+    def test_discriminators(self):
+        """Discriminators must be a tuple of strings, a string would be compared as a set of
+        characters, so different strings made of the same characters would match the same session."""
+        signers = [("user1", "user1@sign.com", "User 1", "Position 1")]
+        check_discriminators(())
+        check_discriminators(("council1", u"council2"))
+        for wrong in ("council1", u"council1", ["council1"], None, ("council1", 1)):
+            self.assertRaises(TypeError, check_discriminators, wrong)
+        # checked when adding files to a session, nothing is created
+        self.assertRaises(TypeError, add_files_to_session, signers, (self.uids[0],), discriminators=u"council1")
+        self.assertRaises(TypeError, add_files_to_session, signers, (self.uids[0],), discriminators=[u"council1"])
+        annot = get_session_annotation()
+        self.assertFalse(annot["sessions"])
+        self.assertFalse(annot["uids"])
+        self.assertRaises(TypeError, create_session, signers, discriminators=[u"council1"])
+        self.assertEqual(annot["numbering"], 0)
+        self.assertRaises(TypeError, discriminate_sessions, signers, None, True, discriminators=u"council1")
+
+        # different discriminators made of the same characters → different sessions
+        sid0 = add_files_to_session(signers, (self.uids[0],), discriminators=(u"council 12",))[-1][0]
+        sid1 = add_files_to_session(signers, (self.uids[1],), discriminators=(u"council 21",))[-1][0]
+        self.assertNotEqual(sid0, sid1)
+        self.assertEqual(add_files_to_session(signers, (self.uids[2],), discriminators=(u"council 12",))[-1][0], sid0)
+
+        # sessions created before discriminators were checked may store a string or a list
+        session0 = annot["sessions"][sid0]
+        self.assertEqual(get_session_discriminators(session0), (u"council 12",))
+        session0["discriminators"] = u"council 12"
+        self.assertEqual(get_session_discriminators(session0), (u"council 12",))
+        self.assertEqual(add_files_to_session(signers, (self.uids[3],), discriminators=(u"council 12",))[-1][0], sid0)
+        session0["discriminators"] = [u"council 12"]
+        self.assertEqual(get_session_discriminators(session0), (u"council 12",))
+        self.assertEqual(add_files_to_session(signers, (self.uids[4],), discriminators=(u"council 12",))[-1][0], sid0)
+        self.assertEqual(get_session_discriminators({}), ())
 
     def test_add_files_ordering_by_context(self):
         """add_files_to_session: files are ordered by their sibling position within their context."""

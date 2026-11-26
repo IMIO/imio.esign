@@ -4,7 +4,14 @@ Changelog
 1.0.6 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Discriminators must be a tuple of strings, this is checked by `utils.check_discriminators`
+  in `add_files_to_session`, `create_session` and `discriminate_sessions` that raise a
+  `TypeError` otherwise. Discriminators are compared as sets so a string was compared as
+  a set of characters and different strings made of the same characters (like UIDs) were
+  added to the same session. `ISignable.get_discriminators` must return a tuple.
+  Added `utils.get_session_discriminators` to get discriminators stored on a session
+  as a tuple, sessions created before may store a list or a string.
+  [gbastien]
 
 
 1.0.5 (2026-11-19)

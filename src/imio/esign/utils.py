@@ -28,6 +28,7 @@ from os import path
 from persistent.list import PersistentList
 from persistent.mapping import PersistentMapping
 from plone import api
+from six import string_types
 from zope.annotation import IAnnotations
 from zope.component import getAdapter
 from zope.i18n import translate
@@ -87,11 +88,12 @@ def add_files_to_session(  # noqa C901
     :param session_id: explicit session number. When given, no dispatching is performed: all files
         go into this session even if it overflows the configured limits.
     :param title: optional string for session title. If it contains {sign_id} or {session_id} it will be replaced
-    :param discriminators: optional list of string discriminators to use for session discrimination
+    :param discriminators: optional tuple of string discriminators to use for session discrimination
     :param watchers: optional list of external esign session watchers emails (used only when creating a new session)
     :param create_session_custom_data: optional custom dict of custom session data
     :return: list of (session_id, session) tuples, one entry per distinct session used
     """
+    check_discriminators(discriminators)
     annot = get_session_annotation()
     session = None
     if session_id is not None:
@@ -307,6 +309,33 @@ def create_external_session(session_id, esign_root_url=None):
     return ret
 
 
+def check_discriminators(discriminators):
+    """Check that discriminators is a tuple of strings.
+
+    Discriminators are compared as sets, a string would be compared as a set of characters,
+    so different strings made of the same characters (like UIDs) would discriminate the same session.
+
+    :param discriminators: discriminators to check
+    :raise TypeError: if discriminators is not a tuple of strings
+    """
+    if not isinstance(discriminators, tuple) or not all(isinstance(d, string_types) for d in discriminators):
+        raise TypeError("discriminators must be a tuple of strings, got {!r}".format(discriminators))
+
+
+def get_session_discriminators(session):
+    """Get the discriminators stored on a session as a tuple of strings.
+
+    Sessions created before discriminators were checked may store a list or a string.
+
+    :param session: session information
+    :return: tuple of string discriminators
+    """
+    discriminators = session.get("discriminators", ())
+    if isinstance(discriminators, string_types):
+        return (discriminators,)
+    return tuple(discriminators)
+
+
 def create_session(
     signers,
     seal=False,
@@ -324,11 +353,12 @@ def create_session(
     :param acroform: acroform boolean
     :param title: title of the session
     :param annot: esign annotation, if not provided it will be fetched
-    :param discriminators: optional list of string discriminators
+    :param discriminators: optional tuple of string discriminators
     :param watchers: optional list of external esign session watchers emails
     :param create_session_custom_data: optional custom dict of custom session data
     :return: session id and session information
     """
+    check_discriminators(discriminators)
     if not annot:
         annot = get_session_annotation()
     sessions = annot.setdefault("sessions", PersistentMapping())
@@ -371,12 +401,13 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param seal: seal boolean
     :param acroform: boolean value indicating if acroform is used
-    :param discriminators: optional list of string discriminators
+    :param discriminators: optional tuple of string discriminators
     :param annot: esign annotation, if not provided it will be fetched
     :param size: size in bytes of the files to be added to the session
     :param files_count: number of files to be added to the session
     :return: session id and session if found, or (None, None) if no session found
     """
+    check_discriminators(discriminators)
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
@@ -393,7 +424,7 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
         session_signers = session.get("signers", [])
         if len(signers) != len(session_signers):
             continue
-        if set(discriminators) != set(session.get("discriminators", ())):
+        if set(discriminators) != set(get_session_discriminators(session)):
             continue
         signers_match = all(
             (userid, email) == (s["userid"], s["email"]) for (userid, email, z, z), s in zip(signers, session_signers)

@@ -80,7 +80,7 @@ class SignableAdapter(object):
         return []
 
     def get_discriminators(self):
-        return []
+        return ()
 
     def get_create_session_custom_data(self):
         return {}
@@ -139,9 +139,9 @@ class ISignable(Interface):
 
     def get_discriminators(self):
         """
-        List of discriminators for that element to associate it to an available session.
+        Tuple of string discriminators for that element to associate it to an available session.
         """
-        return []
+        return ()
 
     def get_create_session_custom_data(self):
         """

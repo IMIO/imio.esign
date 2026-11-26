@@ -10,6 +10,7 @@ from imio.esign.browser.views import SessionFilesMixin
 from imio.esign.utils import add_files_to_session
 from imio.esign.utils import create_session
 from imio.esign.utils import get_session_annotation
+from imio.esign.utils import get_session_discriminators
 from imio.esign.utils import get_sessions_for
 from imio.esign.utils import persistent_to_native
 from imio.esign.utils import remove_context_from_session
@@ -337,7 +338,7 @@ class RecreateSessionView(_RecreateSessionMixin, BrowserView):
                 return self._redirect(_("No file selected!"), "warning")
         seal = old.get("seal")
         acroform = old.get("acroform", True)
-        discriminators = old.get("discriminators", ())
+        discriminators = get_session_discriminators(old)
         watchers = list(old.get("watchers", []))
         create_session_custom_data = self.get_create_session_custom_data(old, session_id)
         create_session_custom_data["recreated_from"] = session_id

@@ -270,10 +270,19 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(sid1, 1)
         self.assertIsNot(ses1, ses0)
         self.assertEqual(ses1["size"], 6968)
+        # session 0 did not reach the limit but could not receive the file, it is closed
+        self.assertEqual(ses0["state"], "draft_full")
+        self.assertEqual(ses1["state"], "draft")
         sid2, ses2 = add_files_to_session(signers, (self.uids[2],))[-1]
         self.assertEqual(sid2, 1)
         self.assertIs(ses2, ses1)
         self.assertEqual(ses2["size"], 6968 + 6968)
+        # a file that makes the session reach the size limit is added, then the session is closed
+        ses1["size"] = 1 * 1024 ** 2 - get_filesize(self.uids[3])
+        sid3, ses3 = add_files_to_session(signers, (self.uids[3],))[-1]
+        self.assertIs(ses3, ses1)
+        self.assertEqual(ses3["size"], 1 * 1024 ** 2)
+        self.assertEqual(ses3["state"], "draft_full")
 
         # --- count-based session splitting: a single batch dispatched across several sessions ---
         del root_annot["imio.esign"]
@@ -281,7 +290,10 @@ class TestUtils(BaseEsignTest):
         self.addCleanup(set_esign_registry_max_session_files, prev_max_files)
         set_esign_registry_max_session_files(2)
         signers = [("user1", "user1@sign.com", "User 1", "P1")]
-        sid, session = add_files_to_session(signers, tuple(self.uids[:5]))[-1]
+        # sessions are only discriminated again when the session used for the previous file is full
+        with patch("imio.esign.utils.discriminate_sessions", wraps=discriminate_sessions) as spy:
+            sid, session = add_files_to_session(signers, tuple(self.uids[:5]))[-1]
+        self.assertEqual(spy.call_count, 3)
         annot = get_session_annotation()
         sessions = annot["sessions"]
         self.assertEqual(len(sessions), 3)
@@ -292,6 +304,13 @@ class TestUtils(BaseEsignTest):
         # return value is for the last file added
         self.assertEqual(sid, 2)
         self.assertIs(session, sessions[2])
+
+        # --- a session is marked 'draft_full' as soon as a file makes it reach the limit ---
+        del root_annot["imio.esign"]
+        set_esign_registry_max_session_files(2)
+        sid, session = add_files_to_session(signers, tuple(self.uids[:2]))[-1]
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["state"], "draft_full")
 
         # --- a session marked 'draft_full' is never reused, even if the limit is later raised ---
         del root_annot["imio.esign"]
@@ -308,6 +327,21 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(annot["sessions"][0]["state"], "draft_full")
         self.assertEqual(sid, 1)
         self.assertEqual(len(annot["sessions"][1]["files"]), 2)
+
+        # --- files of a same call do not walk every sessions for every file ---
+        del root_annot["imio.esign"]
+        with patch("imio.esign.utils.discriminate_sessions", wraps=discriminate_sessions) as spy:
+            add_files_to_session(signers, tuple(self.uids[:5]))
+        self.assertEqual(spy.call_count, 1)
+        self.assertEqual(len(get_session_annotation()["sessions"][0]["files"]), 5)
+
+        # --- a file that is not found is skipped, other files are added ---
+        del root_annot["imio.esign"]
+        sid, session = add_files_to_session(signers, ("unknown_uid", self.uids[0]))[-1]
+        self.assertEqual([file_info["uid"] for file_info in session["files"]], [self.uids[0]])
+        self.assertNotIn("unknown_uid", get_session_annotation()["uids"])
+        # nothing is added when no file is found
+        self.assertEqual(add_files_to_session(signers, ("unknown_uid", )), [])
 
         # --- signers order enforced: signers sorted at creation, unlisted ones last in given order ---
         self.register_signers("user1", "user2", "user3")
@@ -430,6 +464,11 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(get_filesize(self.uids[0]), 6968)  # annex0 uses annex1.pdf (6968 bytes)
         self.assertEqual(get_filesize(self.uids[1]), 7014)  # annex1 uses annex2.pdf (7014 bytes)
         self.assertEqual(get_filesize("nonexistent_uid"), 0)
+        # when the annex is given, it is not looked up again
+        annex1 = uuidToObject(uuid=self.uids[1], unrestricted=True)
+        with patch("imio.esign.utils.uuidToObject", wraps=uuidToObject) as spy:
+            self.assertEqual(get_filesize(self.uids[1], annex=annex1), 7014)
+        spy.assert_not_called()
 
         annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
         self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")

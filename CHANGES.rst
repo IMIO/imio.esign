@@ -4,7 +4,22 @@ Changelog
 1.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- In `utils.add_files_to_session`, reuse the session used for the previous file
+  if it is still a draft that may receive the file instead of calling
+  `utils.discriminate_sessions` (that walks every sessions) for every file,
+  sessions are discriminated again when the session is full.
+  Added `utils.session_may_receive` and `utils.session_is_full` to check the
+  session limits without changing the session, the session is marked `draft_full`
+  by `utils.add_files_to_session` once a file makes it reach the limits and by
+  `utils.discriminate_sessions` when it can not receive the files.
+  [gbastien]
+- Added parameter `annex` to `utils.get_filesize` so the annex is not looked up
+  again when it is already available, used by `utils.add_files_to_session` that
+  was getting every annex twice from the catalog.
+  [gbastien]
+- In `utils.add_files_to_session`, a file that is not found is skipped (and logged)
+  instead of failing with an `AttributeError` (and possibly creating an empty session).
+  [gbastien]
 
 
 1.0.6 (2026-11-26)

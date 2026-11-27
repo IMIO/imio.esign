@@ -4,7 +4,13 @@ Changelog
 1.0.7 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- In `utils.add_files_to_session`, reuse the session used for the previous file
+  if it is still a draft that may receive the file instead of calling
+  `utils.discriminate_sessions` (that walks every sessions) for every file,
+  sessions are discriminated again when the session is full.
+  Added `utils.session_may_receive` to check the session limits, used by
+  `utils.discriminate_sessions` and `utils.add_files_to_session`.
+  [gbastien]
 
 
 1.0.6 (2026-11-26)

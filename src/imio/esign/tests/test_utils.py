@@ -281,7 +281,10 @@ class TestUtils(BaseEsignTest):
         self.addCleanup(set_esign_registry_max_session_files, prev_max_files)
         set_esign_registry_max_session_files(2)
         signers = [("user1", "user1@sign.com", "User 1", "P1")]
-        sid, session = add_files_to_session(signers, tuple(self.uids[:5]))[-1]
+        # sessions are only discriminated again when the session used for the previous file is full
+        with patch("imio.esign.utils.discriminate_sessions", wraps=discriminate_sessions) as spy:
+            sid, session = add_files_to_session(signers, tuple(self.uids[:5]))[-1]
+        self.assertEqual(spy.call_count, 3)
         annot = get_session_annotation()
         sessions = annot["sessions"]
         self.assertEqual(len(sessions), 3)
@@ -308,6 +311,13 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(annot["sessions"][0]["state"], "draft_full")
         self.assertEqual(sid, 1)
         self.assertEqual(len(annot["sessions"][1]["files"]), 2)
+
+        # --- files of a same call do not walk every sessions for every file ---
+        del root_annot["imio.esign"]
+        with patch("imio.esign.utils.discriminate_sessions", wraps=discriminate_sessions) as spy:
+            add_files_to_session(signers, tuple(self.uids[:5]))
+        self.assertEqual(spy.call_count, 1)
+        self.assertEqual(len(get_session_annotation()["sessions"][0]["files"]), 5)
 
         # --- signers order enforced: signers sorted at creation, unlisted ones last in given order ---
         self.register_signers("user1", "user2", "user3")

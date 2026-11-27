@@ -104,6 +104,7 @@ def add_files_to_session(  # noqa C901
             session = annot["sessions"][session_id]
     dispatch = session_id is None
     sessions_used = []
+    previous_signers = None
     from imio.esign.adapters import ISignable  # avoid circular import
 
     for uid in files_uids:
@@ -113,14 +114,20 @@ def add_files_to_session(  # noqa C901
 
         if dispatch:
             sorted_signers = signable.sort_signers(signers)
-            session_id, session = discriminate_sessions(
-                sorted_signers,
-                seal,
-                acroform,
-                discriminators=discriminators,
-                size=file_size,
-                files_count=1,
-            )
+            # the session used for the previous file was found or created with the same
+            # parameters, it is the one discriminate_sessions would return if it is still
+            # a draft that may receive this file, this avoids walking every sessions for every file
+            if session is None or sorted_signers != previous_signers or session["state"] != "draft" or \
+                    not session_may_receive(session, size=file_size, files_count=1):
+                session_id, session = discriminate_sessions(
+                    sorted_signers,
+                    seal,
+                    acroform,
+                    discriminators=discriminators,
+                    size=file_size,
+                    files_count=1,
+                )
+            previous_signers = sorted_signers
             if not session:
                 session_id, session = create_session(
                     sorted_signers,
@@ -411,8 +418,6 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
     if not annot:
         annot = get_session_annotation()
     sessions = annot.get("sessions", {})
-    max_session_size = get_esign_registry_max_session_size() * 1024 ** 2
-    max_session_files = get_esign_registry_max_session_files()
 
     for session_id, session in sessions.items():
         if session["state"] != "draft":
@@ -431,19 +436,38 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
         )
         if not signers_match:
             continue
-        session_size = session.get("size", 0)
-        session_files_count = len(session.get("files", []))
-        if session_files_count + files_count >= max_session_files or size + session_size >= max_session_size:
-            #  Mark it draft_full, so it will never be reconsidered for any future batch.
-            session["state"] = "draft_full"
-            session["last_update"] = datetime.now()
-            if session_files_count + files_count > max_session_files or size + session_size > max_session_size:
-                # Session can't accept this batch.
-                continue
+        if not session_may_receive(session, size=size, files_count=files_count):
+            continue
 
         return session_id, session
 
     return None, None
+
+
+def session_may_receive(session, size=0, files_count=0):
+    """Check if a draft session may receive files regarding the configured limits.
+
+    When adding the files reaches ``max_session_size`` or ``max_session_files``, the session
+    is marked ``draft_full`` so it will never be reconsidered, it still receives the files
+    when the limit is reached but not exceeded.
+
+    :param session: session information
+    :param size: size in bytes of the files to be added to the session
+    :param files_count: number of files to be added to the session
+    :return: True if the session may receive the files, False otherwise
+    """
+    max_session_size = get_esign_registry_max_session_size() * 1024 ** 2
+    max_session_files = get_esign_registry_max_session_files()
+    session_size = session.get("size", 0)
+    session_files_count = len(session.get("files", []))
+    if session_files_count + files_count >= max_session_files or size + session_size >= max_session_size:
+        #  Mark it draft_full, so it will never be reconsidered for any future batch.
+        session["state"] = "draft_full"
+        session["last_update"] = datetime.now()
+        if session_files_count + files_count > max_session_files or size + session_size > max_session_size:
+            # Session can't accept this batch.
+            return False
+    return True
 
 
 def get_esign_session_url(esign_root_url):

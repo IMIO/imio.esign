@@ -270,10 +270,19 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(sid1, 1)
         self.assertIsNot(ses1, ses0)
         self.assertEqual(ses1["size"], 6968)
+        # session 0 did not reach the limit but could not receive the file, it is closed
+        self.assertEqual(ses0["state"], "draft_full")
+        self.assertEqual(ses1["state"], "draft")
         sid2, ses2 = add_files_to_session(signers, (self.uids[2],))[-1]
         self.assertEqual(sid2, 1)
         self.assertIs(ses2, ses1)
         self.assertEqual(ses2["size"], 6968 + 6968)
+        # a file that makes the session reach the size limit is added, then the session is closed
+        ses1["size"] = 1 * 1024 ** 2 - get_filesize(self.uids[3])
+        sid3, ses3 = add_files_to_session(signers, (self.uids[3],))[-1]
+        self.assertIs(ses3, ses1)
+        self.assertEqual(ses3["size"], 1 * 1024 ** 2)
+        self.assertEqual(ses3["state"], "draft_full")
 
         # --- count-based session splitting: a single batch dispatched across several sessions ---
         del root_annot["imio.esign"]
@@ -295,6 +304,13 @@ class TestUtils(BaseEsignTest):
         # return value is for the last file added
         self.assertEqual(sid, 2)
         self.assertIs(session, sessions[2])
+
+        # --- a session is marked 'draft_full' as soon as a file makes it reach the limit ---
+        del root_annot["imio.esign"]
+        set_esign_registry_max_session_files(2)
+        sid, session = add_files_to_session(signers, tuple(self.uids[:2]))[-1]
+        self.assertEqual(len(session["files"]), 2)
+        self.assertEqual(session["state"], "draft_full")
 
         # --- a session marked 'draft_full' is never reused, even if the limit is later raised ---
         del root_annot["imio.esign"]

@@ -440,6 +440,11 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(get_filesize(self.uids[0]), 6968)  # annex0 uses annex1.pdf (6968 bytes)
         self.assertEqual(get_filesize(self.uids[1]), 7014)  # annex1 uses annex2.pdf (7014 bytes)
         self.assertEqual(get_filesize("nonexistent_uid"), 0)
+        # when the annex is given, it is not looked up again
+        annex1 = uuidToObject(uuid=self.uids[1], unrestricted=True)
+        with patch("imio.esign.utils.uuidToObject", wraps=uuidToObject) as spy:
+            self.assertEqual(get_filesize(self.uids[1], annex=annex1), 7014)
+        spy.assert_not_called()
 
         annex = uuidToObject(uuid=self.uids[0], unrestricted=True)
         self.assertEqual(annex.content_category, "plone-annexes_types_-_annexes_-_to_sign")

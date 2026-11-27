@@ -40,14 +40,17 @@ import requests
 SESSION_URL = "imio/esign/v1/luxtrust/sessions"
 
 
-def get_filesize(uid, session=None):
+def get_filesize(uid, session=None, annex=None):
     """Get the file size of an annex.
 
     :param uid: The UID of the annex.
+    :param session: session information, used to get the annex context when the annex is not found
+    :param annex: the annex when it is already available, so it is not looked up again
     :return: The file size in bytes, or 0 if not found.
     """
     parent = None
-    annex = uuidToObject(uuid=uid, unrestricted=True)
+    if annex is None:
+        annex = uuidToObject(uuid=uid, unrestricted=True)
     if not annex:
         # try to get context from session in case annex was not found
         # this can happen if we are in an event of a deleted annex
@@ -108,8 +111,8 @@ def add_files_to_session(  # noqa C901
     from imio.esign.adapters import ISignable  # avoid circular import
 
     for uid in files_uids:
-        file_size = get_filesize(uid)
         annex = uuidToObject(uuid=uid, unrestricted=True)
+        file_size = get_filesize(uid, annex=annex)
         signable = ISignable(aq_parent(annex))
 
         if dispatch:

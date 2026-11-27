@@ -11,6 +11,10 @@ Changelog
   Added `utils.session_may_receive` to check the session limits, used by
   `utils.discriminate_sessions` and `utils.add_files_to_session`.
   [gbastien]
+- Added parameter `annex` to `utils.get_filesize` so the annex is not looked up
+  again when it is already available, used by `utils.add_files_to_session` that
+  was getting every annex twice from the catalog.
+  [gbastien]
 
 
 1.0.6 (2026-11-26)

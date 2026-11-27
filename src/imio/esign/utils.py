@@ -79,10 +79,10 @@ def add_files_to_session(  # noqa C901
 ):
     """Add files to a session with the given signers.
 
-    Files are dispatched one by one. When the current target session would exceed
-    ``max_session_size`` or ``max_session_files`` by adding the next file, it is
-    marked as ``draft_full`` (so it will never be reused) and a new session is
-    discriminated or created for the remaining files.
+    Files are dispatched one by one. A session is marked as ``draft_full`` (so it will
+    never be reused) when a file makes it reach ``max_session_size`` or
+    ``max_session_files``, or when it can not receive the next file without exceeding
+    them, a new session is then discriminated or created for the remaining files.
 
     :param signers: a list of signers, each is a quartet with userid, email, fullname and position text
     :param files_uids: files uids list
@@ -204,6 +204,9 @@ def add_files_to_session(  # noqa C901
                 session["title"] = session["title"].replace(u"{sign_id}", session["sign_id"])
             if u"{session_id}" in session["title"]:
                 session["title"] = session["title"].replace(u"{session_id}", str(session_id))
+        if dispatch and session_is_full(session):
+            # mark it draft_full, so it will never be reconsidered for any future batch
+            session["state"] = "draft_full"
         session["last_update"] = datetime.now()
         if not sessions_used or sessions_used[-1][0] != session_id:
             sessions_used.append((session_id, session))
@@ -443,6 +446,9 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
         if not signers_match:
             continue
         if not session_may_receive(session, size=size, files_count=files_count):
+            # mark it draft_full, so it will never be reconsidered for any future batch
+            session["state"] = "draft_full"
+            session["last_update"] = datetime.now()
             continue
 
         return session_id, session
@@ -451,29 +457,25 @@ def discriminate_sessions(signers, seal, acroform, discriminators=(), annot=None
 
 
 def session_may_receive(session, size=0, files_count=0):
-    """Check if a draft session may receive files regarding the configured limits.
-
-    When adding the files reaches ``max_session_size`` or ``max_session_files``, the session
-    is marked ``draft_full`` so it will never be reconsidered, it still receives the files
-    when the limit is reached but not exceeded.
+    """Check if a session may receive files without exceeding the configured limits.
 
     :param session: session information
     :param size: size in bytes of the files to be added to the session
     :param files_count: number of files to be added to the session
     :return: True if the session may receive the files, False otherwise
     """
-    max_session_size = get_esign_registry_max_session_size() * 1024 ** 2
-    max_session_files = get_esign_registry_max_session_files()
-    session_size = session.get("size", 0)
-    session_files_count = len(session.get("files", []))
-    if session_files_count + files_count >= max_session_files or size + session_size >= max_session_size:
-        #  Mark it draft_full, so it will never be reconsidered for any future batch.
-        session["state"] = "draft_full"
-        session["last_update"] = datetime.now()
-        if session_files_count + files_count > max_session_files or size + session_size > max_session_size:
-            # Session can't accept this batch.
-            return False
-    return True
+    return (
+        len(session.get("files", [])) + files_count <= get_esign_registry_max_session_files()
+        and session.get("size", 0) + size <= get_esign_registry_max_session_size() * 1024 ** 2
+    )
+
+
+def session_is_full(session):
+    """Check if a session reached ``max_session_files`` or ``max_session_size``."""
+    return (
+        len(session.get("files", [])) >= get_esign_registry_max_session_files()
+        or session.get("size", 0) >= get_esign_registry_max_session_size() * 1024 ** 2
+    )
 
 
 def get_esign_session_url(esign_root_url):

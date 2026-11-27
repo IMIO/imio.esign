@@ -8,8 +8,10 @@ Changelog
   if it is still a draft that may receive the file instead of calling
   `utils.discriminate_sessions` (that walks every sessions) for every file,
   sessions are discriminated again when the session is full.
-  Added `utils.session_may_receive` to check the session limits, used by
-  `utils.discriminate_sessions` and `utils.add_files_to_session`.
+  Added `utils.session_may_receive` and `utils.session_is_full` to check the
+  session limits without changing the session, the session is marked `draft_full`
+  by `utils.add_files_to_session` once a file makes it reach the limits and by
+  `utils.discriminate_sessions` when it can not receive the files.
   [gbastien]
 - Added parameter `annex` to `utils.get_filesize` so the annex is not looked up
   again when it is already available, used by `utils.add_files_to_session` that

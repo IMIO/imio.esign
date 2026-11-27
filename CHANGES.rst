@@ -15,6 +15,9 @@ Changelog
   again when it is already available, used by `utils.add_files_to_session` that
   was getting every annex twice from the catalog.
   [gbastien]
+- In `utils.add_files_to_session`, a file that is not found is skipped (and logged)
+  instead of failing with an `AttributeError` (and possibly creating an empty session).
+  [gbastien]
 
 
 1.0.6 (2026-11-26)

@@ -112,6 +112,9 @@ def add_files_to_session(  # noqa C901
 
     for uid in files_uids:
         annex = uuidToObject(uuid=uid, unrestricted=True)
+        if annex is None:
+            logger.error("Annex with UID %s not found, it is not added to a session.", uid)
+            continue
         file_size = get_filesize(uid, annex=annex)
         signable = ISignable(aq_parent(annex))
 

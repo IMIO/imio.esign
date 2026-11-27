@@ -319,6 +319,14 @@ class TestUtils(BaseEsignTest):
         self.assertEqual(spy.call_count, 1)
         self.assertEqual(len(get_session_annotation()["sessions"][0]["files"]), 5)
 
+        # --- a file that is not found is skipped, other files are added ---
+        del root_annot["imio.esign"]
+        sid, session = add_files_to_session(signers, ("unknown_uid", self.uids[0]))[-1]
+        self.assertEqual([file_info["uid"] for file_info in session["files"]], [self.uids[0]])
+        self.assertNotIn("unknown_uid", get_session_annotation()["uids"])
+        # nothing is added when no file is found
+        self.assertEqual(add_files_to_session(signers, ("unknown_uid", )), [])
+
         # --- signers order enforced: signers sorted at creation, unlisted ones last in given order ---
         self.register_signers("user1", "user2", "user3")
         self.fake_signers_held_positions()
